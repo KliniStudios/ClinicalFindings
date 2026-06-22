@@ -798,12 +798,22 @@ const HJERNENERVER = [
     { id:'ov_koordinasjon', label:'Finger-nese- og kne/hæl-prøve', options:[
       {id:'normal', cls:'normal', text:'Finger-nese-prøve og kne/hæl-prøve uten anmerkning.'},
       {id:'dysmetri', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
-        template:(L)=> L.side ? `Dysmetri ved finger-nese- og/eller kne/hæl-prøve, ${L.side}.` : 'Dysmetri ved finger-nese- og/eller kne/hæl-prøve.'}
+        subFields:[
+          {key:'test', type:'chips', multi:true, label:'Prøve', choices:[{id:'fn',label:'finger-nese-prøve'},{id:'kh',label:'kne/hæl-prøve'}]},
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+        ],
+        template:(L)=>{
+          let s = 'Dysmetri ved ';
+          s += L.test ? L.test : 'finger-nese- og/eller kne/hæl-prøve';
+          if(L.side) s += ', '+L.side;
+          return s+'.';
+        }}
     ]},
     { id:'ov_gange', label:'Gange', options:[
       {id:'normal', cls:'normal', text:'Klarer å gå på tær, hæl og linjegang.'},
-      {id:'nedsatt', cls:'abnormal', text:'Nedsatt evne til å gå på tær, hæl og/eller linjegang (ataktisk/usikker gange).'}
+      {id:'nedsatt', cls:'abnormal',
+        subFields:[{key:'type', type:'chips', multi:true, label:'Nedsatt ved', choices:[{id:'tar',label:'tærgang'},{id:'hal',label:'hælgang'},{id:'linje',label:'linjegang'}]}],
+        template:(L)=> L.type ? `Nedsatt evne til å gå: ${L.type}.` : 'Nedsatt evne til å gå på tær, hæl og/eller linjegang.'}
     ]},
     { id:'ov_romberg', label:'Romberg', options:[
       {id:'normal', cls:'normal', text:'Negativ Romberg med åpne og lukkede øyne.'},
@@ -860,7 +870,9 @@ const KLINISK = [
     { id:'k_svelg', label:'Svelg / tonsiller (på indikasjon, f.eks. ved infeksjon)', options:[
       {id:'normal', cls:'normal', text:'Ingen rødme i svelg, normale tonsiller.'},
       {id:'rodme', cls:'abnormal', text:'Rødme i svelg.'},
-      {id:'tonsiller', cls:'abnormal', text:'Forstørrede og/eller belagte tonsiller.'}
+      {id:'tonsiller', cls:'abnormal',
+        subFields:[{key:'type', type:'chips', multi:true, label:'Type', choices:[{id:'forstor',label:'forstørrede'},{id:'belagte',label:'belagte'}]}],
+        template:(L)=> L.type ? `Tonsiller ${L.type}.` : 'Tonsiller patologiske.'}
     ]}
   ]},
   { id:'collum', tab:'klinisk', num:'3', name:'Collum', items:[
@@ -957,8 +969,10 @@ const KLINISK = [
   { id:'abdomen', tab:'klinisk', num:'7', name:'Abdomen', items:[
     { id:'k_tarmlyder', label:'Tarmlyder', options:[
       {id:'normal', cls:'normal', text:'Normale tarmlyder.'},
-      {id:'reduserte', cls:'abnormal', text:'Reduserte eller opphørte tarmlyder.'},
-      {id:'okte', cls:'abnormal', text:'Økte/livlige tarmlyder.'}
+      {id:'reduserte', cls:'abnormal', text:'Reduserte tarmlyder.'},
+      {id:'opphort', cls:'abnormal', text:'Opphørte tarmlyder.'},
+      {id:'okte', cls:'abnormal', text:'Økte tarmlyder.'},
+      {id:'livlige', cls:'abnormal', text:'Livlige tarmlyder.'}
     ]},
     { id:'k_perkusjon_abd', label:'Perkusjon', options:[
       {id:'normal', cls:'normal', text:'Normal perkusjonslyd, tympanitisk.'},
@@ -978,7 +992,16 @@ const KLINISK = [
     ]},
     { id:'k_organomegali', label:'Organomegali / oppfylninger', options:[
       {id:'normal', cls:'normal', text:'Ingen palpabel organomegali, ingen palpable oppfylninger eller tumores.'},
-      {id:'tilstede', cls:'abnormal', text:'Palpabel organomegali og/eller oppfylning til stede.'}
+      {id:'tilstede', cls:'abnormal',
+        subFields:[{key:'type', type:'chips', multi:true, label:'Type', choices:[
+          {id:'hepato', label:'hepatomegali'},
+          {id:'spleno', label:'splenomegali'},
+          {id:'hepatospleno', label:'hepatosplenomegali'},
+          {id:'nyre', label:'nyreforstørrelse'},
+          {id:'oppfylning', label:'palpabel oppfylning'},
+          {id:'tumor', label:'palpabel tumor'}
+        ]}],
+        template:(L)=> L.type ? `Palpabel ${L.type}.` : 'Palpabel organomegali og/eller oppfylning til stede.'}
     ]},
     { id:'k_nyrelosjer', label:'Nyrelosjer', options:[
       {id:'normal', cls:'normal', text:'Ikke bankeøm over nyrelosjer.'},
@@ -989,8 +1012,15 @@ const KLINISK = [
     { id:'k_lyskepuls', label:'Lyskepuls (på indikasjon)', options:[
       {id:'normal', cls:'normal', text:'Normale lyskepulser bilateralt.'},
       {id:'nedsatt', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
-        template:(L)=> L.side ? `Nedsatt og/eller fraværende lyskepuls, ${L.side}.` : 'Nedsatt og/eller fraværende lyskepuls.'}
+        subFields:[
+          {key:'grad', type:'chips', label:'Grad', choices:[{id:'ned',label:'nedsatt'},{id:'fravar',label:'fraværende'}]},
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+        ],
+        template:(L)=>{
+          let s = L.grad ? 'Lyskepuls '+L.grad : 'Nedsatt og/eller fraværende lyskepuls';
+          if(L.side) s += ', '+L.side;
+          return s+'.';
+        }}
     ]},
     { id:'k_lymfeknuter_lyske', label:'Lymfeknuter, lyske (på indikasjon)', options:[
       {id:'normal', cls:'normal', text:'Ingen palpable lymfeknuter i lyske.'},
@@ -1008,13 +1038,22 @@ const KLINISK = [
       {id:'varm', cls:'normal', text:'Varm hud.'},
       {id:'torr', cls:'abnormal', text:'Tørr hud.'},
       {id:'kald', cls:'abnormal', text:'Kald hud.'},
-      {id:'vat', cls:'abnormal', text:'Klam/våt hud.'}
+      {id:'klam', cls:'abnormal', text:'Klam hud.'},
+      {id:'vat', cls:'abnormal', text:'Våt hud.'},
+      {id:'blek', cls:'abnormal', text:'Blek hud.'}
     ]},
     { id:'k_radialispuls', label:'Radialispuls', options:[
       {id:'normal', cls:'normal', text:'God radialispuls bilateralt.'},
       {id:'nedsatt', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
-        template:(L)=> L.side ? `Nedsatt og/eller fraværende radialispuls, ${L.side}.` : 'Nedsatt og/eller fraværende radialispuls.'}
+        subFields:[
+          {key:'grad', type:'chips', label:'Grad', choices:[{id:'ned',label:'nedsatt'},{id:'fravar',label:'fraværende'}]},
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+        ],
+        template:(L)=>{
+          let s = L.grad ? 'Radialispuls '+L.grad : 'Nedsatt og/eller fraværende radialispuls';
+          if(L.side) s += ', '+L.side;
+          return s+'.';
+        }}
     ]}
   ]},
   { id:'underekstremiteter', tab:'klinisk', num:'9', name:'Underekstremiteter', items:[
@@ -1038,7 +1077,9 @@ const KLINISK = [
       {id:'varm', cls:'normal', text:'Varm hud.'},
       {id:'torr', cls:'abnormal', text:'Tørr hud.'},
       {id:'kald', cls:'abnormal', text:'Kald hud.'},
-      {id:'vat', cls:'abnormal', text:'Klam/våt hud.'}
+      {id:'klam', cls:'abnormal', text:'Klam hud.'},
+      {id:'vat', cls:'abnormal', text:'Våt hud.'},
+      {id:'blek', cls:'abnormal', text:'Blek hud.'}
     ]},
     { id:'k_fotpuls', label:'Fotpulser (ADP / ATP)', options:[
       {id:'normal', cls:'normal', text:'God puls, ADP og ATP bilateralt.'},
@@ -1206,7 +1247,9 @@ function optionShortLabel(opt){
     hypersonor:'Hypersonor', reduserte:'Reduserte', okte:'Økte', odem:'Ødem', redusert:'Redusert',
     ikke15:'Velg GCS-score', ikke:'Ikke utført', utfort:'Utført', hyper:'Hyperrefleksi', hypo:'Hyporefleksi',
     arefleksi:'Arefleksi', positiv:'Positiv', tremor:'Intensjonstremor', dysmetri:'Dysmetri', dysdiadokokinesi:'Dysdiadokokinesi',
-    varm:'Varm', torr:'Tørr', kald:'Kald', vat:'Klam/våt', uregelmessig:'Uregelmessig aksjon', tympani:'Økt tympanisme', bleke:'Bleke konjunktiva', bilyd:'Bilyd' };
+    varm:'Varm', torr:'Tørr', kald:'Kald', klam:'Klam', vat:'Våt', blek:'Blek',
+    uregelmessig:'Uregelmessig aksjon', tympani:'Økt tympanisme', bleke:'Bleke konjunktiva', bilyd:'Bilyd',
+    opphort:'Opphørte', livlige:'Livlige', tilstede:'Til stede', ned:'Nedsatt', fravar:'Fraværende' };
   return map[opt.id] || opt.id;
 }
 
