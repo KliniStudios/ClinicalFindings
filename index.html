@@ -98,6 +98,8 @@
 
   .subfield{margin-top:10px; padding-left:2px;}
   .subfield-label{font-size:.72rem; color:var(--ink-muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em;}
+  .subfield-row{display:flex; align-items:center; flex-wrap:wrap; gap:6px;}
+  .subfield-label-inline{font-family:'IBM Plex Sans'; font-size:.72rem; color:var(--ink-muted); font-style:italic; white-space:nowrap; margin-left:2px;}
   .chip-group{display:flex; flex-wrap:wrap; gap:5px;}
   .chip-btn{font-family:'IBM Plex Sans'; font-size:.76rem; padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:#FAFBFB; color:var(--ink); cursor:pointer; transition:.15s ease;}
   .num-input{font-family:'IBM Plex Mono'; font-size:.83rem; padding:6px 10px; border-radius:7px; border:1px solid var(--border); background:#FAFBFB; color:var(--ink); width:90px;}
@@ -618,7 +620,20 @@ const HJERNENERVER = [
     ]},
     { id:'opt_syn', label:'Subjektivt syn', options:[
       {id:'normal', cls:'normal', text:'Angir ingen endringer i syn.'},
-      {id:'endring', cls:'abnormal', text:'Angir endringer i syn (uskarphet, dobbeltsyn eller synstap).'}
+      {id:'endring', cls:'abnormal',
+        subFields:[{key:'type', type:'chips', multi:true, label:'Type endring', choices:[
+          {id:'tåkesyn',   label:'tåkesyn'},
+          {id:'uskarphet', label:'uskarphet/nedsatt visus'},
+          {id:'dobbeltsyn',label:'dobbeltsyn'},
+          {id:'lysflimmer', label:'lysflimmer/fosfener'},
+          {id:'sorte_prikker', label:'sorte prikker/fluer'},
+          {id:'skotonomer', label:'skotomer (mørke flekker i synsfeltet)'},
+          {id:'synstap',   label:'synstap'},
+          {id:'kortvarig', label:'kortvarig synstap (amaurosis fugax)'},
+          {id:'fargesvikt', label:'fargesvikt'},
+          {id:'lysoverfolgsom', label:'lysfølsomhet/fotofobi'}
+        ]}],
+        template:(L)=> L.type ? `Angir endringer i syn: ${L.type}.` : 'Angir endringer i syn.'}
     ]}
   ]},
   { id:'okulomotorius', tab:'hjernenerver', roman:'III · IV · VI', num:'3/4/6', name:'N. Oculomotorius, Trochlearis, Abducens', items:[
@@ -654,9 +669,19 @@ const HJERNENERVER = [
         ],
         template:(L)=>{ let s='Nystagmus til stede'; if(L.type) s+= `, ${L.type.toLowerCase()}`; if(L.retning) s+= `, slår ut mot ${L.retning}`; return s+'.'; }}
     ]},
-    { id:'oc_dobbeltsyn', label:'Øyemuskelpareser / dobbeltsyn', options:[
-      {id:'normal', cls:'normal', text:'Ingen øyemuskelpareser, ikke dobbeltsyn.'},
-      {id:'tilstede', cls:'abnormal', text:'Øyemuskelpareser og/eller dobbeltsyn angitt.'}
+    { id:'oc_dobbeltsyn', label:'Dobbeltsyn', options:[
+      {id:'normal', cls:'normal', text:'Ikke dobbeltsyn.'},
+      {id:'tilstede', cls:'abnormal',
+        subFields:[
+          {key:'type', type:'chips', label:'Type', choices:[{id:'binok',label:'binokulært'},{id:'monok',label:'monokulært'}]},
+          {key:'side', type:'chips', label:'Side (ved monokulært)', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'}]}
+        ],
+        template:(L)=>{
+          let s = 'Dobbeltsyn';
+          if(L.type) s += `, ${L.type}`;
+          if(L.type==='monokulært' && L.side) s += `, ${L.side} øye`;
+          return s + '.';
+        }}
     ]}
   ]},
   { id:'trigeminus', tab:'hjernenerver', roman:'V', num:'5', name:'N. Trigeminus', items:[
@@ -678,15 +703,23 @@ const HJERNENERVER = [
       {id:'normal', cls:'normal', text:'Normal kraft i panne.'},
       {id:'nedsatt', cls:'abnormal', text:'Nedsatt kraft i panne.'}
     ]},
-    { id:'fac_funksjon', label:'Øyelukking og kinnblås', options:[
-      {id:'normal', cls:'normal', text:'Kan knipe øyne og blåse opp kinn.'},
-      {id:'nedsatt', cls:'abnormal', text:'Nedsatt evne til å knipe øyne og/eller blåse opp kinn.'}
+    { id:'fac_oyelukking', label:'Øyelukking', options:[
+      {id:'normal', cls:'normal', text:'Kan knipe øyne.'},
+      {id:'nedsatt', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Nedsatt evne til å knipe øyne, ${L.side}.` : 'Nedsatt evne til å knipe øyne.'}
+    ]},
+    { id:'fac_kinnblas', label:'Kinnblås', options:[
+      {id:'normal', cls:'normal', text:'Kan blåse opp kinn.'},
+      {id:'nedsatt', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Nedsatt evne til å blåse opp kinn, ${L.side}.` : 'Nedsatt evne til å blåse opp kinn.'}
     ]},
     { id:'fac_smil', label:'Smil', options:[
       {id:'normal', cls:'normal', text:'Symmetrisk smil.'},
       {id:'asymmetrisk', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
-        template:(L)=> L.side ? `Asymmetrisk smil, ${L.side}.` : 'Asymmetrisk smil.'}
+        subFields:[{key:'side', type:'chips', multi:true, label:'Side (hengende munnvik)', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Asymmetrisk smil, hengende munnvik ${L.side}.` : 'Asymmetrisk smil.'}
     ]}
   ]},
   { id:'vestibulocochlearis', tab:'hjernenerver', roman:'VIII', num:'8', name:'N. Vestibulocochlearis', items:[
@@ -804,19 +837,17 @@ const HJERNENERVER = [
         subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
         template:(L)=> L.side ? `Oppadvendt babinski (positiv), ${L.side}.` : 'Oppadvendt babinski (positiv).'}
     ]},
-    { id:'ov_koordinasjon', label:'Finger-nese- og kne/hæl-prøve', options:[
-      {id:'normal', cls:'normal', text:'Finger-nese-prøve og kne/hæl-prøve uten anmerkning.'},
+    { id:'ov_fn_prove', label:'Finger-nese-prøve', options:[
+      {id:'normal', cls:'normal', text:'Finger-nese-prøve uten anmerkning.'},
       {id:'dysmetri', cls:'abnormal',
-        subFields:[
-          {key:'test', type:'chips', multi:true, label:'Prøve', choices:[{id:'fn',label:'finger-nese-prøve'},{id:'kh',label:'kne/hæl-prøve'}]},
-          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
-        ],
-        template:(L)=>{
-          let s = 'Dysmetri ved ';
-          s += L.test ? L.test : 'finger-nese- og/eller kne/hæl-prøve';
-          if(L.side) s += ', '+L.side;
-          return s+'.';
-        }}
+        subFields:[{key:'side', type:'chips', multi:true, label:'finger-nese-prøve', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Dysmetri ved finger-nese-prøve, ${L.side}.` : 'Dysmetri ved finger-nese-prøve.'}
+    ]},
+    { id:'ov_kh_prove', label:'Kne/hæl-prøve', options:[
+      {id:'normal', cls:'normal', text:'Kne/hæl-prøve uten anmerkning.'},
+      {id:'dysmetri', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'kne/hæl-prøve', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Dysmetri ved kne/hæl-prøve, ${L.side}.` : 'Dysmetri ved kne/hæl-prøve.'}
     ]},
     { id:'ov_gange', label:'Gange', options:[
       {id:'normal', cls:'normal', text:'Klarer å gå på tær, hæl og linjegang.'},
@@ -830,17 +861,23 @@ const HJERNENERVER = [
         subFields:[{key:'tilstand', type:'chips', multi:true, label:'Ved', choices:[{id:'apen',label:'åpne øyne'},{id:'lukket',label:'lukkede øyne'}]}],
         template:(L)=> L.tilstand ? `Positiv Romberg, ${L.tilstand}.` : 'Positiv Romberg.'}
     ]},
-    { id:'ov_cerebellar', label:'Cerebellære tegn', options:[
+    { id:'ov_cerebellar', label:'Cerebellære tegn (intensjonstremor · dysmetri · dysdiadokokinesi · rebound · ataksi — side: flervalg per funn)', options:[
       {id:'normal', cls:'normal', text:'Ingen intensjonstremor, dysmetri eller dysdiadokokinesi.'},
       {id:'tremor', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre arm'},{id:'venstre',label:'venstre arm'},{id:'bilateral',label:'bilateralt'}]}],
+        subFields:[{key:'side', type:'chips', multi:true, label:'intensjonstremor', choices:[{id:'hoyre',label:'høyre arm'},{id:'venstre',label:'venstre arm'},{id:'bilateral',label:'bilateralt'}]}],
         template:(L)=> L.side ? `Intensjonstremor, ${L.side}.` : 'Intensjonstremor.'},
       {id:'dysmetri', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre arm'},{id:'venstre',label:'venstre arm'},{id:'bilateral',label:'bilateralt'}]}],
+        subFields:[{key:'side', type:'chips', multi:true, label:'dysmetri', choices:[{id:'hoyre',label:'høyre arm'},{id:'venstre',label:'venstre arm'},{id:'bilateral',label:'bilateralt'}]}],
         template:(L)=> L.side ? `Dysmetri, ${L.side}.` : 'Dysmetri.'},
       {id:'dysdiadokokinesi', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre arm'},{id:'venstre',label:'venstre arm'},{id:'bilateral',label:'bilateralt'}]}],
-        template:(L)=> L.side ? `Dysdiadokokinesi, ${L.side}.` : 'Dysdiadokokinesi.'}
+        subFields:[{key:'side', type:'chips', multi:true, label:'dysdiadokokinesi', choices:[{id:'hoyre',label:'høyre arm'},{id:'venstre',label:'venstre arm'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Dysdiadokokinesi, ${L.side}.` : 'Dysdiadokokinesi.'},
+      {id:'rebound', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'rebound-fenomen', choices:[{id:'hoyre',label:'høyre arm'},{id:'venstre',label:'venstre arm'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Positivt rebound-fenomen, ${L.side}.` : 'Positivt rebound-fenomen.'},
+      {id:'ataksi_cb', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'cerebellær ataksi', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Cerebellær ataksi, ${L.side}.` : 'Cerebellær ataksi.'}
     ]}
   ]}
 ];
@@ -967,12 +1004,18 @@ const KLINISK = [
     ]},
     { id:'k_ekspirium', label:'Ekspirium', options:[
       {id:'normal', cls:'normal', text:'Normalt ekspirium.'},
-      {id:'forlenget', cls:'abnormal', text:'Forlenget ekspirium.'}
+      {id:'forlenget', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'ekspirium', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Forlenget ekspirium, ${L.side}.` : 'Forlenget ekspirium.'}
     ]},
     { id:'k_perkusjon', label:'Lungeperkusjon (på indikasjon)', options:[
       {id:'normal', cls:'normal', text:'Normal perkusjonslyd over lungene.'},
-      {id:'demping', cls:'abnormal', text:'Demping ved perkusjon.'},
-      {id:'hypersonor', cls:'abnormal', text:'Hypersonor perkusjonslyd.'}
+      {id:'demping', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'demping', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Demping ved perkusjon, ${L.side}.` : 'Demping ved perkusjon.'},
+      {id:'hypersonor', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'hypersonor', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Hypersonor perkusjonslyd, ${L.side}.` : 'Hypersonor perkusjonslyd.'}
     ]}
   ]},
   { id:'abdomen', tab:'klinisk', num:'7', name:'Abdomen', items:[
@@ -1273,7 +1316,8 @@ function optionShortLabel(opt){
     arefleksi:'Arefleksi', positiv:'Positiv', tremor:'Intensjonstremor', dysmetri:'Dysmetri', dysdiadokokinesi:'Dysdiadokokinesi',
     varm:'Varm', torr:'Tørr', kald:'Kald', klam:'Klam', vat:'Våt', blek:'Blek',
     uregelmessig:'Uregelmessig aksjon', tympani:'Økt tympanisme', bleke:'Bleke konjunktiva', bilyd:'Bilyd',
-    opphort:'Opphørte', livlige:'Livlige', tilstede:'Til stede', ned:'Nedsatt', fravar:'Fraværende' };
+    opphort:'Opphørte', livlige:'Livlige', tilstede:'Til stede', ned:'Nedsatt', fravar:'Fraværende',
+    rebound:'Rebound-fenomen', ataksi_cb:'Cerebellær ataksi' };
   return map[opt.id] || opt.id;
 }
 
@@ -1330,7 +1374,8 @@ function subFieldHTML(item, opt, sf){
     const isSel = sf.multi ? (Array.isArray(currentVal) && currentVal.includes(c.id)) : (currentVal===c.id);
     return `<button type="button" class="chip-btn ${isSel?'selected':''}" data-item="${item.id}" data-option="${opt.id}" data-field="${sf.key}" data-value="${c.id}" data-multi="${sf.multi?'1':'0'}">${c.label}</button>`;
   }).join('');
-  return `<div class="subfield"><div class="subfield-label">${sf.label}${sf.multi?' (flere mulig)':''}</div><div class="chip-group">${chips}</div></div>`;
+  const labelHtml = sf.label ? `<em class="subfield-label-inline">${sf.label}</em>` : '';
+  return `<div class="subfield subfield-row"><div class="chip-group">${chips}</div>${labelHtml}</div>`;
 }
 
 function renderItemRowInner(item){
@@ -1627,14 +1672,17 @@ function renderAbnormalSummary(tabId){
       const tabId = toggle.dataset.tab;
       includeAllByTab[tabId] = toggle.checked;
       if(toggle.checked){
-        // Auto-activate the first "normal" option on every item that has nothing selected
-        // (but skip items that were explicitly cleared by the user)
+        // Auto-activate the first "normal" option on ALL items, overriding any previous explicit-clear
+        // Exception: NIHSS item stays untouched (neither "ikke utført" nor "utført" should auto-set)
+        const NIHSS_EXCLUDE = ['neuro_nihss'];
         visibleCardsForTab(tabId).forEach(card => {
           card.items.forEach(item => {
+            if(NIHSS_EXCLUDE.includes(item.id)) return;
             if((activeOptions[item.id]||[]).length > 0) return;
-            if(explicitlyClearedByTab[tabId] && explicitlyClearedByTab[tabId].has(item.id)) return;
             const normalOpt = item.options.find(o => o.cls==='normal');
             if(!normalOpt) return;
+            // Clear explicit-cleared flag so this item is included
+            if(explicitlyClearedByTab[tabId]) explicitlyClearedByTab[tabId].delete(item.id);
             activeOptions[item.id] = [normalOpt.id];
             autoActivatedByTab[tabId].set(item.id, normalOpt.id);
             refreshItemRow(item.id);
