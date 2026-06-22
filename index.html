@@ -423,7 +423,7 @@
     </div>
   </div>
 
-  <footer class="disclaimer">Prototype. Innstillinger og profiler lagres til din konto. Undersøkelsesfunn forblir kun i nettleseren og lagres aldri.</footer>
+  <footer class="disclaimer">Dette er en prototype for klinisk dokumentasjonsassistanse. Det er den behandlende klinikers eget ansvar å kvalitetssikre all dokumentasjon og å sikre at behandling av personopplysninger skjer i henhold til gjeldende lovverk og lokale retningslinjer. Prototypen er ikke validert for klinisk bruk. &nbsp;|&nbsp; <b>v003 &middot; 22.06.2026</b></footer>
 </div>
 
 <script>
@@ -748,14 +748,46 @@ const HJERNENERVER = [
         ],
         template:(L)=>{ let s='Nedsatt sensibilitet'; if(L.type) s+= ` for ${L.type}`; if(L.sted) s+= `, ${L.sted}`; return s+'.'; }}
     ]},
-    { id:'ov_reflekser', label:'Reflekser', options:[
-      {id:'normal', cls:'normal', text:'Normale reflekser svarende til biceps, patella og achilles.'},
-      {id:'hyper', cls:'abnormal', text:'Hyperrefleksi.'},
-      {id:'hypo', cls:'abnormal', text:'Hyporefleksi.'},
+    { id:'ov_reflekser', label:'Dype senestrekreflekser (DSR)', options:[
+      {id:'normal', cls:'normal', text:'Normale dype senestrekreflekser bilateralt (biceps, triceps, brachioradialis, patella, achilles).'},
+      {id:'hyper', cls:'abnormal',
+        subFields:[
+          {key:'reflek', type:'chips', multi:true, label:'Hyperrefleksi ved', choices:[{id:'bic',label:'biceps'},{id:'tri',label:'triceps'},{id:'brad',label:'brachioradialis'},{id:'pat',label:'patella'},{id:'ach',label:'achilles'}]},
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+        ],
+        template:(L)=>{
+          let s = 'Hyperrefleksi';
+          if(L.reflek) s += ' ('+L.reflek+')';
+          if(L.side) s += ', '+L.side;
+          return s+'.';
+        }},
+      {id:'hypo', cls:'abnormal',
+        subFields:[
+          {key:'reflek', type:'chips', multi:true, label:'Hyporefleksi ved', choices:[{id:'bic',label:'biceps'},{id:'tri',label:'triceps'},{id:'brad',label:'brachioradialis'},{id:'pat',label:'patella'},{id:'ach',label:'achilles'}]},
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+        ],
+        template:(L)=>{
+          let s = 'Hyporefleksi';
+          if(L.reflek) s += ' ('+L.reflek+')';
+          if(L.side) s += ', '+L.side;
+          return s+'.';
+        }},
       {id:'arefleksi', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
-        template:(L)=> L.side ? `Arefleksi, ${L.side}.` : 'Arefleksi.'},
-      {id:'asymmetri', cls:'abnormal', text:'Asymmetriske reflekser.'}
+        subFields:[
+          {key:'reflek', type:'chips', multi:true, label:'Arefleksi ved', choices:[{id:'bic',label:'biceps'},{id:'tri',label:'triceps'},{id:'brad',label:'brachioradialis'},{id:'pat',label:'patella'},{id:'ach',label:'achilles'}]},
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+        ],
+        template:(L)=>{
+          let s = 'Arefleksi';
+          if(L.reflek) s += ' ('+L.reflek+')';
+          if(L.side) s += ', '+L.side;
+          return s+'.';
+        }},
+      {id:'asymmetri', cls:'abnormal',
+        subFields:[
+          {key:'reflek', type:'chips', multi:true, label:'Asymmetri ved', choices:[{id:'bic',label:'biceps'},{id:'tri',label:'triceps'},{id:'brad',label:'brachioradialis'},{id:'pat',label:'patella'},{id:'ach',label:'achilles'}]}
+        ],
+        template:(L)=> L.reflek ? `Asymmetriske reflekser (${L.reflek}).` : 'Asymmetriske reflekser.'}
     ]},
     { id:'ov_babinski', label:'Babinski', options:[
       {id:'normal', cls:'normal', text:'Nedadvendt babinski.'},
@@ -861,21 +893,36 @@ const KLINISK = [
   ]},
   { id:'cor', tab:'klinisk', num:'5', name:'Cor', items:[
     { id:'k_coraksjon', label:'Cor, aksjon og bilyder', options:[
-      {id:'normal', cls:'normal', text:'Regelmessig aksjon, uten pulsdeficit, ingen bilyder.'},
+      {id:'normal', cls:'normal',
+        subFields:[{key:'pulsdeficit', type:'chips', label:'Pulsdeficit', choices:[{id:'uten',label:'uten pulsdeficit'},{id:'med',label:'med pulsdeficit'}]}],
+        template:(L)=>{ if(L.pulsdeficit==='med') return 'Regelmessig aksjon, med pulsdeficit, ingen bilyder.'; return 'Regelmessig aksjon, uten pulsdeficit, ingen bilyder.'; }},
       {id:'uregelmessig', cls:'abnormal',
-        subFields:[{key:'pulsdeficit', type:'chips', label:'Pulsdeficit', choices:[{id:'uten',label:'uten'},{id:'med',label:'med'}]}],
+        subFields:[
+          {key:'pulsdeficit', type:'chips', label:'Pulsdeficit', choices:[{id:'uten',label:'uten'},{id:'med',label:'med'}]},
+          {key:'kjent', type:'chips', label:'', choices:[{id:'kjent',label:'kjent fra tidligere'},{id:'ny',label:'nyoppdaget'}]}
+        ],
         template:(L)=>{
-          if(L.pulsdeficit==='med') return 'Uregelmessig aksjon, med pulsdeficit.';
-          if(L.pulsdeficit==='uten') return 'Uregelmessig aksjon, uten pulsdeficit.';
-          return 'Uregelmessig aksjon.';
+          let s = 'Uregelmessig aksjon';
+          if(L.pulsdeficit==='med') s += ', med pulsdeficit';
+          if(L.pulsdeficit==='uten') s += ', uten pulsdeficit';
+          if(L.kjent) s += ' (' + L.kjent + ')';
+          return s + '.';
         }},
       {id:'bilyd', cls:'abnormal',
         subFields:[
+          {key:'kjent', type:'chips', label:'', choices:[{id:'kjent',label:'kjent fra tidligere'},{id:'ny',label:'nyoppdaget'}]},
           {key:'punctum', type:'chips', label:'Punctum maximum', choices:[{id:'apex',label:'Apex'},{id:'erb',label:"Erbs punkt"},{id:'aorta',label:'Aortaområdet'},{id:'pulmonal',label:'Pulmonalområdet'},{id:'tricuspidal',label:'Tricuspidalområdet'}]},
           {key:'grad', type:'chips', label:'Gradering', choices:[{id:'I',label:'I/VI'},{id:'II',label:'II/VI'},{id:'III',label:'III/VI'},{id:'IV',label:'IV/VI'},{id:'V',label:'V/VI'},{id:'VI',label:'VI/VI'}]},
           {key:'utstraling', type:'chips', label:'Utstråling', choices:[{id:'nei',label:'Ingen utstråling'},{id:'ja',label:'Utstråling til stede'}]}
         ],
-        template:(L)=>{ let s='Bilyd til stede'; if(L.punctum) s+= `, punctum maximum ${L.punctum.toLowerCase()}`; if(L.grad) s+= `, grad ${L.grad}`; if(L.utstraling==='Utstråling til stede') s+= ', med utstråling'; return s+'. Ved nyoppdaget bilyd: presiser nærmere i resymé.'; }}
+        template:(L)=>{
+          let s = 'Bilyd';
+          if(L.kjent) s += ' (' + L.kjent + ')';
+          if(L.punctum) s += `, punctum maximum ${L.punctum.toLowerCase()}`;
+          if(L.grad) s += `, grad ${L.grad}`;
+          if(L.utstraling==='Utstråling til stede') s += ', med utstråling';
+          return s + '.';
+        }}
     ]}
   ]},
   { id:'pulm', tab:'klinisk', num:'6', name:'Pulm', items:[
@@ -976,7 +1023,7 @@ const KLINISK = [
       {id:'odem', cls:'abnormal',
         subFields:[
           {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]},
-          {key:'niva', type:'chips', label:'Nivå', choices:[{id:'ankel',label:'opp til ankelen'},{id:'kne',label:'opp til knærne'},{id:'hoyre',label:'høyere'}]},
+          {key:'niva', type:'chips', label:'Nivå', choices:[{id:'ankel',label:'opp til ankelen'},{id:'kne',label:'opp til knærne'},{id:'hoyre',label:'høyere enn knærne'}]},
           {key:'pitting', type:'chips', label:'Pitting', choices:[{id:'med',label:'med pitting'},{id:'uten',label:'uten pitting'}]}
         ],
         template:(L)=>{
@@ -993,11 +1040,18 @@ const KLINISK = [
       {id:'kald', cls:'abnormal', text:'Kald hud.'},
       {id:'vat', cls:'abnormal', text:'Klam/våt hud.'}
     ]},
-    { id:'k_fotpuls', label:'Puls a. dorsalis pedis / a. tibialis posterior', options:[
-      {id:'normal', cls:'normal', text:'God puls i a. dorsalis pedis og a. tibialis posterior bilateralt.'},
+    { id:'k_fotpuls', label:'Fotpulser (ADP / ATP)', options:[
+      {id:'normal', cls:'normal', text:'God puls, ADP og ATP bilateralt.'},
       {id:'nedsatt', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
-        template:(L)=> L.side ? `Nedsatt og/eller fraværende puls i a. dorsalis pedis og/eller a. tibialis posterior, ${L.side}.` : 'Nedsatt og/eller fraværende puls i a. dorsalis pedis og/eller a. tibialis posterior.'}
+        subFields:[
+          {key:'kar', type:'chips', multi:true, label:'Kar', choices:[{id:'adp',label:'ADP'},{id:'atp',label:'ATP'}]},
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+        ],
+        template:(L)=>{
+          let kar = L.kar ? L.kar + ' nedsatt' : 'ADP/ATP nedsatt';
+          if(L.side) kar += ', ' + L.side;
+          return kar + '.';
+        }}
     ]},
     { id:'k_crt_perifer', label:'Kapillærfylning (CRT), perifer', options:[
       {id:'normal', cls:'normal',
@@ -1046,6 +1100,7 @@ const subState = {};
 Object.values(ITEM_INDEX).forEach(it => { activeOptions[it.id] = []; subState[it.id] = {}; });
 
 let includeAllByTab = { hjernenerver:false, klinisk:false };
+let autoActivatedByTab = { hjernenerver:new Map(), klinisk:new Map() }; // itemId → optId
 let activeMainTab = 'hjernenerver';
 let settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14 };
 let customProfiles = [];
@@ -1151,7 +1206,7 @@ function optionShortLabel(opt){
     hypersonor:'Hypersonor', reduserte:'Reduserte', okte:'Økte', odem:'Ødem', redusert:'Redusert',
     ikke15:'Velg GCS-score', ikke:'Ikke utført', utfort:'Utført', hyper:'Hyperrefleksi', hypo:'Hyporefleksi',
     arefleksi:'Arefleksi', positiv:'Positiv', tremor:'Intensjonstremor', dysmetri:'Dysmetri', dysdiadokokinesi:'Dysdiadokokinesi',
-    varm:'Varm', torr:'Tørr', kald:'Kald', vat:'Klam/våt', uregelmessig:'Uregelmessig aksjon', tympani:'Økt tympanisme', bleke:'Bleke konjunktiva' };
+    varm:'Varm', torr:'Tørr', kald:'Kald', vat:'Klam/våt', uregelmessig:'Uregelmessig aksjon', tympani:'Økt tympanisme', bleke:'Bleke konjunktiva', bilyd:'Bilyd' };
   return map[opt.id] || opt.id;
 }
 
@@ -1377,6 +1432,8 @@ function plainNoteText(tabId){
       const itemId = optBtn.dataset.item, optId = optBtn.dataset.option;
       const item = ITEM_INDEX[itemId];
       const clickedOpt = getOption(item, optId);
+      // If this item was auto-activated, clear that tracking since the user is now overriding it
+      if(autoActivatedByTab[tabId]) autoActivatedByTab[tabId].delete(itemId);
       activeOptions[itemId] = activeOptions[itemId] || [];
       const idx = activeOptions[itemId].indexOf(optId);
       if(idx >= 0){
@@ -1455,8 +1512,33 @@ function plainNoteText(tabId){
 
     const toggle = e.target.closest('.includeAllToggle');
     if(toggle){
-      includeAllByTab[toggle.dataset.tab] = toggle.checked;
-      renderNote(toggle.dataset.tab);
+      const tabId = toggle.dataset.tab;
+      includeAllByTab[tabId] = toggle.checked;
+      if(toggle.checked){
+        // Auto-activate the first "normal" option on every item that has nothing selected
+        visibleCardsForTab(tabId).forEach(card => {
+          card.items.forEach(item => {
+            if((activeOptions[item.id]||[]).length > 0) return;
+            const normalOpt = item.options.find(o => o.cls==='normal');
+            if(!normalOpt) return;
+            activeOptions[item.id] = [normalOpt.id];
+            autoActivatedByTab[tabId].set(item.id, normalOpt.id);
+            refreshItemRow(item.id);
+          });
+        });
+      } else {
+        // Only deactivate items that were auto-set and haven't been manually changed since
+        autoActivatedByTab[tabId].forEach((optId, itemId) => {
+          const current = activeOptions[itemId] || [];
+          if(current.length === 1 && current[0] === optId){
+            activeOptions[itemId] = [];
+            const row = document.querySelector(`.item-row[data-item-id="${itemId}"]`);
+            if(row){ row.innerHTML = renderItemRowInner(ITEM_INDEX[itemId]); row.classList.remove('touched'); }
+          }
+        });
+        autoActivatedByTab[tabId].clear();
+      }
+      renderNote(tabId);
       return;
     }
 
@@ -1636,6 +1718,7 @@ document.getElementById('profileList').addEventListener('click', e => {
     renderTopPresetBar();
     persistProfiles(); persistActiveProfile();
     buildExamPanel('hjernenerver'); buildExamPanel('klinisk');
+    renderCardOrderList();
     return;
   }
   const row = e.target.closest('.profile-row');
@@ -1645,6 +1728,7 @@ document.getElementById('profileList').addEventListener('click', e => {
     renderTopPresetBar();
     persistActiveProfile();
     buildExamPanel('hjernenerver'); buildExamPanel('klinisk');
+    renderCardOrderList();
   }
 });
 
@@ -1675,6 +1759,7 @@ document.getElementById('presetSelect').addEventListener('change', e => {
   persistActiveProfile();
   renderProfileList();
   buildExamPanel('hjernenerver'); buildExamPanel('klinisk');
+  renderCardOrderList();
 });
 
 document.getElementById('presetSaveBtn').addEventListener('click', () => {
@@ -1815,21 +1900,66 @@ document.getElementById('saveSectionBtn').addEventListener('click', () => {
 function renderCardOrderList(){
   const list = document.getElementById('orderList');
   const cards = getKlinisCardsOrdered();
-  list.innerHTML = cards.map((c,i) => `
-    <div class="order-row">
+  const hidden = getActiveProfile().hidden || [];
+  list.innerHTML = cards.map((c,i) => {
+    const isHidden = hidden.includes(c.id);
+    const visIcon = isHidden ? '👁️‍🗨️' : '👁️';
+    const visTitle = isHidden ? 'Skjult i aktiv profil — klikk for å vise' : 'Synlig — klikk for å skjule';
+    const editBtn = c.custom ? `<button type="button" class="move-btn" data-edit-section-order="${c.id}" title="Rediger seksjon" style="font-size:.8rem;">✏️</button>` : '';
+    return `
+    <div class="order-row" style="${isHidden?'opacity:.5;':''}">
+      <span class="otag" style="min-width:24px; font-variant-numeric:tabular-nums;">${i+1}.</span>
       <span class="oname">${c.name}</span>
       <span class="otag">${c.custom ? 'egendefinert' : 'innebygd'}</span>
+      <button type="button" class="move-btn" data-toggle-visibility="${c.id}" title="${visTitle}" style="font-size:.88rem; width:32px;">${visIcon}</button>
+      ${editBtn}
       <button type="button" class="move-btn" data-move="up" data-card-id="${c.id}" ${i===0?'disabled':''}>↑</button>
       <button type="button" class="move-btn" data-move="down" data-card-id="${c.id}" ${i===cards.length-1?'disabled':''}>↓</button>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 document.getElementById('orderList').addEventListener('click', e => {
+  // Visibility toggle: add/remove card from active profile's hidden list
+  const visBtn = e.target.closest('[data-toggle-visibility]');
+  if(visBtn){
+    const cardId = visBtn.dataset.toggleVisibility;
+    const prof = getActiveProfile();
+    if(prof.builtin){
+      // Clone to a new custom profile so we don't mutate built-in ones
+      const id = 'custom-' + Date.now();
+      const newProf = { id, name: prof.name + ' (tilpasset)', builtin:false, hidden:[...prof.hidden] };
+      const idx = newProf.hidden.indexOf(cardId);
+      if(idx >= 0) newProf.hidden.splice(idx,1); else newProf.hidden.push(cardId);
+      customProfiles.push(newProf);
+      activeProfileId = id;
+      renderProfileList(); renderTopPresetBar(); renderProfileCheckGroups();
+      persistProfiles(); persistActiveProfile();
+    } else {
+      const idx = prof.hidden.indexOf(cardId);
+      if(idx >= 0) prof.hidden.splice(idx,1); else prof.hidden.push(cardId);
+      persistProfiles();
+    }
+    renderCardOrderList();
+    buildExamPanel('klinisk');
+    return;
+  }
+
+  // Edit custom section from order list
+  const editOrderBtn = e.target.closest('[data-edit-section-order]');
+  if(editOrderBtn){
+    startEditSection(editOrderBtn.dataset.editSectionOrder);
+    // Scroll to builder
+    const builder = document.getElementById('newSectionName');
+    if(builder) builder.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
   const btn = e.target.closest('.move-btn');
   if(!btn) return;
   const id = btn.dataset.cardId;
   const dir = btn.dataset.move;
+  if(!id || !dir) return;
   const ids = getKlinisCardsOrdered().map(c=>c.id);
   const idx = ids.indexOf(id);
   if(dir==='up' && idx>0){ [ids[idx-1],ids[idx]] = [ids[idx],ids[idx-1]]; }
@@ -1931,27 +2061,45 @@ document.getElementById('confirmModalConfirm').addEventListener('click', async (
 });
 
 /* ============================== PERSISTENCE (settings + profiles only — never exam findings) ============================== */
-async function persistSettings(){
-  try{ await window.storage.set('displaySettings', JSON.stringify(settings), false); }catch(e){ console.error('Kunne ikke lagre innstillinger', e); }
+/* ── Persistence: tries window.storage (Claude.ai) then falls back to localStorage ── */
+function lsSet(key, val){  try{ localStorage.setItem('kd_'+key, val); }catch(e){} }
+function lsGet(key){ try{ return localStorage.getItem('kd_'+key); }catch(e){ return null; } }
+function lsDel(key){ try{ localStorage.removeItem('kd_'+key); }catch(e){} }
+
+async function wsSet(key, val){
+  try{ if(window.storage) await window.storage.set(key, val, false); }catch(e){}
 }
-async function persistProfiles(){
-  try{ await window.storage.set('customProfiles', JSON.stringify(customProfiles), false); }catch(e){ console.error('Kunne ikke lagre profiler', e); }
+async function wsGet(key){
+  try{ if(window.storage){ const r = await window.storage.get(key, false); if(r && r.value) return r.value; } }catch(e){}
+  return null;
 }
-async function persistActiveProfile(){
-  try{ await window.storage.set('activeProfileId', activeProfileId, false); }catch(e){ console.error('Kunne ikke lagre aktiv profil', e); }
+async function wsDel(key){
+  try{ if(window.storage) await window.storage.delete(key, false); }catch(e){}
 }
-async function persistCustomSections(){
-  try{ await window.storage.set('customSections', JSON.stringify(customSections), false); }catch(e){ console.error('Kunne ikke lagre seksjoner', e); }
+
+async function persist(key, val){
+  const s = typeof val === 'string' ? val : JSON.stringify(val);
+  lsSet(key, s);
+  await wsSet(key, s);
 }
-async function persistCardOrder(){
-  try{ await window.storage.set('cardOrder', JSON.stringify(cardOrder), false); }catch(e){ console.error('Kunne ikke lagre rekkefølge', e); }
+async function load(key){
+  const wsVal = await wsGet(key);
+  if(wsVal) return wsVal;
+  return lsGet(key); // localStorage fallback
 }
+
+async function persistSettings(){ await persist('displaySettings', settings); }
+async function persistProfiles(){ await persist('customProfiles', customProfiles); }
+async function persistActiveProfile(){ await persist('activeProfileId', activeProfileId); }
+async function persistCustomSections(){ await persist('customSections', customSections); }
+async function persistCardOrder(){ await persist('cardOrder', cardOrder); }
+
 async function loadPersisted(){
-  try{ const r = await window.storage.get('displaySettings', false); if(r && r.value) settings = Object.assign(settings, JSON.parse(r.value)); }catch(e){}
-  try{ const r = await window.storage.get('customProfiles', false); if(r && r.value) customProfiles = JSON.parse(r.value); }catch(e){}
-  try{ const r = await window.storage.get('activeProfileId', false); if(r && r.value) activeProfileId = r.value; }catch(e){}
-  try{ const r = await window.storage.get('customSections', false); if(r && r.value) customSections = JSON.parse(r.value); }catch(e){}
-  try{ const r = await window.storage.get('cardOrder', false); if(r && r.value) cardOrder = JSON.parse(r.value); }catch(e){}
+  try{ const v = await load('displaySettings'); if(v) settings = Object.assign(settings, JSON.parse(v)); }catch(e){}
+  try{ const v = await load('customProfiles');  if(v) customProfiles = JSON.parse(v); }catch(e){}
+  try{ const v = await load('activeProfileId'); if(v) activeProfileId = v; }catch(e){}
+  try{ const v = await load('customSections');  if(v) customSections = JSON.parse(v); }catch(e){}
+  try{ const v = await load('cardOrder');       if(v) cardOrder = JSON.parse(v); }catch(e){}
   if(!allProfiles().find(p=>p.id===activeProfileId)) activeProfileId = 'alle';
 }
 
@@ -1961,11 +2109,10 @@ async function resetAllSettings(){
   activeProfileId = 'alle';
   customSections = [];
   cardOrder = [];
-  try{ await window.storage.delete('displaySettings', false); }catch(e){}
-  try{ await window.storage.delete('customProfiles', false); }catch(e){}
-  try{ await window.storage.delete('activeProfileId', false); }catch(e){}
-  try{ await window.storage.delete('customSections', false); }catch(e){}
-  try{ await window.storage.delete('cardOrder', false); }catch(e){}
+  for(const key of ['displaySettings','customProfiles','activeProfileId','customSections','cardOrder']){
+    lsDel(key);
+    await wsDel(key);
+  }
   applyFontSettings();
   renderProfileList();
   renderProfileCheckGroups();
