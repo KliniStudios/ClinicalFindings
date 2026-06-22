@@ -211,6 +211,15 @@
   .ortho-finding-chip.abn{border-color:var(--clay);}
   .ortho-finding-chip.abn.selected{background:var(--clay); border-color:var(--clay);}
   .ortho-empty-state{font-family:'IBM Plex Sans'; font-size:.85rem; color:var(--ink-muted); font-style:italic; padding:20px 0;}
+  .ortho-mov-table{display:flex; flex-direction:column; gap:6px; margin-top:4px;}
+  .ortho-mov-row{display:grid; grid-template-columns:140px 1fr; gap:8px; align-items:center; padding:4px 0; border-bottom:1px solid var(--border);}
+  .ortho-mov-row:last-child{border-bottom:none;}
+  .ortho-mov-name{font-family:'IBM Plex Sans'; font-size:.8rem; font-weight:500; color:var(--ink);}
+  .ortho-mov-btns{display:flex; flex-wrap:wrap; gap:4px;}
+  .ortho-mov-btn{font-family:'IBM Plex Sans'; font-size:.72rem; padding:4px 9px; border-radius:6px; border:1px solid var(--border); background:#FAFBFB; color:var(--ink); cursor:pointer; transition:.12s ease; white-space:nowrap;}
+  .ortho-mov-btn:hover{border-color:var(--teal);}
+  .ortho-mov-normal.selected{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .ortho-mov-abn.selected{background:var(--clay); color:#fff; border-color:var(--clay);}
 
   /* ===== EKG tab ===== */
   .ekg-wrap{padding:4px 2px 40px;}
@@ -856,7 +865,7 @@ const KLINISK = [
     ]},
     { id:'k_konjunktiva', label:'Konjunktiva', options:[
       {id:'normal', cls:'normal', text:'Normale, rosa konjunktiva.'},
-      {id:'bleke', cls:'abnormal', text:'Bleke konjunktiva (mistanke om anemi).'}
+      {id:'bleke', cls:'abnormal', text:'Bleke konjunktiva.'}
     ]}
   ]},
   { id:'cavum_oris', tab:'klinisk', num:'2', name:'Cavum oris', items:[
@@ -982,13 +991,27 @@ const KLINISK = [
     { id:'k_palpasjon_abd', label:'Palpasjon', options:[
       {id:'normal', cls:'normal', text:'Bløt og uøm.'},
       {id:'om', cls:'abnormal',
-        subFields:[{key:'kvadrant', type:'chips', multi:true, label:'Kvadrant(er)', choices:[
+        subFields:[{key:'lokalisasjon', type:'chips', multi:true, label:'Lokalisasjon', choices:[
+          {id:'epigastrium', label:'epigastriet'},
           {id:'ruq', label:'høyre øvre kvadrant'},
           {id:'luq', label:'venstre øvre kvadrant'},
+          {id:'umbilicalt', label:'periumbilikalt/navle'},
           {id:'rlq', label:'høyre nedre kvadrant'},
-          {id:'llq', label:'venstre nedre kvadrant'}
+          {id:'llq', label:'venstre nedre kvadrant'},
+          {id:'hypogastrium', label:'hypogastriet'},
+          {id:'flanke_h', label:'høyre flanke'},
+          {id:'flanke_v', label:'venstre flanke'},
+          {id:'diffust', label:'diffust i hele abdomen'},
+          {id:'murphy', label:'Murphy-tegn positiv'}
         ]}],
-        template:(L)=> L.kvadrant ? `Palpasjonsøm i ${L.kvadrant}.` : 'Palpasjonsøm.'}
+        template:(L)=>{
+          if(!L.lokalisasjon) return 'Palpasjonsøm.';
+          const locs = L.lokalisasjon.split(' og ').filter(s=>s!=='Murphy-tegn positiv');
+          const hasMurphy = L.lokalisasjon.includes('Murphy-tegn positiv');
+          let s = locs.length ? `Palpasjonsøm i ${locs.join(' og ')}.` : '';
+          if(hasMurphy) s += (s?' ':'')+'Positivt Murphy-tegn.';
+          return s || 'Palpasjonsøm.';
+        }}
     ]},
     { id:'k_organomegali', label:'Organomegali / oppfylninger', options:[
       {id:'normal', cls:'normal', text:'Ingen palpabel organomegali, ingen palpable oppfylninger eller tumores.'},
@@ -1035,7 +1058,7 @@ const KLINISK = [
         template:(L)=> L.side ? `Hevelse/ødem av overekstremitet, ${L.side}.` : 'Hevelse/ødem av overekstremitet(er).'}
     ]},
     { id:'k_hud_overeks', label:'Hud, overekstremiteter', options:[
-      {id:'varm', cls:'normal', text:'Varm hud.'},
+      {id:'varm', cls:'abnormal', text:'Varm hud.'},
       {id:'torr', cls:'abnormal', text:'Tørr hud.'},
       {id:'kald', cls:'abnormal', text:'Kald hud.'},
       {id:'klam', cls:'abnormal', text:'Klam hud.'},
@@ -1074,7 +1097,7 @@ const KLINISK = [
         }}
     ]},
     { id:'k_hud_undereks', label:'Hud, underekstremiteter', options:[
-      {id:'varm', cls:'normal', text:'Varm hud.'},
+      {id:'varm', cls:'abnormal', text:'Varm hud.'},
       {id:'torr', cls:'abnormal', text:'Tørr hud.'},
       {id:'kald', cls:'abnormal', text:'Kald hud.'},
       {id:'klam', cls:'abnormal', text:'Klam hud.'},
@@ -1142,6 +1165,7 @@ Object.values(ITEM_INDEX).forEach(it => { activeOptions[it.id] = []; subState[it
 
 let includeAllByTab = { hjernenerver:false, klinisk:false };
 let autoActivatedByTab = { hjernenerver:new Map(), klinisk:new Map() }; // itemId → optId
+let explicitlyClearedByTab = { hjernenerver:new Set(), klinisk:new Set() }; // items user has explicitly emptied
 let activeMainTab = 'hjernenerver';
 let settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14 };
 let customProfiles = [];
@@ -1420,6 +1444,7 @@ function visibleCardsForTab(tabId){
 
 function noteLinesForTab(tabId){
   const includeAll = includeAllByTab[tabId];
+  const explicitlyCleared = explicitlyClearedByTab[tabId] || new Set();
   const lines = [];
   let abnormalCount = 0;
   let includedCount = 0;
@@ -1436,7 +1461,7 @@ function noteLinesForTab(tabId){
           if(opt.cls === 'abnormal') abnormalCount++;
           parts.push({ text: getOptionText(item, opt), cls: opt.cls });
         });
-      } else if(includeAll){
+      } else if(includeAll && !explicitlyCleared.has(item.id)){
         includedCount++;
         parts.push({ text: getOptionText(item, item.options[0]), cls: item.options[0].cls });
       }
@@ -1523,10 +1548,14 @@ function renderAbnormalSummary(tabId){
         // deactivate
         activeOptions[itemId].splice(idx,1);
         if(subState[itemId]) delete subState[itemId][optId];
+        // If item is now empty, mark as explicitly cleared so includeAll won't re-include it
+        if(activeOptions[itemId].length === 0){
+          if(explicitlyClearedByTab[tabId]) explicitlyClearedByTab[tabId].add(itemId);
+        }
       } else {
-        // activating: normal and avvik findings are mutually exclusive on the same item.
-        // Activating "normal" clears any active abnormal options (and vice versa);
-        // multiple normal options, or multiple abnormal options, can still combine freely.
+        // activating: remove explicit-clear flag since user has now chosen something
+        if(explicitlyClearedByTab[tabId]) explicitlyClearedByTab[tabId].delete(itemId);
+        // normal and avvik findings are mutually exclusive on the same item.
         const clearCls = clickedOpt.cls === 'normal' ? 'abnormal' : 'normal';
         activeOptions[itemId] = activeOptions[itemId].filter(id => {
           const o = getOption(item, id);
@@ -1599,9 +1628,11 @@ function renderAbnormalSummary(tabId){
       includeAllByTab[tabId] = toggle.checked;
       if(toggle.checked){
         // Auto-activate the first "normal" option on every item that has nothing selected
+        // (but skip items that were explicitly cleared by the user)
         visibleCardsForTab(tabId).forEach(card => {
           card.items.forEach(item => {
             if((activeOptions[item.id]||[]).length > 0) return;
+            if(explicitlyClearedByTab[tabId] && explicitlyClearedByTab[tabId].has(item.id)) return;
             const normalOpt = item.options.find(o => o.cls==='normal');
             if(!normalOpt) return;
             activeOptions[item.id] = [normalOpt.id];
@@ -1654,6 +1685,8 @@ function renderAbnormalSummary(tabId){
         activeOptions[it.id] = []; subState[it.id] = {};
         refreshItemRow(it.id);
       }));
+      if(explicitlyClearedByTab[tab]) explicitlyClearedByTab[tab].clear();
+      if(autoActivatedByTab[tab]) autoActivatedByTab[tab].clear();
       renderNote(tab);
       return;
     }
@@ -3179,99 +3212,124 @@ function attachNihssTabEvents(){
 <script>
 /* ============================== ORTHO TAB ============================== */
 const ORTHO_REGIONS = [
-  { id:'skulder', name:'Skulder' },
-  { id:'albue', name:'Albue' },
-  { id:'handledd', name:'Håndledd' },
-  { id:'hand', name:'Hånd/fingre' },
-  { id:'hofte', name:'Hofte' },
-  { id:'kne', name:'Kne' },
-  { id:'ankel', name:'Ankel' },
-  { id:'fot', name:'Fot/tær' },
-  { id:'cervikal', name:'Cervikalcolumna' },
-  { id:'torakal', name:'Torakalcolumna' },
-  { id:'lumbal', name:'Lumbalcolumna' }
+  { id:'skulder',   name:'Skulder' },
+  { id:'albue',     name:'Albue' },
+  { id:'handledd',  name:'Håndledd' },
+  { id:'hand',      name:'Hånd/fingre' },
+  { id:'hofte',     name:'Hofte' },
+  { id:'kne',       name:'Kne' },
+  { id:'ankel',     name:'Ankel' },
+  { id:'fot',       name:'Fot/tær' },
+  { id:'cervikal',  name:'Cervikalcolumna' },
+  { id:'torakal',   name:'Torakalcolumna' },
+  { id:'lumbal',    name:'Lumbalcolumna' }
 ];
+
+/* Region-specific movements */
+const ORTHO_MOVEMENTS = {
+  skulder:  ['Fleksjon','Ekstensjon','Abduksjon','Adduksjon','Innenrotasjon','Utenrotasjon','Sirkumduksjon'],
+  albue:    ['Fleksjon','Ekstensjon','Supinasjon','Pronasjon'],
+  handledd: ['Fleksjon','Ekstensjon','Radialdeviasjon','Ulnardeviasjon','Supinasjon','Pronasjon'],
+  hand:     ['Fleksjon','Ekstensjon','Abduksjon (fingre)','Adduksjon (fingre)','Opposisjon (tommel)'],
+  hofte:    ['Fleksjon','Ekstensjon','Abduksjon','Adduksjon','Innenrotasjon','Utenrotasjon'],
+  kne:      ['Fleksjon','Ekstensjon'],
+  ankel:    ['Dorsalfleksjon','Plantarfleksjon','Eversjon','Inversjon','Supinasjon','Pronasjon'],
+  fot:      ['Dorsalfleksjon (tær)','Plantarfleksjon (tær)','Abduksjon (tær)','Adduksjon (tær)'],
+  cervikal: ['Fleksjon','Ekstensjon','Lateralfleksjon høyre','Lateralfleksjon venstre','Rotasjon høyre','Rotasjon venstre'],
+  torakal:  ['Fleksjon','Ekstensjon','Lateralfleksjon høyre','Lateralfleksjon venstre','Rotasjon høyre','Rotasjon venstre'],
+  lumbal:   ['Fleksjon','Ekstensjon','Lateralfleksjon høyre','Lateralfleksjon venstre','Rotasjon høyre','Rotasjon venstre']
+};
 
 const ORTHO_DOMAINS = ['Inspeksjon','Palpasjon','Bevegelse','Stabilitet','Stukningsømhet','DNVS'];
 
 const ORTHO_FINDINGS = {
   Inspeksjon: {
-    normal: [{id:'normal_ins', label:'Normal inspeksjon (ingen hevelse, rødme eller deformitet)'}],
+    normal:   [{id:'normal_ins',  label:'Normal inspeksjon (ingen hevelse, rødme eller deformitet)'}],
     abnormal: [
-      {id:'hevelse_ins', label:'Hevelse'}, {id:'rodme', label:'Rødme'},
-      {id:'deformitet', label:'Deformitet'}, {id:'atrofi', label:'Muskelatrofi'},
-      {id:'arr', label:'Arr/hudforandringer'}, {id:'bloduttredelse', label:'Bloduttredelse/ekkymos'}
+      {id:'hevelse_ins',    label:'Hevelse'},
+      {id:'rodme',          label:'Rødme'},
+      {id:'deformitet',     label:'Deformitet'},
+      {id:'atrofi',         label:'Muskelatrofi'},
+      {id:'arr',            label:'Arr/hudforandringer'},
+      {id:'bloduttredelse', label:'Bloduttredelse/ekkymos'}
     ]
   },
   Palpasjon: {
-    normal: [{id:'normal_palp', label:'Ikke palpasjonsøm, ingen hevelse ved palpasjon'}],
+    normal:   [{id:'normal_palp', label:'Ikke palpasjonsøm, ingen hevelse ved palpasjon'}],
     abnormal: [
-      {id:'palp_om_lokalt', label:'Lokalt palpasjonsøm'},
-      {id:'palp_om_sene', label:'Øm langs sene'},
-      {id:'palp_om_leddspalte', label:'Øm over leddspalte'},
-      {id:'palp_hevelse', label:'Hevelse ved palpasjon'},
-      {id:'krepitasjon_palp', label:'Krepitasjon'},
-      {id:'effusjon', label:'Leddhevelse/effusjon'}
+      {id:'palp_om_lokalt',    label:'Lokalt palpasjonsøm'},
+      {id:'palp_om_sene',      label:'Øm langs sene'},
+      {id:'palp_om_leddspalte',label:'Øm over leddspalte'},
+      {id:'palp_hevelse',      label:'Hevelse ved palpasjon'},
+      {id:'krepitasjon_palp',  label:'Krepitasjon'},
+      {id:'effusjon',          label:'Leddhevelse/effusjon'}
     ]
   },
   Bevegelse: {
-    normal: [{id:'normal_bev', label:'Normal bevegelighet, smertefri'}],
+    /* These are general movement findings; the detailed movement table is rendered separately */
+    normal:   [{id:'normal_bev', label:'Normal bevegelighet, smertefri i alle plan'}],
     abnormal: [
-      {id:'aktiv_smerter', label:'Smerter ved aktiv bevegelse'},
-      {id:'passiv_smerter', label:'Smerter ved passiv bevegelse'},
-      {id:'isometrisk_smerter', label:'Smerter ved isometrisk motstand'},
-      {id:'innskrenket_aktiv', label:'Innskrenket aktiv bevegelighet'},
-      {id:'innskrenket_passiv', label:'Innskrenket passiv bevegelighet'},
-      {id:'krepitasjon_bev', label:'Krepitasjon ved bevegelse'}
+      {id:'krepitasjon_bev',    label:'Krepitasjon ved bevegelse'}
     ]
   },
   Stabilitet: {
-    normal: [{id:'normal_stab', label:'Stabilt ledd, ingen patologisk laksisitet'}],
+    normal:   [{id:'normal_stab', label:'Stabilt ledd, ingen patologisk laksisitet'}],
     abnormal: [
-      {id:'medial_laks', label:'Medial laksisitet'},
-      {id:'lateral_laks', label:'Lateral laksisitet'},
-      {id:'anterior_laks', label:'Anterior laksisitet'},
+      {id:'medial_laks',    label:'Medial laksisitet'},
+      {id:'lateral_laks',   label:'Lateral laksisitet'},
+      {id:'anterior_laks',  label:'Anterior laksisitet'},
       {id:'posterior_laks', label:'Posterior laksisitet'},
-      {id:'pos_spesiell', label:'Positiv spesiell test (spesifiser i notat)'}
+      {id:'pos_spesiell',   label:'Positiv spesiell test (spesifiser i notat)'}
     ]
   },
   'Stukningsømhet': {
-    normal: [{id:'normal_stuk', label:'Ingen stukningsømhet'}],
+    normal:   [{id:'normal_stuk', label:'Ingen stukningsømhet'}],
     abnormal: [
-      {id:'stuk_lokal', label:'Lokal stukningsømhet'},
-      {id:'stuk_aksial', label:'Aksial stukningsømhet'},
-      {id:'stuk_lig', label:'Ømhet over ligament/kapsel'}
+      {id:'stuk_lokal',   label:'Lokal stukningsømhet'},
+      {id:'stuk_aksial',  label:'Aksial stukningsømhet'},
+      {id:'stuk_lig',     label:'Ømhet over ligament/kapsel'}
     ]
   },
   DNVS: {
-    normal: [{id:'dnvs_normal', label:'DNVS intakt distalt (sensibilitet, motorikk, puls, kapillærfylning)'}],
+    normal:   [{id:'dnvs_normal', label:'DNVS intakt distalt (sensibilitet, motorikk, puls, kapillærfylning)'}],
     abnormal: [
-      {id:'dnvs_sensibilitet', label:'Nedsatt sensibilitet distalt'},
-      {id:'dnvs_motorikk', label:'Nedsatt motorikk distalt'},
-      {id:'dnvs_puls', label:'Nedsatt/fraværende puls distalt'},
-      {id:'dnvs_kap', label:'Nedsatt kapillærfylning distalt'}
+      {id:'dnvs_sensibilitet',  label:'Nedsatt sensibilitet distalt'},
+      {id:'dnvs_motorikk',      label:'Nedsatt motorikk distalt'},
+      {id:'dnvs_puls',          label:'Nedsatt/fraværende puls distalt'},
+      {id:'dnvs_kap',           label:'Nedsatt kapillærfylning distalt'}
     ]
   }
 };
 
 const ORTHO_SIDES = [
   {id:'bilateral', label:'Bilateralt'},
-  {id:'hoyre', label:'Høyre'},
-  {id:'venstre', label:'Venstre'}
+  {id:'hoyre',     label:'Høyre'},
+  {id:'venstre',   label:'Venstre'}
+];
+
+/* Movement status options */
+const MOV_STATUS = [
+  {id:'normal',       label:'Normal'},
+  {id:'redusert',     label:'Redusert ROM'},
+  {id:'smerter_aktiv',    label:'Smerter (aktiv)'},
+  {id:'smerter_passiv',   label:'Smerter (passiv)'},
+  {id:'smerter_isometrisk',label:'Smerter (isometrisk)'},
+  {id:'opphevet',     label:'Opphevet/mangler'}
 ];
 
 let orthoState = {
   region: null,
-  side: 'bilateral',
+  side:   'bilateral',
   domain: 'Inspeksjon',
-  findings: {} // {regionId: {sideId: {domainName: Set<findingId>}}}
+  findings: {},  // {regionId: {sideId: {domainName: Set<findingId>}}}
+  movements: {}  // {regionId: {sideId: {movName: statusId}}}
 };
 
+/* ── helpers ── */
 function orthoCurrentSet(){
   const {region, side, domain} = orthoState;
   if(!region) return new Set();
-  const f = orthoState.findings;
-  return (f[region] && f[region][side] && f[region][side][domain]) || new Set();
+  return orthoState.findings[region]?.[side]?.[domain] || new Set();
 }
 
 function setOrthoFinding(findingId, isNormal){
@@ -3286,41 +3344,81 @@ function setOrthoFinding(findingId, isNormal){
   if(set.has(findingId)){
     set.delete(findingId);
   } else {
-    if(isNormal) defs.abnormal.forEach(d => set.delete(d.id));
-    else defs.normal.forEach(d => set.delete(d.id));
+    if(isNormal) defs.abnormal.forEach(d=>set.delete(d.id));
+    else defs.normal.forEach(d=>set.delete(d.id));
     set.add(findingId);
   }
 }
 
-/* Returns structured data for note rendering.
-   Each entry: {regionName, sideLabel, showSideLabel, domains:[{name, labels:[]}]} */
+function setOrthoMovement(movName, statusId){
+  const {region, side} = orthoState;
+  if(!region) return;
+  const m = orthoState.movements;
+  m[region] = m[region] || {};
+  m[region][side] = m[region][side] || {};
+  /* toggle off if same status clicked again */
+  if(m[region][side][movName] === statusId) delete m[region][side][movName];
+  else m[region][side][movName] = statusId;
+}
+
+function orthoSideFindingCount(regionId, sideId){
+  const regF = orthoState.findings[regionId];
+  const regM = orthoState.movements[regionId];
+  let n = 0;
+  if(regF && regF[sideId]) ORTHO_DOMAINS.forEach(d=>n+=(regF[sideId][d]?regF[sideId][d].size:0));
+  if(regM && regM[sideId]) n += Object.keys(regM[sideId]).filter(k=>regM[sideId][k]!=='normal').length;
+  return n;
+}
+
+/* ── note data ── */
 function orthoNoteData(){
   const out = [];
   ORTHO_REGIONS.forEach(reg => {
     const regF = orthoState.findings[reg.id];
-    if(!regF) return;
-    // Determine which sides have any findings
-    const activeSides = ORTHO_SIDES.map(s=>s.id).filter(s => {
-      const sf = regF[s];
-      return sf && ORTHO_DOMAINS.some(d => sf[d] && sf[d].size > 0);
+    const regM = orthoState.movements[reg.id];
+    const hasSomething = (obj)=> obj && Object.values(obj).some(v => v && (v.size>0 || Object.keys(v).length>0));
+    if(!hasSomething(regF) && !hasSomething(regM)) return;
+
+    const activeSides = ORTHO_SIDES.map(s=>s.id).filter(s=>{
+      const fOk = regF && regF[s] && ORTHO_DOMAINS.some(d=>regF[s][d]&&regF[s][d].size>0);
+      const mOk = regM && regM[s] && Object.keys(regM[s]).some(k=>regM[s][k]&&regM[s][k]!=='normal');
+      return fOk || mOk;
     });
     if(!activeSides.length) return;
-    // Show side label if more than one side active, or only one non-bilateral side
-    const showLabel = activeSides.length > 1 || (activeSides.length === 1 && activeSides[0] !== 'bilateral');
-    activeSides.forEach(side => {
-      const sLabel = side === 'hoyre' ? 'høyre' : side === 'venstre' ? 'venstre' : 'bilateralt';
+
+    const showLabel = activeSides.length>1 || (activeSides.length===1 && activeSides[0]!=='bilateral');
+    activeSides.forEach(side=>{
+      const sLabel = side==='hoyre'?'høyre':side==='venstre'?'venstre':'bilateralt';
       const domains = [];
-      ORTHO_DOMAINS.forEach(d => {
-        const set = regF[side] && regF[side][d];
-        if(!set || !set.size) return;
+
+      ORTHO_DOMAINS.forEach(d=>{
+        const set = regF&&regF[side]&&regF[side][d];
         const defs = ORTHO_FINDINGS[d];
-        const allDefs = [...defs.normal, ...defs.abnormal];
-        const labels = [...set].map(id => {
-          const def = allDefs.find(f=>f.id===id);
-          return def ? def.label : id;
-        });
-        domains.push({name:d, labels});
+        const allDefs = [...defs.normal,...defs.abnormal];
+        const labels = set&&set.size ? [...set].map(id=>{const df=allDefs.find(f=>f.id===id);return df?df.label:id;}) : [];
+
+        /* Bevegelse: also include movement detail */
+        if(d==='Bevegelse'){
+          const movs = regM&&regM[side] ? regM[side] : {};
+          const normalMovs = [];
+          const movGroups = {};
+          Object.entries(movs).forEach(([mov,stat])=>{
+            if(stat==='normal'){ normalMovs.push(mov); return; }
+            (movGroups[stat]=movGroups[stat]||[]).push(mov);
+          });
+          const movLines = [];
+          if(normalMovs.length) movLines.push(`Normal: ${normalMovs.join(', ')}`);
+          Object.entries(movGroups).forEach(([stat,movList])=>{
+            const stDef = MOV_STATUS.find(s=>s.id===stat);
+            movLines.push(`${stDef?stDef.label:stat}: ${movList.join(', ')}`);
+          });
+          const combined = [...labels, ...movLines];
+          if(combined.length) domains.push({name:d, labels:combined});
+        } else {
+          if(labels.length) domains.push({name:d, labels});
+        }
       });
+
       if(domains.length) out.push({regionName:reg.name, sideLabel:sLabel, showLabel, domains});
     });
   });
@@ -3335,73 +3433,156 @@ function renderOrthoNote(){
     body.innerHTML = '<em style="color:var(--ink-muted);">(ingen funn registrert ennå)</em>';
     return;
   }
-  body.innerHTML = data.map(sec => {
+  body.innerHTML = data.map(sec=>{
     const header = sec.showLabel ? `${sec.regionName}, ${sec.sideLabel}:` : `${sec.regionName}:`;
-    const domLines = sec.domains.map(d =>
-      `<span class="nline" style="display:block; padding-left:16px; margin-bottom:2px;"><b>${d.name}:</b> ${d.labels.join(', ')}.</span>`
+    const domLines = sec.domains.map(d=>
+      `<span class="nline" style="display:block;padding-left:16px;margin-bottom:2px;"><b>${d.name}:</b> ${d.labels.join('. ')}.</span>`
     ).join('');
-    return `<span class="nline" style="display:block; font-weight:600; margin-top:8px;">${header}</span>${domLines}`;
+    return `<span class="nline" style="display:block;font-weight:600;margin-top:8px;">${header}</span>${domLines}`;
   }).join('');
 }
 
 function orthoPlainText(){
-  return orthoNoteData().map(sec => {
+  return orthoNoteData().map(sec=>{
     const header = sec.showLabel ? `${sec.regionName}, ${sec.sideLabel}:` : `${sec.regionName}:`;
-    const domLines = sec.domains.map(d => `  ${d.name}: ${d.labels.join(', ')}.`).join('\n');
+    const domLines = sec.domains.map(d=>`  ${d.name}: ${d.labels.join('. ')}.`).join('\n');
     return `${header}\n${domLines}`;
   }).join('\n\n');
 }
 
-/* Count findings for a side button badge */
-function orthoSideFindingCount(regionId, sideId){
-  const regF = orthoState.findings[regionId];
-  if(!regF || !regF[sideId]) return 0;
-  return ORTHO_DOMAINS.reduce((n,d) => n + (regF[sideId][d] ? regF[sideId][d].size : 0), 0);
+/* Only abnormal general findings + non-normal movements, as one line */
+function orthoAbnSummaryText(){
+  const segments = [];
+  ORTHO_REGIONS.forEach(reg => {
+    const regF = orthoState.findings[reg.id];
+    const regM = orthoState.movements[reg.id];
+    if(!regF && !regM) return;
+
+    const activeSides = ORTHO_SIDES.map(s=>s.id).filter(s=>{
+      const fHasAbn = regF && regF[s] && ORTHO_DOMAINS.some(d=>{
+        const set = regF[s][d]; if(!set||!set.size) return false;
+        return [...set].some(id=>ORTHO_FINDINGS[d].abnormal.find(a=>a.id===id));
+      });
+      const mHasAbn = regM && regM[s] && Object.values(regM[s]).some(v=>v&&v!=='normal');
+      return fHasAbn || mHasAbn;
+    });
+    if(!activeSides.length) return;
+
+    const showLabel = activeSides.length>1||(activeSides.length===1&&activeSides[0]!=='bilateral');
+    activeSides.forEach(side=>{
+      const sLabel = side==='hoyre'?'høyre':side==='venstre'?'venstre':'bilateralt';
+      const domSegs = [];
+
+      ORTHO_DOMAINS.forEach(d=>{
+        const set = regF&&regF[side]&&regF[side][d];
+        const defs = ORTHO_FINDINGS[d];
+
+        // Abnormal general chips for this domain
+        const abnLabels = (set&&set.size)
+          ? [...set].filter(id=>defs.abnormal.find(a=>a.id===id))
+                    .map(id=>{const df=defs.abnormal.find(a=>a.id===id);return df?df.label:id;})
+          : [];
+
+        if(d==='Bevegelse'){
+          const movs = (regM&&regM[side]) || {};
+          const movGroups = {};
+          Object.entries(movs).forEach(([mov,stat])=>{
+            if(stat==='normal') return;
+            (movGroups[stat]=movGroups[stat]||[]).push(mov);
+          });
+          const movLines = Object.entries(movGroups).map(([stat,movList])=>{
+            const stDef=MOV_STATUS.find(s=>s.id===stat);
+            return `${stDef?stDef.label:stat}: ${movList.join(', ')}`;
+          });
+          const combined=[...abnLabels,...movLines];
+          if(combined.length) domSegs.push(`Bevegelse: ${combined.join('. ')}`);
+        } else {
+          if(abnLabels.length) domSegs.push(`${d}: ${abnLabels.join(', ')}`);
+        }
+      });
+
+      if(domSegs.length){
+        const hdr=showLabel?`${reg.name}, ${sLabel}:`:`${reg.name}:`;
+        segments.push(`${hdr} ${domSegs.join('. ')}.`);
+      }
+    });
+  });
+  return segments.join(' ');
 }
 
-function renderOrthoFindings(){
-  const container = document.getElementById('ortho-findings-container');
-  if(!container) return;
-  if(!orthoState.region){
-    container.innerHTML = `<div class="ortho-empty-state">Velg en region over for å begynne.</div>`;
-    return;
+function renderOrthoAbnSummary(){
+  const box=document.getElementById('ortho-abn-body');
+  const foot=document.getElementById('ortho-abn-foot');
+  if(!box) return;
+  const text=orthoAbnSummaryText();
+  if(!text){
+    box.innerHTML='<em style="color:var(--ink-muted);">(ingen avvikende funn registrert ennå)</em>';
+    if(foot) foot.style.display='none';
+  } else {
+    box.textContent=text;
+    if(foot) foot.style.display='flex';
   }
-  const d = orthoState.domain;
-  const defs = ORTHO_FINDINGS[d];
-  const active = orthoCurrentSet();
-  const normalHtml = `
-    <div class="ortho-finding-section">
-      <div class="ortho-finding-label">Normal</div>
-      <div class="ortho-finding-chips">
-        ${defs.normal.map(f=>`<button type="button" class="ortho-finding-chip ${active.has(f.id)?'selected':''}" data-finding="${f.id}" data-isnormal="1">${f.label}</button>`).join('')}
-      </div>
-    </div>`;
-  const abnHtml = `
-    <div class="ortho-finding-section">
-      <div class="ortho-finding-label">Avvik</div>
-      <div class="ortho-finding-chips">
-        ${defs.abnormal.map(f=>`<button type="button" class="ortho-finding-chip abn ${active.has(f.id)?'selected':''}" data-finding="${f.id}" data-isnormal="0">${f.label}</button>`).join('')}
-      </div>
-    </div>`;
-  container.innerHTML = normalHtml + abnHtml;
 }
 
-function renderOrthoSidePicker(){
-  const row = document.getElementById('ortho-side-row');
-  if(!row) return;
-  row.innerHTML = ORTHO_SIDES.map(s => {
-    const count = orthoState.region ? orthoSideFindingCount(orthoState.region, s.id) : 0;
-    const badge = count ? ` <span style="font-size:.7em;opacity:.7;">(${count})</span>` : '';
-    return `<button type="button" class="ortho-domain-btn ${orthoState.side===s.id?'selected':''}" data-side="${s.id}">${s.label}${badge}</button>`;
-  }).join('');
-}
-
+/* ── renderers ── */
 function renderOrthoDomainTabs(){
   const row = document.getElementById('ortho-domain-tabs');
   if(!row) return;
   row.innerHTML = ORTHO_DOMAINS.map(d=>`<button type="button" class="ortho-domain-btn ${d===orthoState.domain?'selected':''}" data-domain="${d}">${d}</button>`).join('');
 }
 
+function renderOrthoSidePicker(){
+  const row = document.getElementById('ortho-side-row');
+  if(!row) return;
+  row.innerHTML = ORTHO_SIDES.map(s=>{
+    const count = orthoState.region ? orthoSideFindingCount(orthoState.region, s.id) : 0;
+    const badge = count ? ` <span style="font-size:.7em;opacity:.7;">(${count})</span>` : '';
+    return `<button type="button" class="ortho-domain-btn ${orthoState.side===s.id?'selected':''}" data-side="${s.id}">${s.label}${badge}</button>`;
+  }).join('');
+}
+
+function renderOrthoFindings(){
+  const container = document.getElementById('ortho-findings-container');
+  if(!container) return;
+  if(!orthoState.region){ container.innerHTML=`<div class="ortho-empty-state">Velg en region over for å begynne.</div>`; return; }
+  const d = orthoState.domain;
+  const defs = ORTHO_FINDINGS[d];
+  const active = orthoCurrentSet();
+
+  const generalHtml = `
+    <div class="ortho-finding-section">
+      <div class="ortho-finding-label">Normal</div>
+      <div class="ortho-finding-chips">${defs.normal.map(f=>`<button type="button" class="ortho-finding-chip ${active.has(f.id)?'selected':''}" data-finding="${f.id}" data-isnormal="1">${f.label}</button>`).join('')}</div>
+    </div>
+    ${defs.abnormal.length ? `<div class="ortho-finding-section"><div class="ortho-finding-label">Avvik / generelt</div><div class="ortho-finding-chips">${defs.abnormal.map(f=>`<button type="button" class="ortho-finding-chip abn ${active.has(f.id)?'selected':''}" data-finding="${f.id}" data-isnormal="0">${f.label}</button>`).join('')}</div></div>` : ''}
+  `;
+
+  /* Movement table for Bevegelse domain */
+  let movTableHtml = '';
+  if(d==='Bevegelse'){
+    const movs = ORTHO_MOVEMENTS[orthoState.region] || [];
+    const curMovs = (orthoState.movements[orthoState.region]?.[orthoState.side]) || {};
+    movTableHtml = `
+      <div class="ortho-finding-section">
+        <div class="ortho-finding-label">Bevegelse per plan</div>
+        <div class="ortho-mov-table">
+          ${movs.map(mov=>{
+            const cur = curMovs[mov];
+            return `<div class="ortho-mov-row">
+              <span class="ortho-mov-name">${mov}</span>
+              <div class="ortho-mov-btns">
+                ${MOV_STATUS.map(st=>`<button type="button" class="ortho-mov-btn ${st.id==='normal'?'ortho-mov-normal':'ortho-mov-abn'} ${cur===st.id?'selected':''}" data-mov="${mov}" data-movstat="${st.id}">${st.label}</button>`).join('')}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
+  container.innerHTML = generalHtml + movTableHtml;
+}
+
+/* ── build panel ── */
 function buildOrthoPanel(){
   const panel = document.getElementById('panel-ortho');
   const regHtml = ORTHO_REGIONS.map(r=>`<button type="button" class="ortho-region-btn ${orthoState.region===r.id?'selected':''}" data-region="${r.id}">${r.name}</button>`).join('');
@@ -3427,6 +3608,15 @@ function buildOrthoPanel(){
           <button class="solid-btn" id="ortho-copy-btn">Kopier notat</button>
           <span class="copy-status" id="ortho-copy-status">Kopiert ✓</span>
         </div>
+        <div class="note-divider" style="margin-top:18px;"></div>
+        <div class="note-head" style="margin-top:4px;">
+          <div class="note-title" style="color:var(--clay);">Avvikende funn</div>
+        </div>
+        <div class="note-body" id="ortho-abn-body" style="white-space:normal; line-height:1.7;"></div>
+        <div class="note-foot" id="ortho-abn-foot" style="display:none;">
+          <button class="solid-btn" id="ortho-copy-abn-btn" style="background:var(--clay);border-color:var(--clay);">Kopier avvikende funn</button>
+          <span class="copy-status" id="ortho-abn-copy-status">Kopiert ✓</span>
+        </div>
         <div class="note-divider" style="margin-top:14px;"></div>
         <button class="ghost-btn" id="ortho-reset-btn" style="margin-top:10px;">Tilbakestill ortopedi</button>
       </aside>
@@ -3437,56 +3627,42 @@ function buildOrthoPanel(){
   renderOrthoDomainTabs();
   renderOrthoFindings();
   renderOrthoNote();
+  renderOrthoAbnSummary();
 
-  panel.addEventListener('click', e => {
+  panel.addEventListener('click', e=>{
     const regBtn = e.target.closest('[data-region]');
-    if(regBtn){
-      orthoState.region = orthoState.region===regBtn.dataset.region ? null : regBtn.dataset.region;
-      panel.querySelectorAll('[data-region]').forEach(b=>b.classList.toggle('selected', b.dataset.region===orthoState.region));
-      renderOrthoSidePicker();
-      renderOrthoFindings();
-      return;
-    }
+    if(regBtn){ orthoState.region = orthoState.region===regBtn.dataset.region?null:regBtn.dataset.region; panel.querySelectorAll('[data-region]').forEach(b=>b.classList.toggle('selected',b.dataset.region===orthoState.region)); renderOrthoSidePicker(); renderOrthoFindings(); return; }
+
     const sideBtn = e.target.closest('[data-side]');
-    if(sideBtn){
-      orthoState.side = sideBtn.dataset.side;
-      renderOrthoSidePicker();
-      renderOrthoFindings();
-      return;
-    }
+    if(sideBtn){ orthoState.side=sideBtn.dataset.side; renderOrthoSidePicker(); renderOrthoFindings(); return; }
+
     const domBtn = e.target.closest('[data-domain]');
-    if(domBtn){
-      orthoState.domain = domBtn.dataset.domain;
-      renderOrthoDomainTabs();
-      renderOrthoFindings();
-      return;
-    }
+    if(domBtn){ orthoState.domain=domBtn.dataset.domain; renderOrthoDomainTabs(); renderOrthoFindings(); return; }
+
     const findBtn = e.target.closest('[data-finding]');
-    if(findBtn){
-      setOrthoFinding(findBtn.dataset.finding, findBtn.dataset.isnormal==='1');
-      renderOrthoFindings();
-      renderOrthoSidePicker();
-      renderOrthoNote();
-      return;
-    }
+    if(findBtn){ setOrthoFinding(findBtn.dataset.finding, findBtn.dataset.isnormal==='1'); renderOrthoFindings(); renderOrthoSidePicker(); renderOrthoNote(); renderOrthoAbnSummary(); return; }
+
+    const movBtn = e.target.closest('[data-movstat]');
+    if(movBtn){ setOrthoMovement(movBtn.dataset.mov, movBtn.dataset.movstat); renderOrthoFindings(); renderOrthoSidePicker(); renderOrthoNote(); renderOrthoAbnSummary(); return; }
+
     const copyBtn = e.target.closest('#ortho-copy-btn');
     if(copyBtn){
-      const text = orthoPlainText();
-      const status = document.getElementById('ortho-copy-status');
-      (async()=>{
-        try{ await navigator.clipboard.writeText(text); }
-        catch(err){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-        status.classList.add('show');
-        setTimeout(()=>status.classList.remove('show'), 1600);
-      })();
+      const text=orthoPlainText(); const status=document.getElementById('ortho-copy-status');
+      (async()=>{ try{await navigator.clipboard.writeText(text);}catch(err){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
+        status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600); })();
       return;
     }
+
+    const copyAbnBtn = e.target.closest('#ortho-copy-abn-btn');
+    if(copyAbnBtn){
+      const text=orthoAbnSummaryText(); const status=document.getElementById('ortho-abn-copy-status');
+      (async()=>{ try{await navigator.clipboard.writeText(text);}catch(err){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
+        status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600); })();
+      return;
+    }
+
     const resetBtn = e.target.closest('#ortho-reset-btn');
-    if(resetBtn){
-      orthoState = { region:null, side:'bilateral', domain:'Inspeksjon', findings:{} };
-      buildOrthoPanel();
-      return;
-    }
+    if(resetBtn){ orthoState={region:null,side:'bilateral',domain:'Inspeksjon',findings:{},movements:{}}; buildOrthoPanel(); return; }
   });
 }
 </script>
