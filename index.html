@@ -437,6 +437,28 @@
   <footer class="disclaimer">Dette er en prototype for klinisk dokumentasjonsassistanse. Det er den behandlende klinikers eget ansvar å kvalitetssikre all dokumentasjon og å sikre at behandling av personopplysninger skjer i henhold til gjeldende lovverk og lokale retningslinjer. Prototypen er ikke validert for klinisk bruk. &nbsp;|&nbsp; <b>v003 &middot; 22.06.2026</b></footer>
 </div>
 
+<!-- Category name format popup -->
+<div class="modal-overlay" id="catFormatOverlay">
+  <div class="modal-box" style="max-width:320px;">
+    <div class="modal-title">Format på kategorinavn</div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+      <label style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Sans'; font-size:.88rem; cursor:pointer;">
+        <input type="checkbox" id="catFmtBold" style="width:16px;height:16px;" /> <strong>Fet skrift</strong>
+      </label>
+      <label style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Sans'; font-size:.88rem; cursor:pointer;">
+        <input type="checkbox" id="catFmtItalic" style="width:16px;height:16px;" /> <em>Kursiv</em>
+      </label>
+      <label style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Sans'; font-size:.88rem; cursor:pointer;">
+        <input type="checkbox" id="catFmtUnderline" style="width:16px;height:16px;" /> <u>Understrek</u>
+      </label>
+      <div style="font-family:'IBM Plex Sans'; font-size:.78rem; color:var(--ink-muted); padding:8px; background:#F5F7F7; border-radius:6px;">
+        Forhåndsvisning: <span id="catFmtPreview">Cor:</span>
+      </div>
+    </div>
+    <button type="button" class="modal-close-btn" id="catFormatClose">Lukk</button>
+  </div>
+</div>
+
 <script>
 /* ============================== DIRECTIONS ============================== */
 const DIRS = {
@@ -1218,6 +1240,8 @@ let cardOrder = []; // ordered list of klinisk card ids (builtin + custom), user
 let editingSectionId = null;
 let noteAbnormalBold = false;
 let noteAbnormalItalic = false;
+let noteAbnormalUnderline = false;
+let categoryNameFormat = { bold:true, italic:false, underline:false };
 
 function allProfiles(){ return [...BUILTIN_PROFILES, ...customProfiles]; }
 function getActiveProfile(){ return allProfiles().find(p=>p.id===activeProfileId) || BUILTIN_PROFILES[0]; }
@@ -1436,6 +1460,12 @@ function buildExamPanel(tabId){
           <span class="slider"></span>
         </label>
         <span class="toggle-label">Avvik fet</span>
+        <label class="switch" style="margin-left:12px;">
+          <input type="checkbox" class="abnormalUnderlineToggle" ${noteAbnormalUnderline?'checked':''}/>
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-label">Avvik understrek</span>
+        <button type="button" class="ghost-btn openCatFormatBtn" style="margin-left:12px; font-size:.76rem; padding:5px 10px;">Aa kategorinavn ▾</button>
       </div>
       <div class="toolbar-actions">
         <button class="ghost-btn pasteToggleBtn" data-tab="${tabId}">Lim inn eksisterende notat ↧</button>
@@ -1517,11 +1547,64 @@ function noteLinesForTab(tabId){
 }
 
 function styledPart(text, cls){
-  if(cls !== 'abnormal' || (!noteAbnormalBold && !noteAbnormalItalic)) return text;
+  if(cls !== 'abnormal' || (!noteAbnormalBold && !noteAbnormalItalic && !noteAbnormalUnderline)) return text;
   let s = text;
-  if(noteAbnormalItalic) s = `<em>${s}</em>`;
-  if(noteAbnormalBold) s = `<strong>${s}</strong>`;
+  if(noteAbnormalUnderline) s = `<u>${s}</u>`;
+  if(noteAbnormalItalic)    s = `<em>${s}</em>`;
+  if(noteAbnormalBold)      s = `<strong>${s}</strong>`;
   return s;
+}
+
+function styledPartPlain(text, cls){
+  // Plain-text version for non-HTML clipboard: underscores for underline, no HTML
+  if(cls !== 'abnormal') return text;
+  let s = text;
+  if(noteAbnormalUnderline) s = `_${s}_`;
+  return s;
+}
+
+function formatCategoryName(name){
+  let s = name + ':';
+  if(categoryNameFormat.underline) s = `<u>${s}</u>`;
+  if(categoryNameFormat.italic)    s = `<em>${s}</em>`;
+  if(categoryNameFormat.bold)      s = `<strong>${s}</strong>`;
+  return s;
+}
+
+function htmlNoteText(tabId){
+  const {lines} = noteLinesForTab(tabId);
+  if(!lines.length) return '';
+  const rows = lines.map(l => {
+    const num = l.num ? `<strong>${l.num}.</strong> ` : '';
+    const name = formatCategoryName(l.name);
+    const text = l.parts.map(p => styledPart(p.text, p.cls)).join(' ');
+    return `<p style="margin:0 0 3px;">${num}${name} ${text}</p>`;
+  }).join('\n');
+  return `<html><body>${rows}</body></html>`;
+}
+
+function plainNoteTextStyled(tabId){
+  const {lines} = noteLinesForTab(tabId);
+  return lines.map(l => `${l.num?l.num+'. ':''}${l.name}: ${l.parts.map(p=>styledPartPlain(p.text,p.cls)).join(' ')}`).join('\n');
+}
+
+async function copyWithRichText(htmlContent, plainText, statusEl){
+  let ok = false;
+  try{
+    const htmlBlob = new Blob([htmlContent], {type:'text/html'});
+    const textBlob = new Blob([plainText], {type:'text/plain'});
+    await navigator.clipboard.write([new ClipboardItem({'text/html':htmlBlob,'text/plain':textBlob})]);
+    ok = true;
+  }catch(e){
+    try{ await navigator.clipboard.writeText(plainText); ok = true; }
+    catch(e2){
+      const ta=document.createElement('textarea'); ta.value=plainText;
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      ok = true;
+    }
+  }
+  if(ok && statusEl){ statusEl.classList.add('show'); setTimeout(()=>statusEl.classList.remove('show'),1600); }
 }
 
 function renderNote(tabId){
@@ -1534,7 +1617,7 @@ function renderNote(tabId){
   } else {
     body.innerHTML = lines.map(l => {
       const textHtml = l.parts.map(p => styledPart(p.text, p.cls)).join(' ');
-      return `<span class="nline">${l.num?`<b>${l.num}.</b> `:''}<b>${l.name}:</b> ${textHtml}</span>`;
+      return `<span class="nline">${l.num?`<b>${l.num}.</b> `:''}${formatCategoryName(l.name)} ${textHtml}</span>`;
     }).join('');
   }
   progress.innerHTML = `${includedCount} av ${totalCount} funn${abnormalCount ? ` · <span class="abnormal-count">${abnormalCount} avvikende</span>` : ''}`;
@@ -1720,6 +1803,24 @@ function renderAbnormalSummary(tabId){
       return;
     }
 
+    const underlineToggle = e.target.closest('.abnormalUnderlineToggle');
+    if(underlineToggle){
+      noteAbnormalUnderline = underlineToggle.checked;
+      document.querySelectorAll('.abnormalUnderlineToggle').forEach(el => el.checked = noteAbnormalUnderline);
+      renderNote('hjernenerver'); renderNote('klinisk');
+      return;
+    }
+
+    const catFormatBtn = e.target.closest('.openCatFormatBtn');
+    if(catFormatBtn){
+      document.getElementById('catFmtBold').checked = categoryNameFormat.bold;
+      document.getElementById('catFmtItalic').checked = categoryNameFormat.italic;
+      document.getElementById('catFmtUnderline').checked = categoryNameFormat.underline;
+      updateCatFormatPreview();
+      document.getElementById('catFormatOverlay').classList.add('open');
+      return;
+    }
+
     const pasteToggle = e.target.closest('.pasteToggleBtn');
     if(pasteToggle){
       document.getElementById('pastePanel-'+pasteToggle.dataset.tab).classList.toggle('open');
@@ -1742,18 +1843,8 @@ function renderAbnormalSummary(tabId){
     const copyBtn = e.target.closest('.copyBtn');
     if(copyBtn){
       const tab = copyBtn.dataset.tab;
-      const text = plainNoteText(tab);
       const status = document.getElementById('copyStatus-'+tab);
-      (async () => {
-        try{ await navigator.clipboard.writeText(text); }
-        catch(err){
-          const ta = document.createElement('textarea');
-          ta.value = text; document.body.appendChild(ta); ta.select();
-          document.execCommand('copy'); document.body.removeChild(ta);
-        }
-        status.classList.add('show');
-        setTimeout(()=>status.classList.remove('show'), 1600);
-      })();
+      copyWithRichText(htmlNoteText(tab), plainNoteTextStyled(tab), status);
       return;
     }
 
@@ -1762,15 +1853,7 @@ function renderAbnormalSummary(tabId){
       const tab = copyAbnBtn.dataset.tab;
       const text = abnormalSummaryText(tab);
       const status = document.getElementById('copyAbnStatus-'+tab);
-      (async () => {
-        try{ await navigator.clipboard.writeText(text); }
-        catch(err){
-          const ta = document.createElement('textarea');
-          ta.value = text; document.body.appendChild(ta); ta.select();
-          document.execCommand('copy'); document.body.removeChild(ta);
-        }
-        if(status){ status.classList.add('show'); setTimeout(()=>status.classList.remove('show'), 1600); }
-      })();
+      copyWithRichText(`<html><body><p>${text}</p></body></html>`, text, status);
       return;
     }
 
@@ -2230,6 +2313,32 @@ document.getElementById('resetSettingsBtn').addEventListener('click', () => {
   document.getElementById('confirmModalBody').textContent = 'Dette nullstiller skriftvalg, sletter alle egendefinerte profiler, egendefinerte seksjoner og rekkefølgen på seksjoner. Undersøkelsesfunn påvirkes ikke — de lagres aldri uansett. Dette kan ikke angres.';
   document.getElementById('confirmModalOverlay').classList.add('open');
 });
+/* ── Category name format popup ── */
+function updateCatFormatPreview(){
+  const prev = document.getElementById('catFmtPreview');
+  if(!prev) return;
+  prev.innerHTML = formatCategoryName('Cor');
+}
+
+function applyCatFormat(){
+  categoryNameFormat.bold = document.getElementById('catFmtBold').checked;
+  categoryNameFormat.italic = document.getElementById('catFmtItalic').checked;
+  categoryNameFormat.underline = document.getElementById('catFmtUnderline').checked;
+  updateCatFormatPreview();
+  renderNote('hjernenerver'); renderNote('klinisk');
+}
+
+['catFmtBold','catFmtItalic','catFmtUnderline'].forEach(id => {
+  document.getElementById(id).addEventListener('change', applyCatFormat);
+});
+
+document.getElementById('catFormatClose').addEventListener('click', () => {
+  document.getElementById('catFormatOverlay').classList.remove('open');
+});
+document.getElementById('catFormatOverlay').addEventListener('click', e => {
+  if(e.target.id === 'catFormatOverlay') document.getElementById('catFormatOverlay').classList.remove('open');
+});
+
 document.getElementById('confirmModalCancel').addEventListener('click', () => {
   document.getElementById('confirmModalOverlay').classList.remove('open');
 });
