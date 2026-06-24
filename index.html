@@ -194,7 +194,7 @@
   .import-status.ok{color:var(--teal);}
   .import-status.err{color:var(--clay);}
 
-  footer.disclaimer{margin-top:30px; font-size:.76rem; color:var(--ink-muted); font-style:italic; border-top:1px solid var(--border); padding-top:16px;}
+  footer.disclaimer{margin-top:30px; font-size:.74rem; color:var(--ink-muted); border-top:1px solid var(--border); padding-top:16px; line-height:1.7;}
 
   /* ===== ORTHO TAB ===== */
   .ortho-region-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:18px;}
@@ -288,6 +288,9 @@
   .modal-criteria{list-style:disc; padding-left:20px; margin:0 0 16px;}
   .modal-criteria li{font-family:'IBM Plex Sans'; font-size:.85rem; line-height:1.55; margin-bottom:6px; color:var(--ink);}
   .modal-close-btn{font-family:'IBM Plex Sans'; font-size:.8rem; padding:7px 16px; border-radius:7px; border:1px solid var(--teal); background:var(--teal); color:#fff; cursor:pointer;}
+  .modal-close-x{position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--ink-muted);padding:4px 8px;border-radius:4px;}
+  .modal-close-x:hover{color:var(--ink);background:#f0f0f0;}
+  .modal-box{position:relative;}
   ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
 </style>
 </head>
@@ -434,12 +437,73 @@
     </div>
   </div>
 
-  <footer class="disclaimer">Dette er en prototype for klinisk dokumentasjonsassistanse. Det er den behandlende klinikers eget ansvar å kvalitetssikre all dokumentasjon og å sikre at behandling av personopplysninger skjer i henhold til gjeldende lovverk og lokale retningslinjer. Prototypen er ikke validert for klinisk bruk. &nbsp;|&nbsp; <b>v003 &middot; 22.06.2026</b></footer>
+  <footer class="disclaimer">
+    <b>v005 · 24.06.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
+    Kun dokumentasjons- og formatteringsstøtte. Verktøyet omformer brukerens egne registrerte opplysninger til tekstutkast og foretar ikke kliniske vurderinger. Kontrollér, korrigér og godkjenn alltid teksten før journalføring. Ikke legg inn identifiserende pasientopplysninger.
+  </footer>
+</div>
+
+<!-- Normalfunn warning modal -->
+<div class="modal-overlay" id="normalfunnWarningOverlay">
+  <div class="modal-box" style="max-width:480px;">
+    <button type="button" class="modal-close-x" data-close-modal="normalfunnWarningOverlay">&times;</button>
+    <div class="modal-title" style="color:var(--clay);">⚠ Kontroller alle funn</div>
+    <div style="font-family:'IBM Plex Sans'; font-size:.88rem; line-height:1.75; color:var(--ink); margin-bottom:18px;">
+      <p style="margin:0 0 12px;">«Normalfunn for alle» er nå slått på. Alle felt er satt til <strong>normal</strong> som utgangspunkt.</p>
+      <p style="margin:0 0 12px;">Gå gjennom hvert funn <strong>fra topp til bunn</strong> og kontroller at:</p>
+      <ul style="margin:0 0 12px; padding-left:20px;">
+        <li>Du har valgt riktig profil for denne undersøkelsen</li>
+        <li>Alle avvikende funn er registrert manuelt</li>
+        <li>Funn som ikke er undersøkt, er fjernet fra notatet</li>
+      </ul>
+      <p style="margin:0; font-size:.8rem; color:var(--ink-muted);">Teksten som genereres er kun et utkast — ansvarlig kliniker godkjenner den endelige journalteksten.</p>
+    </div>
+    <button type="button" class="solid-btn" id="normalfunnWarningClose" style="width:100%;">Forstått — jeg går gjennom funnene</button>
+  </div>
+</div>
+
+<!-- Brukervilkår modal -->
+<div class="modal-overlay" id="brukervilkarOverlay">
+  <div class="modal-box" style="max-width:660px; max-height:82vh; overflow-y:auto;">
+    <button type="button" class="modal-close-x" data-close-modal="brukervilkarOverlay">&times;</button>
+    <div class="modal-title">Brukervilkår — v005 · 24.06.2026</div>
+    <div style="font-family:'IBM Plex Sans'; font-size:.83rem; line-height:1.8; color:var(--ink);">
+      <p><strong>1. Formål og avgrensning</strong><br>
+      Dette verktøyet er et teknisk dokumentasjons- og formatteringsverktøy. Formålet er å hjelpe brukeren med å omforme brukerens egne, manuelt registrerte kliniske opplysninger og funn til forslag til strukturert eller løpende tekst.<br>
+      Verktøyet utfører ikke selvstendige kliniske vurderinger og erstatter ikke brukerens kliniske skjønn. Verktøyet skal ikke brukes til diagnostikk, vurdering av alvorlighetsgrad, triagering, valg av undersøkelser, behandling, dosering, henvisning, overvåking eller andre kliniske beslutninger.<br>
+      Verktøyet er ikke beregnet for bruk som beslutningsstøtte i akutte situasjoner eller i situasjoner der forsinkelse, feil eller mangelfull dokumentasjon kan påvirke umiddelbar pasientsikkerhet.</p>
+      <p><strong>2. Generert tekst og brukerens kontrollplikt</strong><br>
+      All tekst som genereres av verktøyet er kun et utkast til dokumentasjon. Programvaren kan inneholde tekniske feil, feil i maler eller tekstlogikk, utelate relevante eller valgte opplysninger, gjengi opplysninger ufullstendig eller generere formuleringer som ikke passer den konkrete kliniske situasjonen.<br>
+      Brukeren skal alltid selv lese gjennom, kontrollere, korrigere og godkjenne den genererte teksten før den brukes i pasientjournal, henvisning, epikrise, kommunikasjon eller annen klinisk dokumentasjon.<br>
+      Brukeren er ansvarlig for å sikre at sluttresultatet er faktuelt korrekt og samsvarer med pasientens kliniske situasjon, egne funn, utførte undersøkelser, vurderinger, tiltak og avtaler.</p>
+      <p><strong>3. Klinisk og journalfaglig ansvar</strong><br>
+      Verktøyet skal ikke brukes som eneste grunnlag for kliniske beslutninger. Den genererte teksten skal heller ikke brukes ukontrollert som en selvstendig kilde til journalopplysninger.<br>
+      Den som yter helsehjelp har selvstendig ansvar for faglige vurderinger og for at journalføringen oppfyller gjeldende krav. Dette omfatter plikten til å føre journal og kravet om at journalen inneholder nødvendige og relevante opplysninger, jf. <strong>helsepersonelloven §§ 39 og 40</strong>.<br>
+      Bruk av verktøyet endrer ikke helsepersonellets faglige ansvar, dokumentasjonsplikt eller ansvar for den endelige journalteksten.</p>
+      <p><strong>4. Medisinsk utstyr</strong><br>
+      Programvaren er utviklet og tilbys, slik funksjonaliteten foreligger på publiseringstidspunktet, som et dokumentasjons- og formatteringsverktøy.<br>
+      Programvaren er ikke ment å bli brukt til å stille diagnose, foreslå eller velge behandling, beregne klinisk risiko, overvåke pasienter eller gi automatiserte kliniske beslutningsanbefalinger.<br>
+      På grunnlag av dette tiltenkte formålet er programvaren ikke utviklet eller markedsført som medisinsk utstyr, og den er ikke CE-merket som medisinsk utstyr etter <strong>forordning (EU) 2017/745</strong> om medisinsk utstyr (MDR), slik regelverket gjelder i norsk rett.<br>
+      Dersom programmets funksjonalitet, tiltenkte formål, markedsføring eller faktiske bruk endres, skal det vurderes på nytt om programvaren kan omfattes av regelverket for medisinsk utstyr og andre relevante krav.</p>
+      <p><strong>5. Personvern, konfidensialitet og informasjonssikkerhet</strong><br>
+      Brukeren skal ikke legge inn direkte eller indirekte identifiserende pasientopplysninger i verktøyet. Dette omfatter blant annet navn, fødselsnummer, adresse, telefonnummer, journalnummer, bilder, lydopptak, konkrete datoer eller kombinasjoner av opplysninger som alene eller samlet kan bidra til å identifisere en pasient.<br>
+      Brukeren er ansvarlig for å vurdere hvilke opplysninger som legges inn i verktøyet, og for å følge virksomhetens lokale prosedyrer for personvern, informasjonssikkerhet og bruk av digitale hjelpemidler.<br>
+      Dersom helseopplysninger eller andre personopplysninger behandles gjennom løsningen, skal dette bare skje i samsvar med gjeldende regelverk, herunder <strong>personopplysningsloven</strong>, <strong>personvernforordningen (GDPR)</strong>, <strong>pasientjournalloven</strong>, <strong>helseregisterloven</strong> og virksomhetens lokale prosedyrer.<br>
+      Ansvarsforholdet mellom bruker, virksomhet og eventuell leverandør må vurderes ut fra den konkrete løsningen, de faktiske behandlingsaktivitetene og gjeldende avtale- og personvernregelverk. Denne teksten erstatter ikke en separat personvernerklæring, risikovurdering, databehandleravtale eller nødvendige interne godkjenninger.</p>
+      <p><strong>6. Faglig innhold</strong><br>
+      Eventuelle kliniske formuleringer, undersøkelser, skalaer, grenseverdier eller faglige opplysninger i verktøyet er generelle støtteopplysninger. De kan være ufullstendige, feilaktige eller utdaterte.<br>
+      Verktøyet erstatter ikke gjeldende nasjonale faglige retningslinjer, lokale prosedyrer, preparatomtaler, spesialistvurderinger eller oppdatert medisinsk kunnskap. Brukeren skal selv kontrollere relevante medisinske opplysninger og faglige vurderinger mot oppdaterte og relevante kilder før de brukes i pasientbehandling.</p>
+      <p><strong>7. Vilkår for bruk</strong><br>
+      Ved bruk av verktøyet bekrefter brukeren at verktøyet kun brukes som dokumentasjons- og formatteringsstøtte, at all generert tekst kontrolleres, korrigeres ved behov og godkjennes av brukeren før klinisk bruk, og at kliniske beslutninger ikke baseres utelukkende på verktøyets output.</p>
+    </div>
+    <button type="button" class="modal-close-btn" id="brukervilkarClose">Lukk</button>
+  </div>
 </div>
 
 <!-- Category name format popup -->
 <div class="modal-overlay" id="catFormatOverlay">
   <div class="modal-box" style="max-width:320px;">
+    <button type="button" class="modal-close-x" data-close-modal="catFormatOverlay">&times;</button>
     <div class="modal-title">Format på kategorinavn</div>
     <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
       <label style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Sans'; font-size:.88rem; cursor:pointer;">
@@ -506,22 +570,22 @@ const NIHSS_ITEMS = [
     {score:'3', label:'Total parese, en- eller bilateralt'}
   ]},
   { key:'5a', label:'5a. Motorikk, arm – venstre', choices:[
-    {score:'0', label:'Intet drift'}, {score:'1', label:'Drift'},
+    {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
     {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
     {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
   ]},
   { key:'5b', label:'5b. Motorikk, arm – høyre', choices:[
-    {score:'0', label:'Intet drift'}, {score:'1', label:'Drift'},
+    {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
     {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
     {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
   ]},
   { key:'6a', label:'6a. Motorikk, ben – venstre', choices:[
-    {score:'0', label:'Intet drift'}, {score:'1', label:'Drift'},
+    {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
     {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
     {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
   ]},
   { key:'6b', label:'6b. Motorikk, ben – høyre', choices:[
-    {score:'0', label:'Intet drift'}, {score:'1', label:'Drift'},
+    {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
     {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
     {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
   ]},
@@ -929,11 +993,14 @@ const KLINISK = [
   ]},
   { id:'cavum_oris', tab:'klinisk', num:'2', name:'Cavum oris', items:[
     { id:'k_munnhule', label:'Cavum oris', options:[
-      {id:'normal', cls:'normal', text:'Velsanerte egne tenner.'},
-      {id:'fuktig', cls:'normal', text:'Fuktige slimhinner.'},
+      {id:'normal', cls:'normal', text:'Velsanerte egne tenner, fuktige slimhinner.'},
+      {id:'fuktig', cls:'abnormal', text:'Fuktige slimhinner.'},
       {id:'protese', cls:'abnormal', text:'Tannprotese.'},
       {id:'torre', cls:'abnormal', text:'Tørre slimhinner.'},
-      {id:'darlig', cls:'abnormal', text:'Dårlig tannstatus.'}
+      {id:'darlig', cls:'abnormal', text:'Dårlig tannstatus.'},
+      {id:'belegg_tunge', cls:'abnormal', text:'Belegg på tunge / mulig candidiase.'},
+      {id:'blod', cls:'abnormal', text:'Blod i munnhule.'},
+      {id:'xerostomi', cls:'abnormal', text:'Xerostomi/munntørrhet.'}
     ]},
     { id:'k_svelg', label:'Svelg / tonsiller (på indikasjon, f.eks. ved infeksjon)', options:[
       {id:'normal', cls:'normal', text:'Ingen rødme i svelg, normale tonsiller.'},
@@ -964,11 +1031,25 @@ const KLINISK = [
   { id:'thorax', tab:'klinisk', num:'4', name:'Thorax', items:[
     { id:'k_thoraxform', label:'Thorax, form og bevegelighet', options:[
       {id:'normal', cls:'normal', text:'Normal form og bevegelighet av thorax.'},
-      {id:'avvik', cls:'abnormal', text:'Avvikende form og/eller bevegelighet av thorax.'}
+      {id:'kyfose', cls:'abnormal', text:'Kyfose.'},
+      {id:'skoliose', cls:'abnormal', text:'Skoliose.'},
+      {id:'pigeon', cls:'abnormal', text:'Trakt-/fuglebryst (pectus excavatum/carinatum).'},
+      {id:'fat_th', cls:'abnormal', text:'Fat-thorax (emfysematøs konfigurasjon).'},
+      {id:'asymmetri_th', cls:'abnormal', text:'Asymmetrisk thorax.'},
+      {id:'nedsatt_ekskursjon', cls:'abnormal',
+        subFields:[{key:'side', type:'chips', multi:true, label:'nedsatt ekskursjon', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
+        template:(L)=> L.side ? `Nedsatt thoraksal ekskursjon, ${L.side}.` : 'Nedsatt thoraksal ekskursjon.'},
+      {id:'avvik', cls:'abnormal', text:'Avvikende form og/eller bevegelighet (uspesifisert).'}
     ]},
     { id:'k_thoraxpalp', label:'Palpasjon (på indikasjon, f.eks. ved brystsmerter)', options:[
       {id:'normal', cls:'normal', text:'Ikke palpasjonsøm over thorax.'},
-      {id:'om', cls:'abnormal', text:'Palpasjonsøm over thorax.'}
+      {id:'om', cls:'abnormal',
+        subFields:[{key:'lok', type:'chips', multi:true, label:'lokalisasjon', choices:[
+          {id:'sternum',label:'sternum'},{id:'costa_h',label:'costae høyre'},{id:'costa_v',label:'costae venstre'},
+          {id:'costa_h2',label:'2. costa høyre'},{id:'costa_v2',label:'2. costa venstre'},
+          {id:'costertebralt',label:'costovertebral vinkel'},{id:'intercostalt',label:'intercostalt'}
+        ]}],
+        template:(L)=> L.lok ? `Palpasjonsøm over thorax, ${L.lok}.` : 'Palpasjonsøm over thorax.'}
     ]}
   ]},
   { id:'cor', tab:'klinisk', num:'5', name:'Cor', items:[
@@ -991,16 +1072,18 @@ const KLINISK = [
       {id:'bilyd', cls:'abnormal',
         subFields:[
           {key:'kjent', type:'chips', label:'', choices:[{id:'kjent',label:'kjent fra tidligere'},{id:'ny',label:'nyoppdaget'}]},
-          {key:'punctum', type:'chips', label:'Punctum maximum', choices:[{id:'apex',label:'Apex'},{id:'erb',label:"Erbs punkt"},{id:'aorta',label:'Aortaområdet'},{id:'pulmonal',label:'Pulmonalområdet'},{id:'tricuspidal',label:'Tricuspidalområdet'}]},
+          {key:'punctum', type:'chips', multi:true, label:'punctum maximum', choices:[{id:'apex',label:'apex'},{id:'erb',label:'Erbs punkt'},{id:'aorta',label:'aortaområdet'},{id:'pulmonal',label:'pulmonalområdet'},{id:'tricuspidal',label:'tricuspidalområdet'}]},
           {key:'grad', type:'chips', label:'Gradering', choices:[{id:'I',label:'I/VI'},{id:'II',label:'II/VI'},{id:'III',label:'III/VI'},{id:'IV',label:'IV/VI'},{id:'V',label:'V/VI'},{id:'VI',label:'VI/VI'}]},
-          {key:'utstraling', type:'chips', label:'Utstråling', choices:[{id:'nei',label:'Ingen utstråling'},{id:'ja',label:'Utstråling til stede'}]}
+          {key:'utstraling', type:'chips', label:'Utstråling', choices:[{id:'nei',label:'Ingen utstråling'},{id:'ja',label:'Utstråling til stede'}]},
+          {key:'utstraling_sted', type:'chips', multi:true, label:'til', choices:[{id:'ax',label:'axilla'},{id:'car',label:'carotidene'},{id:'epi',label:'epigastrium'},{id:'vs',label:'venstre skulder'},{id:'rygg',label:'rygg'},{id:'arm',label:'venstre arm'}]}
         ],
         template:(L)=>{
           let s = 'Bilyd';
           if(L.kjent) s += ' (' + L.kjent + ')';
-          if(L.punctum) s += `, punctum maximum ${L.punctum.toLowerCase()}`;
+          if(L.punctum) s += `, punctum maximum ${L.punctum}`;
           if(L.grad) s += `, grad ${L.grad}`;
-          if(L.utstraling==='Utstråling til stede') s += ', med utstråling';
+          if(L.utstraling_sted) s += `, utstråler til ${L.utstraling_sted}`;
+          else if(L.utstraling==='Utstråling til stede') s += ', med utstråling';
           return s + '.';
         }}
     ]}
@@ -1066,8 +1149,7 @@ const KLINISK = [
           {id:'hypogastrium', label:'hypogastriet'},
           {id:'flanke_h', label:'høyre flanke'},
           {id:'flanke_v', label:'venstre flanke'},
-          {id:'diffust', label:'diffust i hele abdomen'},
-          {id:'murphy', label:'Murphy-tegn positiv'}
+          {id:'diffust', label:'diffust i hele abdomen'}
         ]}],
         template:(L)=>{
           if(!L.lokalisasjon) return 'Palpasjonsøm.';
@@ -1077,6 +1159,28 @@ const KLINISK = [
           if(hasMurphy) s += (s?' ':'')+'Positivt Murphy-tegn.';
           return s || 'Palpasjonsøm.';
         }}
+    ]},
+    { id:'k_slippomt', label:'Slippømhet / rebound', options:[
+      {id:'ingen', cls:'normal', text:'Ingen slippømhet.'},
+      {id:'tilstede_slip', cls:'abnormal',
+        subFields:[{key:'lok', type:'chips', multi:true, label:'slippømhet', choices:[
+          {id:'ruq',label:'høyre øvre kvadrant'},{id:'luq',label:'venstre øvre kvadrant'},
+          {id:'rlq',label:'høyre nedre kvadrant'},{id:'llq',label:'venstre nedre kvadrant'},
+          {id:'epig',label:'epigastriet'},{id:'diffust_sl',label:'diffust'}
+        ]}],
+        template:(L)=> L.lok ? `Slippømhet i ${L.lok}.` : 'Slippømhet til stede.'}
+    ]},
+    { id:'k_spesiell_abd', label:'Spesielle abdominale tegn (?)', options:[
+      {id:'normal_sp', cls:'normal', text:'Ingen spesielle tegn.'},
+      {id:'guarding', cls:'abnormal', text:'Guarding (muskelresistens).'},
+      {id:'murphy_t', cls:'abnormal', text:'Positivt Murphy-tegn.'},
+      {id:'blumberg', cls:'abnormal', text:'Positivt Blumberg-tegn (kontralateral slippømhet).'},
+      {id:'rovsing', cls:'abnormal', text:'Positivt Rovsings tegn.'},
+      {id:'kocher', cls:'abnormal', text:'Positivt Kochers tegn.'},
+      {id:'mcburney', cls:'abnormal', text:'Ømhet over McBurneys punkt.'},
+      {id:'peritoneal', cls:'abnormal', text:'Peritoneale tegn (rigiditet/defense musculaire).'},
+      {id:'psoas', cls:'abnormal', text:'Positivt psoastegn.'},
+      {id:'obturator', cls:'abnormal', text:'Positivt obturatortegn.'}
     ]},
     { id:'k_organomegali', label:'Organomegali / oppfylninger', options:[
       {id:'normal', cls:'normal', text:'Ingen palpabel organomegali, ingen palpable oppfylninger eller tumores.'},
@@ -1372,7 +1476,7 @@ function subFieldHTML(item, opt, sf){
       }
       const btns = it.choices.map(c => {
         const isSel = sel === c.score;
-        return `<button type="button" class="nihss-score-btn ${isSel?'selected':''}" data-item="${item.id}" data-option="${opt.id}" data-field="${sf.key}" data-nkey="${it.key}" data-score="${c.score}">${c.score} — ${c.label}</button>`;
+        return `<button type="button" class="nihss-score-btn ${isSel?'selected':''}" data-item="${item.id}" data-option="${opt.id}" data-field="${sf.key}" data-nkey="${it.key}" data-score="${c.score}">${c.score}: ${c.label}</button>`;
       }).join('');
       return `<div class="nihss-row"><div class="nihss-row-label">${it.label}</div><div class="nihss-btn-group">${btns}</div></div>`;
     }).join('');
@@ -1589,22 +1693,55 @@ function plainNoteTextStyled(tabId){
 }
 
 async function copyWithRichText(htmlContent, plainText, statusEl){
+  /* Extract body content from full HTML doc string */
+  const bodyMatch = htmlContent.match(/<body>([\s\S]*?)<\/body>/i);
+  const bodyHtml = bodyMatch ? bodyMatch[1] : htmlContent;
+
   let ok = false;
+
+  /* Method 1: render HTML in a contenteditable div, select it, execCommand copy.
+     This is the most reliable method for sandboxed iframes and produces a clipboard
+     entry Word/Google Docs can read with bold/italic/underline intact. */
   try{
-    const htmlBlob = new Blob([htmlContent], {type:'text/html'});
-    const textBlob = new Blob([plainText], {type:'text/plain'});
-    await navigator.clipboard.write([new ClipboardItem({'text/html':htmlBlob,'text/plain':textBlob})]);
-    ok = true;
-  }catch(e){
-    try{ await navigator.clipboard.writeText(plainText); ok = true; }
-    catch(e2){
+    const div = document.createElement('div');
+    div.innerHTML = bodyHtml;
+    div.setAttribute('contenteditable', 'true');
+    div.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;white-space:pre-wrap;';
+    document.body.appendChild(div);
+    div.focus();
+    const range = document.createRange();
+    range.selectNodeContents(div);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    ok = document.execCommand('copy');
+    sel.removeAllRanges();
+    document.body.removeChild(div);
+  }catch(e){ ok = false; }
+
+  /* Method 2: modern ClipboardItem API (Chrome 76+, needs focus + permission) */
+  if(!ok){
+    try{
+      if(navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined'){
+        const hBlob = new Blob([htmlContent], {type:'text/html'});
+        const tBlob = new Blob([plainText], {type:'text/plain'});
+        await navigator.clipboard.write([new ClipboardItem({'text/html':hBlob,'text/plain':tBlob})]);
+        ok = true;
+      }
+    }catch(e){ ok = false; }
+  }
+
+  /* Method 3: plain text fallback */
+  if(!ok){
+    try{ await navigator.clipboard.writeText(plainText); ok=true; }
+    catch(e){
       const ta=document.createElement('textarea'); ta.value=plainText;
       document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); document.body.removeChild(ta);
-      ok = true;
+      document.execCommand('copy'); document.body.removeChild(ta); ok=true;
     }
   }
-  if(ok && statusEl){ statusEl.classList.add('show'); setTimeout(()=>statusEl.classList.remove('show'),1600); }
+
+  if(statusEl){ statusEl.classList.add('show'); setTimeout(()=>statusEl.classList.remove('show'),1600); }
 }
 
 function renderNote(tabId){
@@ -1755,6 +1892,8 @@ function renderAbnormalSummary(tabId){
       const tabId = toggle.dataset.tab;
       includeAllByTab[tabId] = toggle.checked;
       if(toggle.checked){
+        // Show warning popup to remind clinician to verify all findings
+        document.getElementById('normalfunnWarningOverlay').classList.add('open');
         // Auto-activate the first "normal" option on ALL items, overriding any previous explicit-clear
         // Exception: NIHSS item stays untouched (neither "ikke utført" nor "utført" should auto-set)
         const NIHSS_EXCLUDE = ['neuro_nihss'];
@@ -1784,40 +1923,6 @@ function renderAbnormalSummary(tabId){
         autoActivatedByTab[tabId].clear();
       }
       renderNote(tabId);
-      return;
-    }
-
-    const italicToggle = e.target.closest('.abnormalItalicToggle');
-    if(italicToggle){
-      noteAbnormalItalic = italicToggle.checked;
-      document.querySelectorAll('.abnormalItalicToggle').forEach(el => el.checked = noteAbnormalItalic);
-      renderNote('hjernenerver'); renderNote('klinisk');
-      return;
-    }
-
-    const boldToggle = e.target.closest('.abnormalBoldToggle');
-    if(boldToggle){
-      noteAbnormalBold = boldToggle.checked;
-      document.querySelectorAll('.abnormalBoldToggle').forEach(el => el.checked = noteAbnormalBold);
-      renderNote('hjernenerver'); renderNote('klinisk');
-      return;
-    }
-
-    const underlineToggle = e.target.closest('.abnormalUnderlineToggle');
-    if(underlineToggle){
-      noteAbnormalUnderline = underlineToggle.checked;
-      document.querySelectorAll('.abnormalUnderlineToggle').forEach(el => el.checked = noteAbnormalUnderline);
-      renderNote('hjernenerver'); renderNote('klinisk');
-      return;
-    }
-
-    const catFormatBtn = e.target.closest('.openCatFormatBtn');
-    if(catFormatBtn){
-      document.getElementById('catFmtBold').checked = categoryNameFormat.bold;
-      document.getElementById('catFmtItalic').checked = categoryNameFormat.italic;
-      document.getElementById('catFmtUnderline').checked = categoryNameFormat.underline;
-      updateCatFormatPreview();
-      document.getElementById('catFormatOverlay').classList.add('open');
       return;
     }
 
@@ -2313,6 +2418,73 @@ document.getElementById('resetSettingsBtn').addEventListener('click', () => {
   document.getElementById('confirmModalBody').textContent = 'Dette nullstiller skriftvalg, sletter alle egendefinerte profiler, egendefinerte seksjoner og rekkefølgen på seksjoner. Undersøkelsesfunn påvirkes ikke — de lagres aldri uansett. Dette kan ikke angres.';
   document.getElementById('confirmModalOverlay').classList.add('open');
 });
+/* ── Global modal close: X buttons + backdrop + Lukk buttons ── */
+document.addEventListener('click', e => {
+  /* Formatting toggles — must be global so they fire from any panel (exam, ortho, etc.) */
+  const italicToggle = e.target.closest('.abnormalItalicToggle');
+  if(italicToggle){
+    noteAbnormalItalic = italicToggle.checked;
+    document.querySelectorAll('.abnormalItalicToggle').forEach(el => el.checked = noteAbnormalItalic);
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
+    return;
+  }
+  const boldToggle = e.target.closest('.abnormalBoldToggle');
+  if(boldToggle){
+    noteAbnormalBold = boldToggle.checked;
+    document.querySelectorAll('.abnormalBoldToggle').forEach(el => el.checked = noteAbnormalBold);
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
+    return;
+  }
+  const underlineToggle = e.target.closest('.abnormalUnderlineToggle');
+  if(underlineToggle){
+    noteAbnormalUnderline = underlineToggle.checked;
+    document.querySelectorAll('.abnormalUnderlineToggle').forEach(el => el.checked = noteAbnormalUnderline);
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
+    return;
+  }
+  const catFormatBtn = e.target.closest('.openCatFormatBtn');
+  if(catFormatBtn){
+    document.getElementById('catFmtBold').checked = categoryNameFormat.bold;
+    document.getElementById('catFmtItalic').checked = categoryNameFormat.italic;
+    document.getElementById('catFmtUnderline').checked = categoryNameFormat.underline;
+    updateCatFormatPreview();
+    document.getElementById('catFormatOverlay').classList.add('open');
+    return;
+  }
+
+  // X button with data-close-modal attribute
+  const xBtn = e.target.closest('[data-close-modal]');
+  if(xBtn){
+    const overlay = document.getElementById(xBtn.dataset.closeModal);
+    if(overlay) overlay.classList.remove('open');
+    return;
+  }
+  // Clicking the overlay backdrop (not the box inside)
+  if(e.target.classList.contains('modal-overlay')){
+    e.target.classList.remove('open');
+    return;
+  }
+  // Lukk / close buttons with modal-close-btn class (find parent overlay)
+  const lukkBtn = e.target.closest('.modal-close-btn');
+  if(lukkBtn){
+    const overlay = lukkBtn.closest('.modal-overlay');
+    if(overlay) overlay.classList.remove('open');
+    return;
+  }
+  // Normalfunn warning confirmation button
+  const normalBtn = e.target.closest('#normalfunnWarningClose');
+  if(normalBtn){
+    document.getElementById('normalfunnWarningOverlay').classList.remove('open');
+    return;
+  }
+});
+
+/* ── Brukervilkår open ── */
+document.getElementById('openBrukervilkar').addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('brukervilkarOverlay').classList.add('open');
+});
+
 /* ── Category name format popup ── */
 function updateCatFormatPreview(){
   const prev = document.getElementById('catFmtPreview');
@@ -2325,18 +2497,11 @@ function applyCatFormat(){
   categoryNameFormat.italic = document.getElementById('catFmtItalic').checked;
   categoryNameFormat.underline = document.getElementById('catFmtUnderline').checked;
   updateCatFormatPreview();
-  renderNote('hjernenerver'); renderNote('klinisk');
+  renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
 }
 
 ['catFmtBold','catFmtItalic','catFmtUnderline'].forEach(id => {
   document.getElementById(id).addEventListener('change', applyCatFormat);
-});
-
-document.getElementById('catFormatClose').addEventListener('click', () => {
-  document.getElementById('catFormatOverlay').classList.remove('open');
-});
-document.getElementById('catFormatOverlay').addEventListener('click', e => {
-  if(e.target.id === 'catFormatOverlay') document.getElementById('catFormatOverlay').classList.remove('open');
 });
 
 document.getElementById('confirmModalCancel').addEventListener('click', () => {
@@ -2479,63 +2644,131 @@ const EKG_VPICK = ['V1','V2','V3','V4','V5','V6'];
 /* Criteria are paraphrased summaries for quick bedside reference, not a
    substitute for full guideline review. */
 const CONDITIONS = [
-  { id:'afib', name:'Atrieflimmer (AFib)', criteria:[
-    'Ingen tydelige, regelmessige P-bølger.',
-    'Uregelmessig ventrikkelaktivering — ingen fast mønster i RR-intervallene.',
-    'Forutsetter at det ikke foreligger AV-blokk.',
-    'Klinisk diagnose krever 12-avlednings-EKG, eller ≥30 sekunder sammenhengende på ambulatorisk EKG-registrering.'
-  ]},
-  { id:'aflutter', name:'Atrieflutter', criteria:[
-    'Regelmessig atrieaktivitet, typisk rundt 250–350/min.',
-    'Sagtannmønster (flutterbølger), tydeligst i avledning II, III og aVF.',
-    'Ofte fast AV-overledningsforhold (f.eks. 2:1), som gir en regelmessig ventrikkelfrekvens.'
-  ]},
-  { id:'avI', name:'AV-blokk grad I', criteria:[
-    'Forlenget PQ-tid (>200 ms).',
-    'Hver P-bølge etterfølges likevel av et QRS-kompleks (1:1-overledning).'
-  ]},
-  { id:'avII_1', name:'AV-blokk grad II (Mobitz I / Wenckebach)', criteria:[
-    'Progressivt økende PQ-tid fra slag til slag.',
-    'Til slutt faller et QRS-kompleks helt ut (et P uten påfølgende QRS).',
-    'Mønsteret gjentar seg syklisk.'
-  ]},
-  { id:'avII_2', name:'AV-blokk grad II (Mobitz II)', criteria:[
-    'Plutselig bortfall av QRS-kompleks uten forutgående forlengelse av PQ-tiden.',
-    'Ofte fast overledningsforhold (f.eks. 2:1 eller 3:1).',
-    'Høyere risiko for progresjon til totalblokk enn Mobitz I.'
-  ]},
-  { id:'avIII', name:'AV-blokk grad III (totalblokk)', criteria:[
-    'Ingen sammenheng mellom P-bølger og QRS-komplekser (AV-dissosiasjon).',
-    'En erstatningsrytme overtar — kan ha smale eller brede QRS-komplekser avhengig av opphav.',
-    'Atriefrekvensen er som regel raskere enn erstatningsrytmens frekvens.'
-  ]},
-  { id:'wpw', name:'WPW (pre-eksitasjon)', criteria:[
-    'Kort PQ-tid (<120 ms).',
-    'Deltabølge — langsom, hakete oppstrek i begynnelsen av QRS-komplekset.',
-    'Bredt QRS-kompleks som følge av deltabølgen.'
-  ]},
-  { id:'lbbb', name:'Venstre grenblokk (LBBB)', criteria:[
-    'Bredt QRS-kompleks (≥120 ms).',
-    'Bred eller kløftet R-takk i V5–V6, I og aVL ("M-mønster").',
-    'Manglende septal q-takk i V5–V6 og I.',
-    'Sekundære ST/T-forandringer i motsatt retning av hovedutslaget i QRS.'
-  ]},
-  { id:'rbbb', name:'Høyre grenblokk (RBBB)', criteria:[
-    'Bredt QRS-kompleks (≥120 ms).',
-    'RSR\'-mønster ("kaninører") i V1–V2.',
-    'Bred, sleip S-takk i I, aVL og V5–V6.'
-  ]},
-  { id:'stemi', name:'STEMI-mønster', criteria:[
-    'Ny ST-elevasjon i ≥2 anatomisk sammenhengende avledninger.',
-    'Terskelverdier varierer noe med avledning, alder og kjønn — vanligvis brukes høyere terskel i V2–V3 enn i øvrige avledninger.',
-    'Ny venstre grenblokk med klinikk forenlig med iskemi behandles på samme indikasjon.',
-    'Skal alltid sammenholdes med klinisk presentasjon (brystsmerter, troponin, hemodynamikk).'
-  ]},
-  { id:'longqt', name:'Forlenget QT / Long QT-syndrom', criteria:[
-    'QTc forlenget utover aldersjustert/kjønnsjustert referansegrense (vanligvis >440 ms hos menn, >460 ms hos kvinner).',
-    'Kan være medfødt (kanalopati) eller medikamentindusert/elektrolyttutløst.',
-    'Gir økt risiko for torsades de pointes og ventrikkelarytmi.'
-  ]}
+  { id:'afib', name:'Atrieflimmer (AFib)',
+    link:'https://sml.snl.no/atrieflimmer',
+    source:'Store medisinske leksikon / ESC 2020 (Hindricks et al., Eur Heart J 2021)',
+    criteria:[
+      'Fravær av distinkte, regelmessige P-bølger — uregelmessig grunnlinje (fibrillasjonsbølger 350–600/min).',
+      'Uregelmessige RR-intervaller (irregularly irregular) uten fast mønster.',
+      'Smale QRS-komplekser dersom ingen grenblokk foreligger.',
+      'EKG-dokumentasjon kreves: ≥30 sekunder på enkeltavledning, eller 12-avlednings-EKG.',
+      'Kilde: Hindricks G et al., 2020 ESC Guidelines for AF, Eur Heart J 2021;42:373–498.'
+    ]
+  },
+  { id:'aflutter', name:'Atrieflutter',
+    link:'https://sml.snl.no/atrieflutter',
+    source:'Store medisinske leksikon / ESC 2020',
+    criteria:[
+      'Regelmessig atrieaktivitet 250–350/min (typisk ~300/min ved typisk flutter moturs).',
+      'Sagtenneformede flutter-bølger (negative i II, III, aVF ved typisk kaveflutter).',
+      'Regelmessig ventrikkelrespons, typisk 2:1, 3:1 eller 4:1 AV-blokk.',
+      'Smale QRS dersom uten grenblokk; kan forveksles med SVT ved 2:1-blokk.',
+      'Kilde: Hindricks G et al., 2020 ESC Guidelines for AF, Eur Heart J 2021;42:373–498.'
+    ]
+  },
+  { id:'avblokk1', name:'AV-blokk grad I',
+    link:'https://sml.snl.no/AV-blokk',
+    source:'Store medisinske leksikon / ESC 2021 Cardiac Pacing (Glikson et al.)',
+    criteria:[
+      'PQ-intervall > 200 ms (P-start til Q-begynnelse).',
+      'Alle P-bølger ledes til ventriklene — ingen manglende QRS.',
+      'Normalt QRS med mindre annen ledningsforstyrrelse foreligger.',
+      'Oftest benign; hos veltrente er det normalt. Nyoppstått: vurder underliggende årsak.',
+      'Kilde: Glikson M et al., 2021 ESC Guidelines on Cardiac Pacing, Eur Heart J 2021;42:3427–3520.'
+    ]
+  },
+  { id:'avblokk2m1', name:'AV-blokk grad II – Mobitz I (Wenckebach)',
+    link:'https://sml.snl.no/AV-blokk',
+    source:'Store medisinske leksikon / ESC 2021 Cardiac Pacing',
+    criteria:[
+      'Progressiv forlengelse av PQ-intervallet til en P-bølge ikke ledes (manglende QRS).',
+      'RR-intervallene avtar gradvis før det manglende QRS-komplekset.',
+      'Grupper av 3:2, 4:3 osv. ledning er typisk (Wenckebach-perioder).',
+      'Vanligvis nodalt (AV-knutenivå); prognose oftest benign. Ses hos veltrente.',
+      'Kilde: Glikson M et al., 2021 ESC Guidelines on Cardiac Pacing, Eur Heart J 2021;42:3427–3520.'
+    ]
+  },
+  { id:'avblokk2m2', name:'AV-blokk grad II – Mobitz II',
+    link:'https://sml.snl.no/AV-blokk',
+    source:'Store medisinske leksikon / ESC 2021 Cardiac Pacing',
+    criteria:[
+      'Konstant PQ-intervall med plutselig manglende QRS (ingen progressiv forlengelse).',
+      'Infranodalt blokk (His-bunt eller grennivå) — QRS kan være bredt.',
+      'Mer alvorlig enn Mobitz I; økt risiko for overgang til totalblokk.',
+      'Pacemakeroppfølging bør vurderes ved symptomer eller progredierende blokk.',
+      'Kilde: Glikson M et al., 2021 ESC Guidelines on Cardiac Pacing, Eur Heart J 2021;42:3427–3520.'
+    ]
+  },
+  { id:'avblokk3', name:'AV-blokk grad III (totalblokk)',
+    link:'https://sml.snl.no/hjerteblokk',
+    source:'Store medisinske leksikon / ESC 2021 Cardiac Pacing',
+    criteria:[
+      'Komplett AV-dissosiasjon: P-bølger og QRS-komplekser er helt uavhengige av hverandre.',
+      'Både P og QRS er regelmessige, men med ulike frekvenser (P raskere enn QRS).',
+      'Langsom erstatningsrytme: 40–60/min ved nodalt (smale QRS), 20–40/min ved infranodalt (brede QRS).',
+      'Vanligvis symptomatisk: bradykardi, synkope, dyspné. Pacemaker er oftest indisert.',
+      'Kilde: Glikson M et al., 2021 ESC Guidelines on Cardiac Pacing, Eur Heart J 2021;42:3427–3520.'
+    ]
+  },
+  { id:'wpw', name:'Wolff-Parkinson-White (WPW)',
+    link:'https://sml.snl.no/Wolff-Parkinson-Whites_syndrom',
+    source:'Store medisinske leksikon / ESC 2019 SVT (Brugada et al.)',
+    criteria:[
+      'Kort PQ-intervall (< 120 ms) — preeksitasjon via aksessorisk bane.',
+      'Delta-bølge: sløret oppadgående helling ved begynnelsen av QRS-komplekset.',
+      'Bredt QRS-kompleks (≥ 110–120 ms) pga. fusjon av normal og aksessorisk ledning.',
+      'Sekundære ST- og T-forandringer i motsatt retning av delta-bølgen.',
+      'Risiko for AVRT-takykardi og, ved AFib med rask aksessorisk ledning, plutselig hjertedød.',
+      'Kilde: Brugada J et al., 2019 ESC Guidelines for SVT, Eur Heart J 2020;41:655–720.'
+    ]
+  },
+  { id:'lbbb', name:'Venstre grenblokk (LBBB)',
+    link:'https://sml.snl.no/grenblokk',
+    source:'Store medisinske leksikon / Surawicz 2009 (AHA/ACCF/HRS)',
+    criteria:[
+      'QRS-varighet ≥ 120 ms.',
+      'Brede, nottede R-bølger i avledning I, aVL, V5–V6 (M-konfigurasjon).',
+      'Fravær av septale Q-bølger i avledning I og V5–V6.',
+      'QS- eller rS-mønster i V1 (dyp negativ defleksjon).',
+      'Sekundære ST-T-forandringer kan likne infarkt — tolkning er vanskeliggjort.',
+      'Venstre grenblokk bør utredes — skyldes som regel underliggende hjertesykdom.',
+      'Kilde: Surawicz B et al., Circulation 2009;119:e235–e240.'
+    ]
+  },
+  { id:'rbbb', name:'Høyre grenblokk (RBBB)',
+    link:'https://sml.snl.no/grenblokk',
+    source:'Store medisinske leksikon / Surawicz 2009 (AHA/ACCF/HRS)',
+    criteria:[
+      'QRS-varighet ≥ 120 ms.',
+      "rsR'- eller rSR'-mønster i V1 (kaninører / M-konfigurasjon).",
+      'Bred, slapp S-bølge i avledning I og V5–V6.',
+      'Isolert høyre grenblokk regnes relativt ufarlig; nyoppstått bør utredes for underliggende sykdom.',
+      'Kilde: Surawicz B et al., Circulation 2009;119:e235–e240.'
+    ]
+  },
+  { id:'stemi', name:'STEMI-mønster',
+    link:'https://sml.snl.no/hjerteinfarkt',
+    source:'Store medisinske leksikon / ESC 2023 ACS (Byrne et al.)',
+    criteria:[
+      'ST-elevasjon ≥ 1 mm i ≥ 2 kontiguøse avledninger (lemma eller prekordiale).',
+      'I V2–V3: ≥ 2 mm hos menn ≥ 40 år, ≥ 2,5 mm hos menn < 40 år, ≥ 1,5 mm hos kvinner.',
+      'Nytt venstre grenblokk med typiske symptomer bør behandles som STEMI inntil annet er avklart.',
+      'Posteriort infarkt: ST-depresjon V1–V3 med høy, bred R-bølge (speilbildemønster).',
+      'OBS: HASTEUNDERSØKELSE — kontakt kardiolog umiddelbart ved klinisk mistanke.',
+      'Kilde: Byrne RA et al., 2023 ESC Guidelines for Acute Coronary Syndromes, Eur Heart J 2023;44:3720–3826.'
+    ]
+  },
+  { id:'longqt', name:'Langt QT-intervall',
+    link:'https://sml.snl.no/lang_QT-tid-syndrom',
+    source:'Store medisinske leksikon / ESC 2022 (Zeppenfeld et al.)',
+    criteria:[
+      'QTc (Bazett) > 440 ms hos menn, > 460 ms hos kvinner (grenser varierer noe mellom retningslinjer).',
+      'QTc > 500 ms gir vesentlig økt risiko for torsades de pointes.',
+      'Kan være medfødt (kanalopati, LQTS type 1–3 m.fl.) eller ervervet (legemidler, elektrolyttforstyrrelser).',
+      'Gjennomgå legemiddelliste — mange vanlige medikamenter forlenger QTc. Se crediblemeds.org.',
+      'Kilde: Zeppenfeld K et al., 2022 ESC Guidelines for ventricular arrhythmias, Eur Heart J 2022;43:3997–4126.'
+    ]
+  }
 ];
 
 const EKG_LEADS = ['I','II','III','aVR','aVL','aVF','V1','V2','V3','V4','V5','V6'];
@@ -2557,15 +2790,23 @@ function flagNumeric(field, valStr){
   let max = field.max;
   if(field.key==='qtc'){
     if(!ekgState.kjonn) return null;
-    max = ekgState.kjonn==='mann' ? 440 : 460;
+    // ESC 2022 (Zeppenfeld et al.): clearly prolonged >470ms (men) / >480ms (women)
+    // Borderline: >450ms (men) / >460ms (women)
+    max = ekgState.kjonn==='mann' ? 470 : 480;
   }
   if(field.min!=null && num < field.min) return 'low';
   if(max!=null && num > max) return 'high';
+  // QTc borderline zone
+  if(field.key==='qtc'){
+    const borderline = ekgState.kjonn==='mann' ? 450 : 460;
+    if(num > borderline) return 'borderline';
+  }
   return 'normal';
 }
 
 function flagText(field, flag){
   if(flag==='normal') return 'normal';
+  if(flag==='borderline') return 'grenseverdi';
   if(flag==='low') return field.lowLabel || 'lav';
   if(flag==='high') return field.highLabel || 'høy';
   return null;
@@ -2573,9 +2814,9 @@ function flagText(field, flag){
 
 function refRangeText(field){
   if(field.key==='qtc'){
-    if(!ekgState.kjonn) return 'referanse: <440 ms (menn) / <460 ms (kvinner) — velg kjønn';
-    const max = ekgState.kjonn==='mann' ? 440 : 460;
-    return `referanse: <${max} ms`;
+    if(!ekgState.kjonn) return 'referanse: ≤450 ms (menn) / ≤460 ms (kvinner) — velg kjønn · kilde: ESC 2022';
+    if(ekgState.kjonn==='mann') return 'referanse: ≤450 ms normal, 451–470 ms grenseverdi, >470 ms forlenget (menn) · ESC 2022';
+    return 'referanse: ≤460 ms normal, 461–480 ms grenseverdi, >480 ms forlenget (kvinner) · ESC 2022';
   }
   if(field.min!=null && field.max!=null) return `referanse: ${field.min}–${field.max} ${field.unit}`;
   if(field.max!=null) return `referanse: <${field.max} ${field.unit}`;
@@ -2599,8 +2840,10 @@ function generateSuggestions(){
   if(!isNaN(qrs) && qrs > 120) s.push('Bredt QRS-kompleks — vurder grenblokk eller ventrikulær opprinnelse?');
   const qtc = parseFloat(ekgState.qtc);
   if(!isNaN(qtc) && ekgState.kjonn){
-    const lim = ekgState.kjonn==='mann' ? 440 : 460;
-    if(qtc > lim) s.push('Forlenget QTc — vurder medfødt/medikamentindusert long QT-syndrom eller elektrolyttforstyrrelse?');
+    const limBorderline = ekgState.kjonn==='mann' ? 450 : 460;
+    const limClear = ekgState.kjonn==='mann' ? 470 : 480;
+    if(qtc > limBorderline && qtc <= limClear) s.push(`QTc grenseverdi (${qtc} ms) — vurder legemidler, elektrolytter og arvegang?`);
+    if(qtc > limClear) s.push(`QTc forlenget (${qtc} ms) — vurder long QT-syndrom, medikamenter, elektrolyttforstyrrelse?`);
   }
   if(ekgState.akse==='venstre') s.push('Venstreakseavvik — vurder venstre fascikkelblokk eller annen årsak?');
   if(ekgState.akse==='hoyre') s.push('Høyreakseavvik — vurder høyre fascikkelblokk, lungesykdom eller annen årsak?');
@@ -2637,8 +2880,12 @@ function ekgNoteText(){
   if(ekgState.pq) ivParts.push('PR-intervall '+ekgState.pq+' ms');
   if(ekgState.qrs) ivParts.push('QRS-tid '+ekgState.qrs+' ms');
   if(ekgState.qtc){
-    const lim = ekgState.kjonn==='mann' ? 440 : ekgState.kjonn==='kvinne' ? 460 : null;
-    const flag = lim && parseFloat(ekgState.qtc)>lim ? ' (forlenget, grense '+lim+' ms)' : '';
+    const lim = ekgState.kjonn==='mann' ? 470 : ekgState.kjonn==='kvinne' ? 480 : null;
+    const borderline = ekgState.kjonn==='mann' ? 450 : ekgState.kjonn==='kvinne' ? 460 : null;
+    const qtcVal = parseFloat(ekgState.qtc);
+    let flag = '';
+    if(lim && qtcVal > lim) flag = ' (forlenget per ESC 2022, grense ' + lim + ' ms)';
+    else if(borderline && qtcVal > borderline) flag = ' (grenseverdi, grense ' + borderline + ' ms)';
     ivParts.push('QTc '+ekgState.qtc+' ms'+flag);
   }
   if(ivParts.length) parts.push(ivParts.join(', '));
@@ -2763,9 +3010,14 @@ function buildEkgPanel(){
             <div class="calc-result" id="calc-rr-result">– /min</div>
           </div>
           <div class="ekg-calc-cell">
-            <label>RR-intervall (store ruter) → frekvens</label>
+            <label>Antall <b>store</b> ruter (${largeMs} ms/rute) → frekvens</label>
             <input type="number" class="ekg-calc-input" id="calc-rr-boxes" min="1" max="15" step="0.5" placeholder="ruter" />
             <div class="calc-result" id="calc-rr-boxes-result">– /min</div>
+          </div>
+          <div class="ekg-calc-cell">
+            <label>Antall <b>små</b> ruter (${smallMs} ms/rute) → frekvens</label>
+            <input type="number" class="ekg-calc-input" id="calc-rr-small-boxes" min="1" max="75" step="0.5" placeholder="ruter" />
+            <div class="calc-result" id="calc-rr-small-boxes-result">– /min</div>
           </div>
         </div>
         <div style="margin-bottom:14px;">
@@ -2925,6 +3177,7 @@ function buildEkgPanel(){
     </main>
     <div class="modal-overlay" id="ekg-modal-overlay">
       <div class="modal-box">
+        <button type="button" class="modal-close-x" data-close-modal="ekg-modal-overlay">&times;</button>
         <div class="modal-title" id="ekg-modal-title"></div>
         <ul class="modal-criteria" id="ekg-modal-criteria"></ul>
         <button type="button" class="modal-close-btn" id="ekg-modal-close">Lukk</button>
@@ -2933,7 +3186,10 @@ function buildEkgPanel(){
   `;
 
   updateEkgAll();
-  attachEkgEvents();
+  if(!panel.dataset.ekgListeners){
+    panel.dataset.ekgListeners = '1';
+    attachEkgEvents();
+  }
 }
 
 function updateEkgBadge(field){
@@ -3009,6 +3265,14 @@ function attachEkgEvents(){
       const rr = parseFloat(rrMs.value);
       const res = document.getElementById('calc-rr-result');
       if(res) res.textContent = (!isNaN(rr) && rr > 0) ? Math.round(60000 / rr) + ' /min' : '– /min';
+    }
+    const rrSmallBoxes = e.target.closest('#calc-rr-small-boxes');
+    if(rrSmallBoxes){
+      const speed = ekgState.paperSpeed || 50;
+      const boxes = parseFloat(rrSmallBoxes.value);
+      const rrInMs = boxes * calcBoxMs(speed, false); // small boxes
+      const res = document.getElementById('calc-rr-small-boxes-result');
+      if(res) res.textContent = (!isNaN(boxes) && boxes > 0) ? Math.round(60000 / rrInMs) + ' /min' : '– /min';
     }
     const rrBoxes = e.target.closest('#calc-rr-boxes');
     if(rrBoxes){
@@ -3100,7 +3364,14 @@ function attachEkgEvents(){
     const speedBtn = e.target.closest('[data-speed]');
     if(speedBtn){
       ekgState.paperSpeed = parseInt(speedBtn.dataset.speed, 10);
-      buildEkgPanel(); // rebuild to update all speed-dependent UI
+      const calcWasOpen = document.getElementById('ekg-calc-body')?.classList.contains('open');
+      buildEkgPanel();
+      if(calcWasOpen){
+        const body = document.getElementById('ekg-calc-body');
+        const arrow = document.getElementById('ekg-calc-arrow');
+        if(body) body.classList.add('open');
+        if(arrow) arrow.style.transform = 'rotate(180deg)';
+      }
       return;
     }
 
@@ -3224,7 +3495,14 @@ function attachEkgEvents(){
 
 function openEkgModal(condition){
   document.getElementById('ekg-modal-title').textContent = condition.name;
-  document.getElementById('ekg-modal-criteria').innerHTML = condition.criteria.map(c=>`<li>${c}</li>`).join('');
+  const linkHtml = condition.link
+    ? `<p style="font-family:'IBM Plex Sans';font-size:.75rem;color:var(--ink-muted);margin-top:10px;">
+        Kilde: <a href="${condition.link}" target="_blank" rel="noopener noreferrer" style="color:var(--teal);">Store medisinske leksikon</a>
+        ${condition.source ? ' · ' + condition.source : ''}
+       </p>`
+    : '';
+  document.getElementById('ekg-modal-criteria').innerHTML =
+    condition.criteria.map(c=>`<li>${c}</li>`).join('') + linkHtml;
   document.getElementById('ekg-modal-overlay').classList.add('open');
 }
 function closeEkgModal(){
@@ -3296,6 +3574,16 @@ function buildNihssTab(){
           <div class="card-head"><span class="card-name">NIHSS — National Institutes of Health Stroke Scale</span></div>
           <div class="ekg-hedge-note" style="margin:0 0 14px;">Velg poengsum for hvert av de 15 punktene. Denne kalkulatoren deler data med NIHSS-punktet under Hjernenerver-fanen, så du trenger bare fylle den ut ett sted.</div>
           <div id="nihss-calc-container"></div>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Om NIHSS og opphavsrett</span></div>
+          <ul class="ekg-sources">
+            <li><b>Original publisering:</b> Brott T, Adams HP Jr, Olinger CP et al. «Measurements of acute cerebral infarction: a clinical examination scale.» <em>Stroke</em> 1989;20(7):864–870. NIHSS-skalaen ble utviklet med offentlig finansiering (National Institutes of Health, USA) og er offentlig tilgjengelig uten lisensbegrensning.</li>
+            <li><b>Reliabilitetsstudie:</b> Lyden P, Brott T, Tilley B et al. «Improved reliability of the NIH Stroke Scale using video training.» <em>Stroke</em> 1994;25(11):2220–2226.</li>
+            <li><b>Opphavsrettslig status:</b> NIHSS er et resultat av statlig finansiert forskning (US federal government). Verk produsert av amerikanske føderale myndigheter er i det fri (public domain) i USA (17 U.S.C. § 105). Skalaen er gjort fritt tilgjengelig av National Institute of Neurological Disorders and Stroke (NINDS) og kan implementeres og brukes uten lisensbetaling. Det finnes kommersielle sertifiseringsløsninger for NIHSS-opplæring — disse er separate produkter og ikke knyttet til selve skalaen.</li>
+            <li><b>Implementeringen her</b> gjengir poengkriteriene som selvstendige faglige sammendrag basert på den publiserte skalaen, ikke som verbatim reproduksjon av noe enkeltdokument. Klinisk bruk av NIHSS-skalaen krever opplæring; denne kalkulatoren er ikke en erstatning for sertifisert NIHSS-opplæring.</li>
+            <li><b>Norsk kontekst:</b> NIHSS er anbefalt av Helsedirektoratet i nasjonale faglige retningslinjer for behandling og rehabilitering ved hjerneslag (IS-2688).</li>
+          </ul>
         </div>
       </section>
 
@@ -3536,9 +3824,10 @@ function orthoNoteData(){
     const hasSomething = (obj)=> obj && Object.values(obj).some(v => v && (v.size>0 || Object.keys(v).length>0));
     if(!hasSomething(regF) && !hasSomething(regM)) return;
 
+    /* Main note shows ALL findings (normal + abnormal) */
     const activeSides = ORTHO_SIDES.map(s=>s.id).filter(s=>{
       const fOk = regF && regF[s] && ORTHO_DOMAINS.some(d=>regF[s][d]&&regF[s][d].size>0);
-      const mOk = regM && regM[s] && Object.keys(regM[s]).some(k=>regM[s][k]&&regM[s][k]!=='normal');
+      const mOk = regM && regM[s] && Object.keys(regM[s]).length>0;
       return fOk || mOk;
     });
     if(!activeSides.length) return;
@@ -3552,27 +3841,37 @@ function orthoNoteData(){
         const set = regF&&regF[side]&&regF[side][d];
         const defs = ORTHO_FINDINGS[d];
         const allDefs = [...defs.normal,...defs.abnormal];
-        const labels = set&&set.size ? [...set].map(id=>{const df=allDefs.find(f=>f.id===id);return df?df.label:id;}) : [];
+        /* Return {text, cls} pairs so renderOrthoNote can apply styling */
+        let parts = set&&set.size ? [...set].map(id=>{
+          const df=allDefs.find(f=>f.id===id);
+          const isAbn = defs.abnormal.find(a=>a.id===id);
+          return {text: df?df.label:id, cls: isAbn?'abnormal':'normal'};
+        }) : [];
+        /* Defensive: if any abnormal chip is selected, suppress normal chip text
+           (they're mutually exclusive by design, but guard against edge cases) */
+        if(parts.some(p=>p.cls==='abnormal')) parts = parts.filter(p=>p.cls!=='normal');
 
-        /* Bevegelse: also include movement detail */
         if(d==='Bevegelse'){
           const movs = regM&&regM[side] ? regM[side] : {};
           const normalMovs = [];
           const movGroups = {};
-          Object.entries(movs).forEach(([mov,stat])=>{
-            if(stat==='normal'){ normalMovs.push(mov); return; }
-            (movGroups[stat]=movGroups[stat]||[]).push(mov);
+          Object.entries(movs).forEach(([mov,statOrSet])=>{
+            const statSet = statOrSet instanceof Set ? statOrSet : new Set([statOrSet]);
+            if([...statSet].every(s=>s==='normal')){ normalMovs.push(mov); return; }
+            if(statSet.has('normal')) normalMovs.push(mov);
+            statSet.forEach(s=>{ if(s!=='normal')(movGroups[s]=movGroups[s]||[]).push(mov); });
           });
-          const movLines = [];
-          if(normalMovs.length) movLines.push(`Normal: ${normalMovs.join(', ')}`);
+          /* Suppress normal_bev chip text if abnormal movements exist */
+          const hasAbnMovs = Object.keys(movGroups).length > 0;
+          const filteredParts = hasAbnMovs ? parts.filter(p=>p.cls!=='normal') : parts;
+          if(normalMovs.length) filteredParts.push({text:`Normal: ${normalMovs.join(', ')}`, cls:'normal'});
           Object.entries(movGroups).forEach(([stat,movList])=>{
             const stDef = MOV_STATUS.find(s=>s.id===stat);
-            movLines.push(`${stDef?stDef.label:stat}: ${movList.join(', ')}`);
+            filteredParts.push({text:`${stDef?stDef.label:stat}: ${movList.join(', ')}`, cls:'abnormal'});
           });
-          const combined = [...labels, ...movLines];
-          if(combined.length) domains.push({name:d, labels:combined});
+          if(filteredParts.length) domains.push({name:d, parts:filteredParts});
         } else {
-          if(labels.length) domains.push({name:d, labels});
+          if(parts.length) domains.push({name:d, parts});
         }
       });
 
@@ -3592,9 +3891,10 @@ function renderOrthoNote(){
   }
   body.innerHTML = data.map(sec=>{
     const header = sec.showLabel ? `${sec.regionName}, ${sec.sideLabel}:` : `${sec.regionName}:`;
-    const domLines = sec.domains.map(d=>
-      `<span class="nline" style="display:block;padding-left:16px;margin-bottom:2px;"><b>${d.name}:</b> ${d.labels.join('. ')}.</span>`
-    ).join('');
+    const domLines = sec.domains.map(d=>{
+      const partsHtml = d.parts.map(p=>styledPart(p.text, p.cls)).join('. ');
+      return `<span class="nline" style="display:block;padding-left:16px;margin-bottom:2px;">${formatCategoryName(d.name)} ${partsHtml}.</span>`;
+    }).join('');
     return `<span class="nline" style="display:block;font-weight:600;margin-top:8px;">${header}</span>${domLines}`;
   }).join('');
 }
@@ -3602,7 +3902,7 @@ function renderOrthoNote(){
 function orthoPlainText(){
   return orthoNoteData().map(sec=>{
     const header = sec.showLabel ? `${sec.regionName}, ${sec.sideLabel}:` : `${sec.regionName}:`;
-    const domLines = sec.domains.map(d=>`  ${d.name}: ${d.labels.join('. ')}.`).join('\n');
+    const domLines = sec.domains.map(d=>`  ${d.name}: ${d.parts.map(p=>p.text).join('. ')}.`).join('\n');
     return `${header}\n${domLines}`;
   }).join('\n\n');
 }
@@ -3643,9 +3943,9 @@ function orthoAbnSummaryText(){
         if(d==='Bevegelse'){
           const movs = (regM&&regM[side]) || {};
           const movGroups = {};
-          Object.entries(movs).forEach(([mov,stat])=>{
-            if(stat==='normal') return;
-            (movGroups[stat]=movGroups[stat]||[]).push(mov);
+          Object.entries(movs).forEach(([mov,statOrSet])=>{
+            const statSet = statOrSet instanceof Set ? statOrSet : new Set([statOrSet]);
+            statSet.forEach(s=>{ if(s!=='normal')(movGroups[s]=movGroups[s]||[]).push(mov); });
           });
           const movLines = Object.entries(movGroups).map(([stat,movList])=>{
             const stDef=MOV_STATUS.find(s=>s.id===stat);
@@ -3728,7 +4028,7 @@ function renderOrthoFindings(){
             return `<div class="ortho-mov-row">
               <span class="ortho-mov-name">${mov}</span>
               <div class="ortho-mov-btns">
-                ${MOV_STATUS.map(st=>`<button type="button" class="ortho-mov-btn ${st.id==='normal'?'ortho-mov-normal':'ortho-mov-abn'} ${cur===st.id?'selected':''}" data-mov="${mov}" data-movstat="${st.id}">${st.label}</button>`).join('')}
+                ${MOV_STATUS.map(st=>`<button type="button" class="ortho-mov-btn ${st.id==='normal'?'ortho-mov-normal':'ortho-mov-abn'} ${(cur instanceof Set?cur.has(st.id):cur===st.id)?'selected':''}" data-mov="${mov}" data-movstat="${st.id}">${st.label}</button>`).join('')}
               </div>
             </div>`;
           }).join('')}
@@ -3759,6 +4059,26 @@ function buildOrthoPanel(){
         </div>
       </section>
       <aside class="note-panel">
+        <div class="exam-toolbar" style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+          <div class="toggle-wrap">
+            <label class="switch">
+              <input type="checkbox" class="abnormalItalicToggle" ${noteAbnormalItalic?'checked':''}/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik kursiv</span>
+            <label class="switch" style="margin-left:10px;">
+              <input type="checkbox" class="abnormalBoldToggle" ${noteAbnormalBold?'checked':''}/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik fet</span>
+            <label class="switch" style="margin-left:10px;">
+              <input type="checkbox" class="abnormalUnderlineToggle" ${noteAbnormalUnderline?'checked':''}/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik understrek</span>
+            <button type="button" class="ghost-btn openCatFormatBtn" style="margin-left:10px; font-size:.76rem; padding:5px 10px;">Aa kategorinavn ▾</button>
+          </div>
+        </div>
         <div class="note-head"><div class="note-title">Notat</div></div>
         <div class="note-body" id="ortho-note-body"></div>
         <div class="note-foot">
