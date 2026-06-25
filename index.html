@@ -512,6 +512,66 @@
   </div>
 </div>
 
+<!-- Card item editor modal -->
+<div class="modal-overlay" id="cardItemEditorOverlay">
+  <div class="modal-box" style="max-width:580px; max-height:88vh; display:flex; flex-direction:column;">
+    <button type="button" class="modal-close-x" data-close-modal="cardItemEditorOverlay">&times;</button>
+    <div class="modal-title" id="cardItemEditorTitle">Rediger seksjon</div>
+    <p style="font-family:'IBM Plex Sans'; font-size:.79rem; color:var(--ink-muted); margin:0 0 12px;">↑↓ for å flytte, skriv nummer for å bytte plass, hake for å vise/skjule, ✕ for å fjerne.</p>
+    <div id="cardItemEditorList" style="display:flex; flex-direction:column; gap:5px; overflow-y:auto; max-height:40vh; margin-bottom:12px;"></div>
+    <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+      <button type="button" class="ghost-btn" id="cardItemAddBtn" style="font-size:.8rem;">+ Legg til test</button>
+      <button type="button" class="ghost-btn" id="createCustomTestBtn" style="font-size:.8rem; color:var(--clay);">✦ Lag ny egendefinert test</button>
+    </div>
+    <div style="border-top:1px solid var(--border); padding-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+      <button type="button" class="solid-btn" id="cardItemSaveNew">Lagre som ny profil</button>
+      <button type="button" class="solid-btn" id="cardItemOverwrite" style="background:var(--clay); border-color:var(--clay);">Overskriv aktiv profil</button>
+      <span id="cardItemSaveStatus" class="copy-status">Lagret ✓</span>
+    </div>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center;">
+      <span style="font-family:'IBM Plex Sans'; font-size:.74rem; color:var(--ink-muted);">Egendefinerte tester:</span>
+      <button type="button" class="ghost-btn" id="exportCustomTestsBtn" style="font-size:.74rem;">Eksporter</button>
+      <label class="ghost-btn" style="font-size:.74rem; cursor:pointer; padding:5px 12px;">Importer
+        <input type="file" id="importCustomTestsBtn" accept=".json" style="display:none;" />
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Item picker modal (add items from other sections) -->
+<div class="modal-overlay" id="itemPickerOverlay">
+  <div class="modal-box" style="max-width:500px; max-height:85vh; display:flex; flex-direction:column;">
+    <button type="button" class="modal-close-x" data-close-modal="itemPickerOverlay">&times;</button>
+    <div class="modal-title">Legg til test fra annen seksjon</div>
+    <input type="text" id="itemPickerSearch" placeholder="Søk etter test..." style="font-family:'IBM Plex Sans'; font-size:.85rem; padding:8px 12px; border:1px solid var(--border); border-radius:8px; margin-bottom:12px; width:100%; box-sizing:border-box;" />
+    <div id="itemPickerList" style="overflow-y:auto; flex:1; max-height:50vh;"></div>
+    <button type="button" class="modal-close-btn" style="margin-top:12px;">Lukk</button>
+  </div>
+</div>
+
+<!-- Custom test creator modal -->
+<div class="modal-overlay" id="customTestOverlay">
+  <div class="modal-box" style="max-width:440px;">
+    <button type="button" class="modal-close-x" data-close-modal="customTestOverlay">&times;</button>
+    <div class="modal-title">Lag egendefinert test</div>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px; font-family:'IBM Plex Sans'; font-size:.85rem;">
+      <label>Navn på test / undersøkelse
+        <input type="text" id="customTestLabel" placeholder="F.eks. Spesiell nevrologisk test" style="display:block; width:100%; box-sizing:border-box; margin-top:4px; padding:7px 10px; border:1px solid var(--border); border-radius:7px; font-family:'IBM Plex Sans'; font-size:.84rem;" />
+      </label>
+      <label>Normalfunn-tekst (valgfritt)
+        <input type="text" id="customTestNormal" placeholder="F.eks. Normal." style="display:block; width:100%; box-sizing:border-box; margin-top:4px; padding:7px 10px; border:1px solid var(--border); border-radius:7px; font-family:'IBM Plex Sans'; font-size:.84rem;" />
+      </label>
+      <label>Avvikstekst (valgfritt)
+        <input type="text" id="customTestAbnormal" placeholder="F.eks. Avvik påvist." style="display:block; width:100%; box-sizing:border-box; margin-top:4px; padding:7px 10px; border:1px solid var(--border); border-radius:7px; font-family:'IBM Plex Sans'; font-size:.84rem;" />
+      </label>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button type="button" class="solid-btn" id="customTestSaveBtn">Lagre test</button>
+      <button type="button" class="modal-close-btn" data-close-modal="customTestOverlay">Avbryt</button>
+    </div>
+  </div>
+</div>
+
 <!-- Region name format popup (ortho body-part headers) -->
 <div class="modal-overlay" id="regionFormatOverlay">
   <div class="modal-box" style="max-width:320px;">
@@ -1335,6 +1395,16 @@ const KLINISK = [
     ]}
   ]},
   { id:'hud', tab:'klinisk', num:'10', name:'Hud / sirkulasjon', items:[
+    { id:'k_cyanose', label:'Cyanose', options:[
+      {id:'normal', cls:'normal', text:'Ikke cyanose.'},
+      {id:'perifer', cls:'abnormal',
+        subFields:[{key:'lok', type:'chips', multi:true, label:'perifer cyanose', choices:[{id:'fingre',label:'fingre'},{id:'tær',label:'tær'},{id:'lepper',label:'lepper'},{id:'negler',label:'negler'}]}],
+        template:(L)=> L.lok ? `Perifer cyanose, ${L.lok}.` : 'Perifer cyanose.'},
+      {id:'sentral', cls:'abnormal',
+        subFields:[{key:'lok', type:'chips', multi:true, label:'sentral cyanose', choices:[{id:'lepper',label:'lepper'},{id:'tunge',label:'tunge'},{id:'slimhinner',label:'slimhinner'}]}],
+        template:(L)=> L.lok ? `Sentral cyanose, ${L.lok}.` : 'Sentral cyanose.'},
+      {id:'diff', cls:'abnormal', text:'Diffus/generalisert cyanose.'}
+    ]},
     { id:'k_hudturgor', label:'Hudturgor', options:[
       {id:'normal', cls:'normal', text:'Normal hudturgor.'},
       {id:'redusert', cls:'abnormal', text:'Redusert hudturgor.'}
@@ -1377,6 +1447,29 @@ let explicitlyClearedByTab = { hjernenerver:new Set(), klinisk:new Set() }; // i
 let activeMainTab = 'hjernenerver';
 let settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14 };
 let customProfiles = [];
+let profileItemOverrides = {}; // {profileId: {cardId: {hidden:Set<itemId>, order:[itemId,...]}}}
+
+function getItemOverrides(profileId, cardId){
+  const p = profileItemOverrides[profileId];
+  if(!p || !p[cardId]) return null;
+  return p[cardId];
+}
+function setItemOverrides(profileId, cardId, hidden, order){
+  if(!profileItemOverrides[profileId]) profileItemOverrides[profileId] = {};
+  profileItemOverrides[profileId][cardId] = {hidden: Array.from(hidden), order};
+}
+function cardItems(card){
+  const over = getItemOverrides(activeProfileId, card.id);
+  if(!over) return card.items;
+  const hidden = new Set(over.hidden);
+  const orderedIds = over.order;
+  // Apply order then filter hidden
+  const byId = Object.fromEntries(card.items.map(it=>[it.id, it]));
+  const ordered = orderedIds.map(id=>byId[id]).filter(Boolean);
+  // Add any items not in order (new items added after override was saved)
+  card.items.forEach(it=>{ if(!orderedIds.includes(it.id)) ordered.push(it); });
+  return ordered.filter(it=>!hidden.has(it.id));
+}
 let activeProfileId = 'alle';
 let customSections = []; // [{id, name, itemIds:[...]}] — user-defined klinisk sections
 let cardOrder = []; // ordered list of klinisk card ids (builtin + custom), user-defined display order
@@ -1578,7 +1671,7 @@ function buildExamPanel(tabId){
   const cards = visibleCardsForTab(tabId);
   const cardsHtml = cards.map(card => {
     const numeral = card.roman ? `<div class="nerve-numeral">${card.roman.split(' ')[0]}</div>` : '';
-    const itemsHtml = card.items.map(item => `<div class="item-row ${(activeOptions[item.id]||[]).length>0?'touched':''}" data-item-id="${item.id}">${renderItemRowInner(item)}</div>`).join('');
+    const itemsHtml = cardItems(card).map(item => `<div class="item-row ${(activeOptions[item.id]||[]).length>0?'touched':''}" data-item-id="${item.id}">${renderItemRowInner(item)}</div>`).join('');
     return `<div class="exam-card ${card.roman?'with-numeral':''}">
       ${numeral}
       <div class="card-head">${card.num?`<span class="card-num-label">${card.num}.</span>`:''}<span class="card-name">${card.name}</span></div>
@@ -1672,7 +1765,7 @@ function noteLinesForTab(tabId){
   let totalCount = 0;
   visibleCardsForTab(tabId).forEach(card => {
     const parts = []; // [{text, cls}]
-    card.items.forEach(item => {
+    cardItems(card).forEach(item => {
       totalCount++;
       const active = activeOptions[item.id] || [];
       if(active.length > 0){
@@ -2307,7 +2400,255 @@ document.getElementById('saveSectionBtn').addEventListener('click', () => {
   buildExamPanel('klinisk');
 });
 
-/* ============================== SETTINGS: SECTION ORDER ============================== */
+/* ════════════════════════════════════════════════════════════
+   CARD ITEM EDITOR — full rewrite
+════════════════════════════════════════════════════════════ */
+let _editCardId = null;
+let _editorItems = []; // [{id, label, visible, custom?, customDef?}]
+
+/* Custom test definitions: {id, label, options:[{id,cls,text}]} */
+let customTestDefs = [];
+
+function allItemsForCard(card){
+  /* Returns the base item array for a card, including any custom items added to it */
+  const extras = customTestDefs.filter(t=>t.cardId === card.id);
+  return [...card.items, ...extras];
+}
+
+function openCardItemEditor(cardId){
+  _editCardId = cardId;
+  const card = ALL_CARDS.find(c=>c.id===cardId);
+  if(!card) return;
+  const over = getItemOverrides(activeProfileId, cardId);
+  const hiddenSet = new Set(over ? over.hidden : []);
+  const savedOrder = over ? over.order : null;
+
+  const allItems = allItemsForCard(card);
+  const byId = Object.fromEntries(allItems.map(it=>[it.id,it]));
+
+  // Build ordered list
+  let ordered;
+  if(savedOrder){
+    ordered = savedOrder.map(id=>byId[id]).filter(Boolean);
+    allItems.forEach(it=>{ if(!savedOrder.includes(it.id)) ordered.push(it); });
+  } else {
+    ordered = [...allItems];
+  }
+
+  _editorItems = ordered.map(it=>({ id:it.id, label:it.label, visible:!hiddenSet.has(it.id) }));
+  document.getElementById('cardItemEditorTitle').textContent = 'Rediger: ' + card.name;
+  renderEditorList();
+  document.getElementById('cardItemEditorOverlay').classList.add('open');
+}
+
+function renderEditorList(){
+  const list = document.getElementById('cardItemEditorList');
+  list.innerHTML = _editorItems.map((it,i)=>`
+    <div class="order-row" data-editor-idx="${i}" style="align-items:center; gap:6px; padding:6px 8px; border:1px solid var(--border); border-radius:7px; background:#fff;">
+      <div style="display:flex; flex-direction:column; gap:1px;">
+        <button type="button" class="move-btn editor-arrow-up" data-idx="${i}" ${i===0?'disabled':''} style="padding:1px 5px; font-size:.7rem;">↑</button>
+        <button type="button" class="move-btn editor-arrow-down" data-idx="${i}" ${i===_editorItems.length-1?'disabled':''} style="padding:1px 5px; font-size:.7rem;">↓</button>
+      </div>
+      <input type="number" class="editor-num-input" value="${i+1}" min="1" max="${_editorItems.length}" data-idx="${i}"
+        style="width:42px; font-family:'IBM Plex Mono'; font-size:.8rem; padding:3px 5px; border:1px solid var(--border); border-radius:5px; text-align:center;" />
+      <label style="display:flex; align-items:center; gap:6px; flex:1; cursor:pointer; ${!it.visible?'opacity:.45;text-decoration:line-through;':''}">
+        <input type="checkbox" class="editor-vis-toggle" data-idx="${i}" ${it.visible?'checked':''} style="width:15px;height:15px;flex-shrink:0;" />
+        <span style="font-family:'IBM Plex Sans'; font-size:.84rem;">${it.label}</span>
+      </label>
+      <button type="button" class="move-btn editor-remove-btn" data-idx="${i}" title="Fjern fra seksjon" style="color:var(--clay); font-size:.8rem;">✕</button>
+    </div>`).join('');
+}
+
+/* ── Editor list events ── */
+document.getElementById('cardItemEditorList').addEventListener('click', e=>{
+  const upBtn = e.target.closest('.editor-arrow-up');
+  if(upBtn){ const i=parseInt(upBtn.dataset.idx); if(i>0){[_editorItems[i-1],_editorItems[i]]=[_editorItems[i],_editorItems[i-1]]; renderEditorList();} return; }
+
+  const dnBtn = e.target.closest('.editor-arrow-down');
+  if(dnBtn){ const i=parseInt(dnBtn.dataset.idx); if(i<_editorItems.length-1){[_editorItems[i],_editorItems[i+1]]=[_editorItems[i+1],_editorItems[i]]; renderEditorList();} return; }
+
+  const rmBtn = e.target.closest('.editor-remove-btn');
+  if(rmBtn){ const i=parseInt(rmBtn.dataset.idx); _editorItems.splice(i,1); renderEditorList(); return; }
+});
+
+document.getElementById('cardItemEditorList').addEventListener('change', e=>{
+  const numIn = e.target.closest('.editor-num-input');
+  if(numIn){
+    const fromIdx = parseInt(numIn.dataset.idx);
+    const toIdx   = Math.min(_editorItems.length, Math.max(1, parseInt(numIn.value)||1)) - 1;
+    if(fromIdx !== toIdx){
+      // SWAP the two positions
+      const moved = _editorItems.splice(fromIdx, 1)[0];
+      _editorItems.splice(toIdx, 0, moved);
+      renderEditorList();
+    }
+    return;
+  }
+  const vis = e.target.closest('.editor-vis-toggle');
+  if(vis){ const i=parseInt(vis.dataset.idx); _editorItems[i].visible=vis.checked; renderEditorList(); return; }
+});
+
+/* ── Add items from other sections ── */
+document.getElementById('cardItemAddBtn').addEventListener('click', ()=>{
+  renderItemPickerModal(_editCardId);
+  document.getElementById('itemPickerOverlay').classList.add('open');
+});
+
+function renderItemPickerModal(currentCardId){
+  const searchBox = document.getElementById('itemPickerSearch');
+  searchBox.value = '';
+  renderItemPickerList('');
+  searchBox.oninput = ()=>renderItemPickerList(searchBox.value.toLowerCase());
+}
+
+function renderItemPickerList(query){
+  const container = document.getElementById('itemPickerList');
+  const existingIds = new Set(_editorItems.map(x=>x.id));
+  let html = '';
+  ALL_CARDS.forEach(card=>{
+    const matching = card.items.filter(it=>{
+      if(existingIds.has(it.id)) return false;
+      return !query || it.label.toLowerCase().includes(query) || card.name.toLowerCase().includes(query);
+    });
+    if(!matching.length) return;
+    html += `<div style="font-weight:600; font-size:.78rem; color:var(--teal); margin:10px 0 4px; text-transform:uppercase; letter-spacing:.05em;">${card.name}</div>`;
+    html += matching.map(it=>`
+      <div style="display:flex; align-items:center; gap:8px; padding:5px 8px; border-radius:6px; cursor:pointer; hover:background:#f5f5f5;"
+           class="item-picker-row" data-item-id="${it.id}" data-item-label="${it.label.replace(/"/g,'&quot;')}">
+        <span style="font-size:.84rem;">${it.label}</span>
+        <button type="button" class="solid-btn" style="padding:2px 10px; font-size:.74rem; margin-left:auto;" data-add-item="${it.id}" data-add-label="${it.label.replace(/"/g,'&quot;')}">Legg til</button>
+      </div>`).join('');
+  });
+  // Also show custom test defs
+  const customMatching = customTestDefs.filter(t=>!existingIds.has(t.id)&&(!query||t.label.toLowerCase().includes(query)));
+  if(customMatching.length){
+    html += `<div style="font-weight:600; font-size:.78rem; color:var(--clay); margin:10px 0 4px; text-transform:uppercase; letter-spacing:.05em;">Egendefinerte tester</div>`;
+    html += customMatching.map(it=>`
+      <div style="display:flex; align-items:center; gap:8px; padding:5px 8px; border-radius:6px;">
+        <span style="font-size:.84rem;">${it.label}</span>
+        <button type="button" class="solid-btn" style="padding:2px 10px; font-size:.74rem; margin-left:auto;" data-add-item="${it.id}" data-add-label="${it.label.replace(/"/g,'&quot;')}">Legg til</button>
+      </div>`).join('');
+  }
+  container.innerHTML = html || '<em style="color:var(--ink-muted); font-size:.84rem;">Ingen tester funnet.</em>';
+}
+
+document.getElementById('itemPickerList').addEventListener('click', e=>{
+  const addBtn = e.target.closest('[data-add-item]');
+  if(addBtn){
+    _editorItems.push({id:addBtn.dataset.addItem, label:addBtn.dataset.addLabel, visible:true});
+    renderEditorList();
+    // Remove from picker list
+    const existingIds = new Set(_editorItems.map(x=>x.id));
+    renderItemPickerList(document.getElementById('itemPickerSearch').value.toLowerCase());
+    return;
+  }
+});
+
+/* ── Custom test creator ── */
+document.getElementById('createCustomTestBtn').addEventListener('click', ()=>{
+  document.getElementById('customTestOverlay').classList.add('open');
+  document.getElementById('customTestLabel').value='';
+  document.getElementById('customTestNormal').value='';
+  document.getElementById('customTestAbnormal').value='';
+});
+
+document.getElementById('customTestSaveBtn').addEventListener('click', ()=>{
+  const label   = document.getElementById('customTestLabel').value.trim();
+  const norTxt  = document.getElementById('customTestNormal').value.trim();
+  const abnTxt  = document.getElementById('customTestAbnormal').value.trim();
+  if(!label){ alert('Skriv inn navn på testen.'); return; }
+  const id = 'custom_test_' + Date.now();
+  const def = {
+    id, label, cardId: _editCardId,
+    options:[
+      ...(norTxt ? [{id:'normal',cls:'normal',text:norTxt}] : []),
+      ...(abnTxt ? [{id:'avvik', cls:'abnormal',text:abnTxt}] : [])
+    ]
+  };
+  customTestDefs.push(def);
+  // Also patch into ITEM_INDEX and the card's item list so it works
+  const card = ALL_CARDS.find(c=>c.id===_editCardId);
+  if(card){ def.cardId=card.id; ITEM_INDEX[id]=def; }
+  _editorItems.push({id, label, visible:true});
+  persistCustomTests();
+  renderEditorList();
+  document.getElementById('customTestOverlay').classList.remove('open');
+});
+
+async function persistCustomTests(){ await persist('customTestDefs', customTestDefs); }
+
+/* ── Save editor state to profile ── */
+function collectEditorState(){
+  return {
+    order: _editorItems.map(x=>x.id),
+    hidden: new Set(_editorItems.filter(x=>!x.visible).map(x=>x.id))
+  };
+}
+
+function saveCardItemEdits(overwrite){
+  const {order, hidden} = collectEditorState();
+  let targetProfileId = activeProfileId;
+
+  if(!overwrite || getActiveProfile().builtin){
+    // Always create new profile when overwriting a builtin
+    const base = getActiveProfile();
+    const id = 'custom-' + Date.now();
+    const newProf = { id, name: base.name + ' (tilpasset)', builtin:false, hidden:[...(base.hidden||[])] };
+    customProfiles.push(newProf);
+    activeProfileId = id;
+    targetProfileId = id;
+    persistProfiles(); persistActiveProfile();
+    const pl = document.getElementById('profileList');
+    if(pl){ renderProfileList(); renderTopPresetBar(); renderProfileCheckGroups(); }
+  }
+
+  setItemOverrides(targetProfileId, _editCardId, hidden, order);
+  persistProfileItemOverrides();
+
+  document.getElementById('cardItemEditorOverlay').classList.remove('open');
+
+  const kPanel = document.getElementById('panel-klinisk');
+  const hPanel = document.getElementById('panel-hjernenerver');
+  if(kPanel) buildExamPanel('klinisk');
+  if(hPanel) buildExamPanel('hjernenerver');
+
+  const ol = document.getElementById('orderList');
+  if(ol) renderCardOrderList();
+
+  const status = document.getElementById('cardItemSaveStatus');
+  if(status){ status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600); }
+}
+
+document.getElementById('cardItemSaveNew').addEventListener('click', ()=>saveCardItemEdits(false));
+document.getElementById('cardItemOverwrite').addEventListener('click', ()=>saveCardItemEdits(true));
+
+async function persistProfileItemOverrides(){ await persist('profileItemOverrides', profileItemOverrides); }
+
+/* Export custom tests */
+document.getElementById('exportCustomTestsBtn').addEventListener('click', ()=>{
+  downloadJSON('egne-tester.json', customTestDefs);
+});
+document.getElementById('importCustomTestsBtn').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const arr = JSON.parse(ev.target.result);
+      arr.forEach(t=>{
+        if(!customTestDefs.find(x=>x.id===t.id)){
+          customTestDefs.push(t);
+          if(t.cardId){ const card=ALL_CARDS.find(c=>c.id===t.cardId); if(card) ITEM_INDEX[t.id]=t; }
+        }
+      });
+      persistCustomTests();
+      alert('Importert ' + arr.length + ' tester.');
+    }catch(err){ alert('Feil ved import: ' + err.message); }
+    e.target.value='';
+  };
+  reader.readAsText(file);
+});
+
+/* ── Card item editor end ── */
 function renderCardOrderList(){
   const list = document.getElementById('orderList');
   const cards = getKlinisCardsOrdered();
@@ -2316,7 +2657,7 @@ function renderCardOrderList(){
     const isHidden = hidden.includes(c.id);
     const visIcon = isHidden ? '👁️‍🗨️' : '👁️';
     const visTitle = isHidden ? 'Skjult i aktiv profil — klikk for å vise' : 'Synlig — klikk for å skjule';
-    const editBtn = c.custom ? `<button type="button" class="move-btn" data-edit-section-order="${c.id}" title="Rediger seksjon" style="font-size:.8rem;">✏️</button>` : '';
+    const editBtn = `<button type="button" class="move-btn" data-edit-card-items="${c.id}" title="Rediger innhold og rekkefølge" style="font-size:.8rem;">✏️</button>`;
     return `
     <div class="order-row" style="${isHidden?'opacity:.5;':''}">
       <span class="otag" style="min-width:24px; font-variant-numeric:tabular-nums;">${i+1}.</span>
@@ -2356,7 +2697,14 @@ document.getElementById('orderList').addEventListener('click', e => {
     return;
   }
 
-  // Edit custom section from order list
+  // ── Card item editor ──
+  const editCardBtn = e.target.closest('[data-edit-card-items]');
+  if(editCardBtn){
+    openCardItemEditor(editCardBtn.dataset.editCardItems);
+    return;
+  }
+
+  // Edit custom section (original functionality)
   const editOrderBtn = e.target.closest('[data-edit-section-order]');
   if(editOrderBtn){
     startEditSection(editOrderBtn.dataset.editSectionOrder);
@@ -2625,6 +2973,8 @@ async function persistCardOrder(){ await persist('cardOrder', cardOrder); }
 async function loadPersisted(){
   try{ const v = await load('displaySettings'); if(v) settings = Object.assign(settings, JSON.parse(v)); }catch(e){}
   try{ const v = await load('customProfiles');  if(v) customProfiles = JSON.parse(v); }catch(e){}
+  try{ const v = await load('profileItemOverrides'); if(v) profileItemOverrides = JSON.parse(v); }catch(e){}
+  try{ const v = await load('customTestDefs'); if(v){ customTestDefs = JSON.parse(v); customTestDefs.forEach(t=>{ if(t.cardId){const card=ALL_CARDS.find(c=>c.id===t.cardId);if(card)ITEM_INDEX[t.id]=t;} }); } }catch(e){}
   try{ const v = await load('activeProfileId'); if(v) activeProfileId = v; }catch(e){}
   try{ const v = await load('customSections');  if(v) customSections = JSON.parse(v); }catch(e){}
   try{ const v = await load('cardOrder');       if(v) cardOrder = JSON.parse(v); }catch(e){}
@@ -2633,7 +2983,7 @@ async function loadPersisted(){
 
 async function resetAllSettings(){
   settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14 };
-  customProfiles = [];
+  customProfiles = []; profileItemOverrides = {}; customTestDefs = [];
   activeProfileId = 'alle';
   customSections = [];
   cardOrder = [];
