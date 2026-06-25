@@ -1747,7 +1747,7 @@ function renderItemRowInner(item){
       : '';
     return `<div class="item-label">${item.label}</div>
       <div class="option-group">
-        <button type="button" class="option-btn ${count?'selected abnormal':''} open-item-popup"
+        <button type="button" class="chip ${count?'selected abnormal':''} open-item-popup"
                 data-popup-item="${item.id}"
                 style="min-width:120px;">
           ${count ? 'Vis / rediger' : 'Vis tegn'}${badge}
@@ -2056,7 +2056,7 @@ function renderAbnormalSummary(tabId){
       const itemId = optBtn.dataset.item, optId = optBtn.dataset.option;
       const item = ITEM_INDEX[itemId];
       const clickedOpt = getOption(item, optId);
-      // If this item was auto-activated, clear that tracking since the user is now overriding it
+      if(!clickedOpt) return; // guard: popup trigger or unknown item, clear that tracking since the user is now overriding it
       if(autoActivatedByTab[tabId]) autoActivatedByTab[tabId].delete(itemId);
       activeOptions[itemId] = activeOptions[itemId] || [];
       const idx = activeOptions[itemId].indexOf(optId);
