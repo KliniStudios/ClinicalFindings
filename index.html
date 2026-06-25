@@ -572,6 +572,16 @@
   </div>
 </div>
 
+<!-- Generic item popup modal (for popup:true items like Spesielle abdominale tegn) -->
+<div class="modal-overlay" id="itemPopupOverlay">
+  <div class="modal-box" style="max-width:480px; max-height:80vh; overflow-y:auto;">
+    <button type="button" class="modal-close-x" data-close-modal="itemPopupOverlay">&times;</button>
+    <div class="modal-title" id="itemPopupTitle"></div>
+    <div id="itemPopupContent" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px;"></div>
+    <button type="button" class="modal-close-btn">Lukk</button>
+  </div>
+</div>
+
 <!-- Region name format popup (ortho body-part headers) -->
 <div class="modal-overlay" id="regionFormatOverlay">
   <div class="modal-box" style="max-width:320px;">
@@ -1126,19 +1136,43 @@ const KLINISK = [
   { id:'thorax', tab:'klinisk', num:'4', name:'Thorax', items:[
     { id:'k_thoraxform', label:'Thorax, form', options:[
       {id:'normal', cls:'normal', text:'Normal thoraxform.'},
-      {id:'kyfose', cls:'abnormal', text:'Kyfose.'},
-      {id:'skoliose', cls:'abnormal', text:'Skoliose.'},
-      {id:'pigeon', cls:'abnormal', text:'Trakt-/fuglebryst (pectus excavatum/carinatum).'},
-      {id:'fat_th', cls:'abnormal', text:'Fat-thorax (emfysematøs konfigurasjon).'},
-      {id:'asymmetri_th', cls:'abnormal', text:'Asymmetrisk thorax.'},
-      {id:'avvik_th', cls:'abnormal', text:'Avvikende thoraxform (uspesifisert).'}
+      {id:'avvik', cls:'abnormal',
+        subFields:[{key:'type', type:'chips', multi:true, label:'avvik thoraxform', choices:[
+          {id:'kyfose',      label:'Kyfose'},
+          {id:'skoliose',    label:'Skoliose'},
+          {id:'pigeon',      label:'Trakt-/fuglebryst (pectus excavatum/carinatum)'},
+          {id:'fat_th',      label:'Fat-thorax (emfysematøs konfigurasjon)'},
+          {id:'asymmetri_th',label:'Asymmetrisk thorax'},
+          {id:'usp',         label:'Avvikende form (uspesifisert)'}
+        ]}],
+        template:(L)=> L.type
+          ? (L.type.charAt(0).toUpperCase() + L.type.slice(1) + '.')
+          : 'Avvikende thoraxform.'}
     ]},
     { id:'k_thoraxbev', label:'Thorax, bevegelighet', options:[
       {id:'normal', cls:'normal', text:'Normal thoraksal ekskursjon bilateralt.'},
-      {id:'nedsatt_ekskursjon', cls:'abnormal',
-        subFields:[{key:'side', type:'chips', multi:true, label:'nedsatt ekskursjon', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
-        template:(L)=> L.side ? `Nedsatt thoraksal ekskursjon, ${L.side}.` : 'Nedsatt thoraksal ekskursjon.'},
-      {id:'asymmetrisk_bev', cls:'abnormal', text:'Asymmetrisk thoraksal bevegelighet.'}
+      {id:'avvik', cls:'abnormal',
+        subFields:[
+          {key:'bev', type:'chips', multi:true, label:'avvik bevegelighet', choices:[
+            {id:'nedsatt',     label:'Nedsatt ekskursjon'},
+            {id:'asymmetrisk', label:'Asymmetrisk bevegelighet'}
+          ]},
+          {key:'side', type:'chips', multi:true, label:'side (nedsatt ekskursjon)', choices:[
+            {id:'hoyre',    label:'høyre'},
+            {id:'venstre',  label:'venstre'},
+            {id:'bilat',    label:'bilateralt'}
+          ]}
+        ],
+        template:(L)=>{
+          const parts = [];
+          const bev = L.bev||'';
+          if(bev.toLowerCase().includes('nedsatt'))
+            parts.push(L.side ? `Nedsatt thoraksal ekskursjon, ${L.side}` : 'Nedsatt thoraksal ekskursjon');
+          if(bev.toLowerCase().includes('asymmetrisk'))
+            parts.push('Asymmetrisk thoraksal bevegelighet');
+          if(!parts.length) return bev ? `Avvikende thoraksal bevegelighet (${bev}).` : 'Avvikende thoraksal bevegelighet.';
+          return parts.join('. ') + '.';
+        }}
     ]},
     { id:'k_thoraxpalp', label:'Palpasjon (på indikasjon, f.eks. ved brystsmerter)', options:[
       {id:'normal', cls:'normal', text:'Ikke palpasjonsøm over thorax.'},
@@ -1269,7 +1303,7 @@ const KLINISK = [
         ]}],
         template:(L)=> L.lok ? `Slippømhet i ${L.lok}.` : 'Slippømhet til stede.'}
     ]},
-    { id:'k_spesiell_abd', label:'Spesielle abdominale tegn (?)', options:[
+    { id:'k_spesiell_abd', label:'Spesielle abdominale tegn', popup:true, options:[
       {id:'normal_sp', cls:'normal', text:'Ingen spesielle tegn.'},
       {id:'guarding', cls:'abnormal', text:'Guarding (muskelresistens).'},
       {id:'murphy_t', cls:'abnormal', text:'Positivt Murphy-tegn.'},
@@ -1516,7 +1550,10 @@ function getKlinisCardsOrdered(){
 }
 
 /* ============================== HELPERS ============================== */
-function getOption(item, optId){ return item.options.find(o=>o.id===optId); }
+function getOption(item, optId){
+  if(!item || !item.options) return null;
+  return item.options.find(o=>o.id===optId) || null;
+}
 
 function subFieldValueLabel(sf, val){
   if(sf.type==='number'){
@@ -1619,7 +1656,7 @@ function subFieldHTML(item, opt, sf){
   }
   if(sf.type === 'number'){
     const v = (currentVal===null||currentVal===undefined) ? '' : currentVal;
-    return `<div class="subfield"><div class="subfield-label">${sf.label}</div><input type="number" class="num-input" inputmode="decimal" min="${sf.min!=null?sf.min:0}" max="${sf.max!=null?sf.max:30}" step="${sf.step||0.5}" placeholder="sek" value="${v}" data-item="${item.id}" data-option="${opt.id}" data-field="${sf.key}" /></div>`;
+    return `<div class="subfield"><div class="subfield-label">${sf.label}</div><input type="text" inputmode="decimal" class="num-input" placeholder="–" value="${v}" data-item="${item.id}" data-option="${opt.id}" data-field="${sf.key}" /></div>`;
   }
   if(sf.type === 'direction'){
     const isMulti = !!sf.multi;
@@ -1641,8 +1678,87 @@ function subFieldHTML(item, opt, sf){
   return `<div class="subfield subfield-row"><div class="chip-group">${chips}</div>${labelHtml}</div>`;
 }
 
+/* ── toggleOption: shared logic for activating/deactivating an option ── */
+function toggleOption(item, optId, tabId){
+  if(!item || !item.options) return;
+  tabId = tabId || item.tab || 'klinisk';
+  const clickedOpt = getOption(item, optId);
+  if(!clickedOpt) return;
+  if(autoActivatedByTab[tabId]) autoActivatedByTab[tabId].delete(item.id);
+  activeOptions[item.id] = activeOptions[item.id] || [];
+  const idx = activeOptions[item.id].indexOf(optId);
+  if(idx >= 0){
+    activeOptions[item.id].splice(idx, 1);
+    if(subState[item.id]) delete subState[item.id][optId];
+    if(activeOptions[item.id].length === 0){
+      if(explicitlyClearedByTab[tabId]) explicitlyClearedByTab[tabId].add(item.id);
+    }
+  } else {
+    if(explicitlyClearedByTab[tabId]) explicitlyClearedByTab[tabId].delete(item.id);
+    const clearCls = clickedOpt.cls === 'normal' ? 'abnormal' : 'normal';
+    activeOptions[item.id] = activeOptions[item.id].filter(id => {
+      const o = getOption(item, id);
+      if(o && o.cls === clearCls){ if(subState[item.id]) delete subState[item.id][id]; return false; }
+      return true;
+    });
+    activeOptions[item.id].push(optId);
+  }
+  /* activeOptions lives in memory only — no separate persist needed */
+}
+
+/* ── Item popup: open ── */
+function openItemPopup(itemId){
+  const item = ITEM_INDEX[itemId];
+  if(!item || !item.options) return;
+  renderItemPopup(item);
+  document.getElementById('itemPopupOverlay').classList.add('open');
+}
+
+function renderItemPopup(item){
+  document.getElementById('itemPopupTitle').textContent = item.label;
+  const active = activeOptions[item.id] || [];
+  document.getElementById('itemPopupContent').innerHTML = item.options.map(o=>{
+    const isSel = active.includes(o.id);
+    const label = (o.text||o.id).replace(/\.$/, '');
+    const cls   = o.cls === 'normal' ? '' : 'abnormal';
+    return `<button type="button"
+              class="option-btn ${cls} ${isSel?'selected':''} popup-option-btn"
+              data-item-id="${item.id}" data-option-id="${o.id}"
+              style="text-align:left; min-width:160px;">
+              ${label}
+            </button>`;
+  }).join('');
+}
+
 function renderItemRowInner(item){
   const active = activeOptions[item.id] || [];
+
+  /* ── Popup items: render as a single trigger button ── */
+  if(item.popup){
+    const count = active.length;
+    const summaryParts = active
+      .map(sid=>{ const o=item.options.find(x=>x.id===sid); return o?(o.text||'').replace(/\.$/,''):sid; })
+      .filter(Boolean);
+    const badge = count > 0
+      ? `<span style="background:var(--teal);color:#fff;border-radius:99px;padding:1px 8px;font-size:.72rem;margin-left:6px;">${count}</span>`
+      : '';
+    const summary = summaryParts.length
+      ? `<div style="font-family:'IBM Plex Sans';font-size:.76rem;color:var(--teal);margin-top:4px;padding-left:2px;">${summaryParts.join(' · ')}</div>`
+      : '';
+    return `<div class="item-label">${item.label}</div>
+      <div class="option-group">
+        <button type="button" class="option-btn ${count?'selected abnormal':''} open-item-popup"
+                data-popup-item="${item.id}"
+                style="min-width:120px;">
+          ${count ? 'Vis / rediger' : 'Vis tegn'}${badge}
+        </button>
+      </div>${summary}`;
+  }
+  /* ── Guard against items without options (e.g. incomplete custom defs) ── */
+  if(!item.options || !item.options.length){
+    return `<div class="item-label">${item.label||item.id}</div><div class="option-group"><em style="color:var(--ink-muted);font-size:.8rem;">Ingen alternativer definert.</em></div>`;
+  }
+
   const optsHtml = item.options.map(o => {
     const subVals = (subState[item.id] && subState[item.id][o.id]) || {};
     const label = (o.buttonLabel && active.includes(o.id)) ? o.buttonLabel(subVals) : optionShortLabel(o);
@@ -2810,6 +2926,27 @@ document.getElementById('resetSettingsBtn').addEventListener('click', () => {
 });
 /* ── Global modal close: X buttons + backdrop + Lukk buttons ── */
 document.addEventListener('click', e => {
+  /* ── Item popup: open ── */
+  const popupTrigger = e.target.closest('.open-item-popup');
+  if(popupTrigger){
+    openItemPopup(popupTrigger.dataset.popupItem);
+    return;
+  }
+
+  /* ── Item popup: option click ── */
+  const popupOpt = e.target.closest('.popup-option-btn');
+  if(popupOpt){
+    const itemId = popupOpt.dataset.itemId;
+    const optId  = popupOpt.dataset.optionId;
+    const item   = ITEM_INDEX[itemId];
+    if(!item || !item.options) return;
+    toggleOption(item, optId);
+    renderItemPopup(item);
+    refreshItemRow(itemId);
+    renderNote(item.tab || 'klinisk');
+    return;
+  }
+
   /* Formatting toggles — must be global so they fire from any panel (exam, ortho, etc.) */
   const italicToggle = e.target.closest('.abnormalItalicToggle');
   if(italicToggle){
@@ -2885,7 +3022,41 @@ document.getElementById('openBrukervilkar').addEventListener('click', e => {
   document.getElementById('brukervilkarOverlay').classList.add('open');
 });
 
-/* ── Category name format popup ── */
+/* ── parseNum: accepts both comma and dot as decimal separator ── */
+function parseNum(v){ return parseFloat(String(v||'').trim().replace(',','.')); }
+
+/* ── Global comma→dot interceptor for all numeric inputs ── */
+document.addEventListener('keydown', e => {
+  if(e.key !== ',') return;
+  const el = document.activeElement;
+  if(!el || el.tagName !== 'INPUT') return;
+  e.preventDefault();
+  /* Insert a dot at cursor position */
+  if(typeof el.setRangeText === 'function'){
+    const s = el.selectionStart ?? el.value.length;
+    const en = el.selectionEnd ?? el.value.length;
+    el.setRangeText('.', s, en, 'end');
+  } else {
+    el.value = el.value + '.';
+  }
+  el.dispatchEvent(new Event('input', {bubbles:true}));
+}, false);
+
+/* Also clean on paste */
+document.addEventListener('paste', e => {
+  const el = document.activeElement;
+  if(!el || el.tagName !== 'INPUT') return;
+  const t = (e.clipboardData||window.clipboardData).getData('text');
+  if(/[,]/.test(t)){
+    e.preventDefault();
+    const clean = t.replace(',','.');
+    if(typeof el.setRangeText === 'function'){
+      const s = el.selectionStart ?? 0, en = el.selectionEnd ?? 0;
+      el.setRangeText(clean, s, en, 'end');
+    } else { el.value = el.value + clean; }
+    el.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+}, false);
 function updateRegFmtPreview(){
   const p = document.getElementById('regFmtPreview');
   if(!p) return;
@@ -3208,7 +3379,7 @@ const ekgState = {
 
 function flagNumeric(field, valStr){
   if(valStr===null || valStr===undefined || valStr==='') return null;
-  const num = parseFloat(valStr);
+  const num = parseNum(valStr);
   if(isNaN(num)) return null;
   let max = field.max;
   if(field.key==='qtc'){
@@ -3249,19 +3420,19 @@ function refRangeText(field){
 
 function generateSuggestions(){
   const s = [];
-  const hr = parseFloat(ekgState.hr);
+  const hr = parseNum(ekgState.hr);
   if(!isNaN(hr) && (ekgState.rytme==='sinus' || !ekgState.rytme)){
     if(hr < 60) s.push('Hjertefrekvens under 60/min — vurder sinusbradykardi?');
     if(hr > 100) s.push('Hjertefrekvens over 100/min — vurder sinustakykardi?');
   }
-  const pq = parseFloat(ekgState.pq);
+  const pq = parseNum(ekgState.pq);
   if(!isNaN(pq)){
     if(pq > 200) s.push('Forlenget PR-intervall — vurder AV-blokk grad I?');
     if(pq > 0 && pq < 120) s.push('Kort PR-intervall — vurder pre-eksitasjon (WPW)?');
   }
-  const qrs = parseFloat(ekgState.qrs);
+  const qrs = parseNum(ekgState.qrs);
   if(!isNaN(qrs) && qrs > 120) s.push('Bredt QRS-kompleks — vurder grenblokk eller ventrikulær opprinnelse?');
-  const qtc = parseFloat(ekgState.qtc);
+  const qtc = parseNum(ekgState.qtc);
   if(!isNaN(qtc) && ekgState.kjonn){
     const limBorderline = ekgState.kjonn==='mann' ? 450 : 460;
     const limClear = ekgState.kjonn==='mann' ? 470 : 480;
@@ -3305,7 +3476,7 @@ function ekgNoteText(){
   if(ekgState.qtc){
     const lim = ekgState.kjonn==='mann' ? 470 : ekgState.kjonn==='kvinne' ? 480 : null;
     const borderline = ekgState.kjonn==='mann' ? 450 : ekgState.kjonn==='kvinne' ? 460 : null;
-    const qtcVal = parseFloat(ekgState.qtc);
+    const qtcVal = parseNum(ekgState.qtc);
     let flag = '';
     if(lim && qtcVal > lim) flag = ' (forlenget per ESC 2022, grense ' + lim + ' ms)';
     else if(borderline && qtcVal > borderline) flag = ' (grenseverdi, grense ' + borderline + ' ms)';
@@ -3412,12 +3583,12 @@ function buildEkgPanel(){
         <div class="ekg-calc-grid" style="margin-bottom:16px;">
           <div class="ekg-calc-cell">
             <label>Antall <b>små</b> ruter → ms</label>
-            <input type="number" class="ekg-calc-input" id="calc-small-input" min="0" max="200" step="0.5" placeholder="0" />
+            <input type="text" inputmode="decimal" class="ekg-calc-input" id="calc-small-input" min="0" max="200" step="0.5" placeholder="0" />
             <div class="calc-result" id="calc-small-result">– ms</div>
           </div>
           <div class="ekg-calc-cell">
             <label>Antall <b>store</b> ruter → ms</label>
-            <input type="number" class="ekg-calc-input" id="calc-large-input" min="0" max="40" step="0.5" placeholder="0" />
+            <input type="text" inputmode="decimal" class="ekg-calc-input" id="calc-large-input" min="0" max="40" step="0.5" placeholder="0" />
             <div class="calc-result" id="calc-large-result">– ms</div>
           </div>
         </div>
@@ -3429,17 +3600,17 @@ function buildEkgPanel(){
         <div class="ekg-calc-grid" style="margin-bottom:8px;">
           <div class="ekg-calc-cell">
             <label>RR-intervall (ms) → frekvens</label>
-            <input type="number" class="ekg-calc-input" id="calc-rr-ms" min="200" max="3000" step="1" placeholder="ms" />
+            <input type="text" inputmode="decimal" class="ekg-calc-input" id="calc-rr-ms" min="200" max="3000" step="1" placeholder="ms" />
             <div class="calc-result" id="calc-rr-result">– /min</div>
           </div>
           <div class="ekg-calc-cell">
             <label>Antall <b>store</b> ruter (${largeMs} ms/rute) → frekvens</label>
-            <input type="number" class="ekg-calc-input" id="calc-rr-boxes" min="1" max="15" step="0.5" placeholder="ruter" />
+            <input type="text" inputmode="decimal" class="ekg-calc-input" id="calc-rr-boxes" min="1" max="15" step="0.5" placeholder="ruter" />
             <div class="calc-result" id="calc-rr-boxes-result">– /min</div>
           </div>
           <div class="ekg-calc-cell">
             <label>Antall <b>små</b> ruter (${smallMs} ms/rute) → frekvens</label>
-            <input type="number" class="ekg-calc-input" id="calc-rr-small-boxes" min="1" max="75" step="0.5" placeholder="ruter" />
+            <input type="text" inputmode="decimal" class="ekg-calc-input" id="calc-rr-small-boxes" min="1" max="75" step="0.5" placeholder="ruter" />
             <div class="calc-result" id="calc-rr-small-boxes-result">– /min</div>
           </div>
         </div>
@@ -3449,11 +3620,11 @@ function buildEkgPanel(){
             <div class="ekg-calc-grid">
               <div class="ekg-calc-cell">
                 <label>Antall QRS-komplekser (N)</label>
-                <input type="number" class="ekg-calc-input" id="calc-avg-n" min="2" max="100" step="1" placeholder="N" />
+                <input type="text" inputmode="decimal" class="ekg-calc-input" id="calc-avg-n" min="2" max="100" step="1" placeholder="N" />
               </div>
               <div class="ekg-calc-cell">
                 <label>Total RR-tid (ms)</label>
-                <input type="number" class="ekg-calc-input" id="calc-avg-rr" min="100" max="60000" step="10" placeholder="ms" />
+                <input type="text" inputmode="decimal" class="ekg-calc-input" id="calc-avg-rr" min="100" max="60000" step="10" placeholder="ms" />
               </div>
             </div>
             <div class="calc-result" id="calc-avg-result" style="margin-top:6px;">– /min</div>
@@ -3498,7 +3669,7 @@ function buildEkgPanel(){
     <div class="ekg-field-card"${redStyle} data-field-key="${f.key}">
       <div class="ekg-field-label">${f.label}</div>
       <div class="ekg-field-row">
-        <input type="number" class="ekg-num-input" inputmode="decimal" step="1" placeholder="–" id="ekg-input-${f.key}" data-field="${f.key}" />
+        <input type="text" inputmode="decimal" class="ekg-num-input" step="1" placeholder="–" id="ekg-input-${f.key}" data-field="${f.key}" />
         <span class="ekg-unit">${f.unit}</span>
         <span class="flag-badge" id="ekg-badge-${f.key}" style="display:none;"></span>
       </div>
@@ -3671,12 +3842,12 @@ function attachEkgEvents(){
     if(calcSmall || calcLarge){
       const speed = ekgState.paperSpeed || 50;
       if(calcSmall){
-        const n = parseFloat(calcSmall.value);
+        const n = parseNum(calcSmall.value);
         const res = document.getElementById('calc-small-result');
         if(res) res.textContent = isNaN(n) ? '– ms' : (n * calcBoxMs(speed, false)).toFixed(0) + ' ms';
       }
       if(calcLarge){
-        const n = parseFloat(calcLarge.value);
+        const n = parseNum(calcLarge.value);
         const res = document.getElementById('calc-large-result');
         if(res) res.textContent = isNaN(n) ? '– ms' : (n * calcBoxMs(speed, true)).toFixed(0) + ' ms';
       }
@@ -3685,14 +3856,14 @@ function attachEkgEvents(){
     /* ── HR frequency calculator inputs ── */
     const rrMs = e.target.closest('#calc-rr-ms');
     if(rrMs){
-      const rr = parseFloat(rrMs.value);
+      const rr = parseNum(rrMs.value);
       const res = document.getElementById('calc-rr-result');
       if(res) res.textContent = (!isNaN(rr) && rr > 0) ? Math.round(60000 / rr) + ' /min' : '– /min';
     }
     const rrSmallBoxes = e.target.closest('#calc-rr-small-boxes');
     if(rrSmallBoxes){
       const speed = ekgState.paperSpeed || 50;
-      const boxes = parseFloat(rrSmallBoxes.value);
+      const boxes = parseNum(rrSmallBoxes.value);
       const rrInMs = boxes * calcBoxMs(speed, false); // small boxes
       const res = document.getElementById('calc-rr-small-boxes-result');
       if(res) res.textContent = (!isNaN(boxes) && boxes > 0) ? Math.round(60000 / rrInMs) + ' /min' : '– /min';
@@ -3700,7 +3871,7 @@ function attachEkgEvents(){
     const rrBoxes = e.target.closest('#calc-rr-boxes');
     if(rrBoxes){
       const speed = ekgState.paperSpeed || 50;
-      const boxes = parseFloat(rrBoxes.value);
+      const boxes = parseNum(rrBoxes.value);
       const rrInMs = boxes * calcBoxMs(speed, true); // large boxes default
       const res = document.getElementById('calc-rr-boxes-result');
       if(res) res.textContent = (!isNaN(boxes) && boxes > 0) ? Math.round(60000 / rrInMs) + ' /min' : '– /min';
@@ -3710,8 +3881,8 @@ function attachEkgEvents(){
     if(avgN || avgRR){
       const nEl = panel.querySelector('#calc-avg-n');
       const rrEl = panel.querySelector('#calc-avg-rr');
-      const N = nEl ? parseFloat(nEl.value) : NaN;
-      const totalRR = rrEl ? parseFloat(rrEl.value) : NaN;
+      const N = nEl ? parseNum(nEl.value) : NaN;
+      const totalRR = rrEl ? parseNum(rrEl.value) : NaN;
       const res = document.getElementById('calc-avg-result');
       if(res){
         if(!isNaN(N) && N > 1 && !isNaN(totalRR) && totalRR > 0){
