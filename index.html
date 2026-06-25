@@ -108,6 +108,14 @@
   .chip-btn.selected{background:var(--clay); border-color:var(--clay); color:#fff;}
 
   .dir-grid{display:grid; grid-template-columns:repeat(3,34px); grid-template-rows:repeat(3,34px); gap:4px;}
+  .nihss-detail-toggle{margin:8px 0 0; width:100%; text-align:left; background:none; border:none; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.8rem; color:var(--teal); padding:4px 0;}
+  .nihss-detail-section{margin-top:8px; padding:8px 10px; background:#F6F8FF; border:1px solid var(--border); border-radius:7px; display:none;}
+  .nihss-detail-section.open{display:block;}
+  .nihss-detail-label{font-family:'IBM Plex Sans'; font-size:.72rem; color:var(--ink-muted); margin-bottom:5px; font-weight:600;}
+  .nihss-detail-chips{display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px;}
+  .nihss-detail-chip{font-family:'IBM Plex Sans'; font-size:.75rem; padding:4px 10px; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer; transition:.12s;}
+  .nihss-detail-chip.selected{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .nihss-detail-text{font-family:'IBM Plex Mono'; font-size:.8rem; padding:5px 8px; border-radius:6px; border:1px solid var(--border); width:100%; box-sizing:border-box;}
   .nihss-total-bar{font-family:'IBM Plex Sans'; font-size:.86rem; color:var(--ink); background:#F6E6DC; border-left:3px solid var(--clay); border-radius:4px; padding:8px 12px; margin-bottom:10px;}
   .nihss-total-bar b{font-family:'IBM Plex Mono'; color:var(--clay);}
   .nihss-grid{display:flex; flex-direction:column; gap:14px;}
@@ -495,8 +503,35 @@
       Verktøyet erstatter ikke gjeldende nasjonale faglige retningslinjer, lokale prosedyrer, preparatomtaler, spesialistvurderinger eller oppdatert medisinsk kunnskap. Brukeren skal selv kontrollere relevante medisinske opplysninger og faglige vurderinger mot oppdaterte og relevante kilder før de brukes i pasientbehandling.</p>
       <p><strong>7. Vilkår for bruk</strong><br>
       Ved bruk av verktøyet bekrefter brukeren at verktøyet kun brukes som dokumentasjons- og formatteringsstøtte, at all generert tekst kontrolleres, korrigeres ved behov og godkjennes av brukeren før klinisk bruk, og at kliniske beslutninger ikke baseres utelukkende på verktøyets output.</p>
+      <p><strong>8. Opphavsrett og bruksrettigheter</strong><br>
+      Verktøyet kan brukes gratis til personlig og intern bruk. Det er ikke tillatt å kopiere, republisere, distribuere, selge eller på annen måte utnytte hele eller vesentlige deler av nettsidens originale innhold uten skriftlig tillatelse fra rettighetshaver.</p>
+      <p><strong>9. Donasjoner</strong><br>
+      Frivillige donasjoner mottas med takk og bidrar til drift, vedlikehold og videreutvikling av verktøyet. Donasjoner er frivillige og gir ikke utvidede bruksrettigheter, krav på støtte eller andre særskilte ytelser, med mindre dette uttrykkelig er oppgitt.</p>
     </div>
     <button type="button" class="modal-close-btn" id="brukervilkarClose">Lukk</button>
+  </div>
+</div>
+
+<!-- Region name format popup (ortho body-part headers) -->
+<div class="modal-overlay" id="regionFormatOverlay">
+  <div class="modal-box" style="max-width:320px;">
+    <button type="button" class="modal-close-x" data-close-modal="regionFormatOverlay">&times;</button>
+    <div class="modal-title">Format på kroppsdelnavn</div>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+      <label style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Sans'; font-size:.88rem; cursor:pointer;">
+        <input type="checkbox" id="regFmtBold" style="width:16px;height:16px;" /> <strong>Fet skrift</strong>
+      </label>
+      <label style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Sans'; font-size:.88rem; cursor:pointer;">
+        <input type="checkbox" id="regFmtItalic" style="width:16px;height:16px;" /> <em>Kursiv</em>
+      </label>
+      <label style="display:flex; align-items:center; gap:10px; font-family:'IBM Plex Sans'; font-size:.88rem; cursor:pointer;">
+        <input type="checkbox" id="regFmtUnderline" style="width:16px;height:16px;" /> <u>Understrek</u>
+      </label>
+      <div style="font-family:'IBM Plex Sans'; font-size:.78rem; color:var(--ink-muted); padding:8px; background:#F5F7F7; border-radius:6px;">
+        Forhåndsvisning: <span id="regFmtPreview"><strong>Skulder:</strong></span>
+      </div>
+    </div>
+    <button type="button" class="modal-close-btn">Lukk</button>
   </div>
 </div>
 
@@ -675,7 +710,7 @@ const HJERNENERVER = [
           {id:'reseptiv', label:'reseptiv afasi'},
           {id:'dysartri', label:'dysartri'}
         ]}],
-        template:(L)=> L.type ? `Afasi og/eller dysartri til stede: ${L.type}.` : 'Afasi og/eller dysartri til stede.'}
+        template:(L)=> L.type ? `${L.type.charAt(0).toUpperCase()+L.type.slice(1)}.` : 'Afasi og/eller dysartri til stede.'}
     ]},
     { id:'neuro_nihss', label:'NIHSS', options:[
       {id:'ikke', cls:'normal', text:'NIHSS ikke utført.'},
@@ -1029,17 +1064,21 @@ const KLINISK = [
     ]}
   ]},
   { id:'thorax', tab:'klinisk', num:'4', name:'Thorax', items:[
-    { id:'k_thoraxform', label:'Thorax, form og bevegelighet', options:[
-      {id:'normal', cls:'normal', text:'Normal form og bevegelighet av thorax.'},
+    { id:'k_thoraxform', label:'Thorax, form', options:[
+      {id:'normal', cls:'normal', text:'Normal thoraxform.'},
       {id:'kyfose', cls:'abnormal', text:'Kyfose.'},
       {id:'skoliose', cls:'abnormal', text:'Skoliose.'},
       {id:'pigeon', cls:'abnormal', text:'Trakt-/fuglebryst (pectus excavatum/carinatum).'},
       {id:'fat_th', cls:'abnormal', text:'Fat-thorax (emfysematøs konfigurasjon).'},
       {id:'asymmetri_th', cls:'abnormal', text:'Asymmetrisk thorax.'},
+      {id:'avvik_th', cls:'abnormal', text:'Avvikende thoraxform (uspesifisert).'}
+    ]},
+    { id:'k_thoraxbev', label:'Thorax, bevegelighet', options:[
+      {id:'normal', cls:'normal', text:'Normal thoraksal ekskursjon bilateralt.'},
       {id:'nedsatt_ekskursjon', cls:'abnormal',
         subFields:[{key:'side', type:'chips', multi:true, label:'nedsatt ekskursjon', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}],
         template:(L)=> L.side ? `Nedsatt thoraksal ekskursjon, ${L.side}.` : 'Nedsatt thoraksal ekskursjon.'},
-      {id:'avvik', cls:'abnormal', text:'Avvikende form og/eller bevegelighet (uspesifisert).'}
+      {id:'asymmetrisk_bev', cls:'abnormal', text:'Asymmetrisk thoraksal bevegelighet.'}
     ]},
     { id:'k_thoraxpalp', label:'Palpasjon (på indikasjon, f.eks. ved brystsmerter)', options:[
       {id:'normal', cls:'normal', text:'Ikke palpasjonsøm over thorax.'},
@@ -1059,19 +1098,19 @@ const KLINISK = [
         template:(L)=>{ if(L.pulsdeficit==='med') return 'Regelmessig aksjon, med pulsdeficit, ingen bilyder.'; return 'Regelmessig aksjon, uten pulsdeficit, ingen bilyder.'; }},
       {id:'uregelmessig', cls:'abnormal',
         subFields:[
-          {key:'pulsdeficit', type:'chips', label:'Pulsdeficit', choices:[{id:'uten',label:'uten'},{id:'med',label:'med'}]},
-          {key:'kjent', type:'chips', label:'', choices:[{id:'kjent',label:'kjent fra tidligere'},{id:'ny',label:'nyoppdaget'}]}
+          {key:'kjent', type:'chips', label:'Uregelmessig aksjon', choices:[{id:'kjent',label:'kjent fra tidligere'},{id:'ny',label:'nyoppdaget'}]},
+          {key:'pulsdeficit', type:'chips', label:'Pulsdeficit', choices:[{id:'uten',label:'uten'},{id:'med',label:'med'}]}
         ],
         template:(L)=>{
           let s = 'Uregelmessig aksjon';
-          if(L.pulsdeficit==='med') s += ', med pulsdeficit';
-          if(L.pulsdeficit==='uten') s += ', uten pulsdeficit';
           if(L.kjent) s += ' (' + L.kjent + ')';
+          if(L.pulsdeficit==='med') s += ', med pulsdeficit';
+          else if(L.pulsdeficit==='uten') s += ', uten pulsdeficit';
           return s + '.';
         }},
       {id:'bilyd', cls:'abnormal',
         subFields:[
-          {key:'kjent', type:'chips', label:'', choices:[{id:'kjent',label:'kjent fra tidligere'},{id:'ny',label:'nyoppdaget'}]},
+          {key:'kjent', type:'chips', label:'Bilyd', choices:[{id:'kjent',label:'kjent fra tidligere'},{id:'ny',label:'nyoppdaget'}]},
           {key:'punctum', type:'chips', multi:true, label:'punctum maximum', choices:[{id:'apex',label:'apex'},{id:'erb',label:'Erbs punkt'},{id:'aorta',label:'aortaområdet'},{id:'pulmonal',label:'pulmonalområdet'},{id:'tricuspidal',label:'tricuspidalområdet'}]},
           {key:'grad', type:'chips', label:'Gradering', choices:[{id:'I',label:'I/VI'},{id:'II',label:'II/VI'},{id:'III',label:'III/VI'},{id:'IV',label:'IV/VI'},{id:'V',label:'V/VI'},{id:'VI',label:'VI/VI'}]},
           {key:'utstraling', type:'chips', label:'Utstråling', choices:[{id:'nei',label:'Ingen utstråling'},{id:'ja',label:'Utstråling til stede'}]},
@@ -1343,9 +1382,12 @@ let customSections = []; // [{id, name, itemIds:[...]}] — user-defined klinisk
 let cardOrder = []; // ordered list of klinisk card ids (builtin + custom), user-defined display order
 let editingSectionId = null;
 let noteAbnormalBold = false;
+let nihssDetails = {};        // {itemKey: {chips:[],text:''}}
+let nihssShowDetails = false; // toggle for detail pickers
 let noteAbnormalItalic = false;
 let noteAbnormalUnderline = false;
 let categoryNameFormat = { bold:true, italic:false, underline:false };
+let regionNameFormat   = { bold:true, italic:false, underline:false }; // for ortho body-part headers
 
 function allProfiles(){ return [...BUILTIN_PROFILES, ...customProfiles]; }
 function getActiveProfile(){ return allProfiles().find(p=>p.id===activeProfileId) || BUILTIN_PROFILES[0]; }
@@ -2442,6 +2484,16 @@ document.addEventListener('click', e => {
     renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
     return;
   }
+  const regionFormatBtn = e.target.closest('.openRegionFormatBtn');
+  if(regionFormatBtn){
+    document.getElementById('regFmtBold').checked    = regionNameFormat.bold;
+    document.getElementById('regFmtItalic').checked  = regionNameFormat.italic;
+    document.getElementById('regFmtUnderline').checked = regionNameFormat.underline;
+    updateRegFmtPreview();
+    document.getElementById('regionFormatOverlay').classList.add('open');
+    return;
+  }
+
   const catFormatBtn = e.target.closest('.openCatFormatBtn');
   if(catFormatBtn){
     document.getElementById('catFmtBold').checked = categoryNameFormat.bold;
@@ -2486,6 +2538,27 @@ document.getElementById('openBrukervilkar').addEventListener('click', e => {
 });
 
 /* ── Category name format popup ── */
+function updateRegFmtPreview(){
+  const p = document.getElementById('regFmtPreview');
+  if(!p) return;
+  let s = 'Skulder';
+  if(regionNameFormat.bold)      s = `<strong>${s}</strong>`;
+  if(regionNameFormat.italic)    s = `<em>${s}</em>`;
+  if(regionNameFormat.underline) s = `<u>${s}</u>`;
+  p.innerHTML = s + ':';
+}
+function applyRegFmt(){
+  regionNameFormat.bold      = document.getElementById('regFmtBold').checked;
+  regionNameFormat.italic    = document.getElementById('regFmtItalic').checked;
+  regionNameFormat.underline = document.getElementById('regFmtUnderline').checked;
+  updateRegFmtPreview();
+  if(typeof renderOrthoNote==='function') renderOrthoNote();
+}
+['regFmtBold','regFmtItalic','regFmtUnderline'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('change', applyRegFmt);
+});
+
 function updateCatFormatPreview(){
   const prev = document.getElementById('catFmtPreview');
   if(!prev) return;
@@ -3521,6 +3594,56 @@ function nihssBreakdown(){
   return (subState['neuro_nihss'] && subState['neuro_nihss']['utfort'] && subState['neuro_nihss']['utfort']['breakdown']) || {};
 }
 
+/* ── NIHSS detail definitions ── */
+const NIHSS_DETAIL_DEFS = {
+  '1b': {
+    label: '1b — Tilleggsdetaljer',
+    chips: [{key:'feil', multi:true, label:'Feil ved', choices:[{id:'maaned',label:'Måneden'},{id:'alder',label:'Alderen'}]}],
+    text: {key:'svar', label:'Pasientens svar (valgfritt)'}
+  },
+  '1c': {
+    label: '1c — Tilleggsdetaljer',
+    chips: [{key:'bommet', multi:true, label:'Bommet på', choices:[{id:'oyne',label:'Åpne/lukke øyne'},{id:'hand',label:'Knytte/åpne hånd'}]}]
+  },
+  '2': {
+    label: '2 — Tilleggsdetaljer',
+    chips: [
+      {key:'side', multi:true, label:'Side', choices:[{id:'hoyre',label:'Høyre →'},{id:'venstre',label:'← Venstre'},{id:'begge',label:'Begge'}]},
+      {key:'type', multi:false, label:'Type', choices:[{id:'partiell',label:'Partiell parese'},{id:'tvungen',label:'Tvungen deviasjon'},{id:'cn_parese',label:'CN III/IV/VI parese'}]}
+    ]
+  },
+  '5a': {label:'5a — Tilleggsdetaljer', chips:[{key:'drift',multi:false,label:'Drift/fall', choices:[{id:'raskt',label:'Raskt fall'},{id:'sakte',label:'Langsomt fall'},{id:'ingen_bev',label:'Ingen bevegelse'}]}]},
+  '5b': {label:'5b — Tilleggsdetaljer', chips:[{key:'drift',multi:false,label:'Drift/fall', choices:[{id:'raskt',label:'Raskt fall'},{id:'sakte',label:'Langsomt fall'},{id:'ingen_bev',label:'Ingen bevegelse'}]}]},
+  '7': {
+    label: '7 — Tilleggsdetaljer',
+    chips: [{key:'ext', multi:true, label:'Berørte ekstremiteter', choices:[{id:'h_arm',label:'Høyre arm'},{id:'v_arm',label:'Venstre arm'},{id:'h_ben',label:'Høyre ben'},{id:'v_ben',label:'Venstre ben'}]}]
+  },
+  '8': {
+    label: '8 — Tilleggsdetaljer',
+    chips: [{key:'lok', multi:true, label:'Lokalisasjon', choices:[{id:'h_arm',label:'Høyre arm'},{id:'v_arm',label:'Venstre arm'},{id:'h_ben',label:'Høyre ben'},{id:'v_ben',label:'Venstre ben'},{id:'h_ans',label:'Ansikt høyre'},{id:'v_ans',label:'Ansikt venstre'}]}]
+  },
+  '11': {
+    label: '11 — Tilleggsdetaljer',
+    chips: [{key:'mod', multi:true, label:'Modalitet', choices:[{id:'visuell',label:'Visuell'},{id:'taktil',label:'Taktil'},{id:'auditiv',label:'Auditiv'},{id:'romlig',label:'Romlig/personlig'}]}]
+  }
+};
+
+function nihssDetailText(key){
+  const det = nihssDetails[key];
+  if(!det) return '';
+  const def = NIHSS_DETAIL_DEFS[key];
+  if(!def) return '';
+  const parts = [];
+  (def.chips||[]).forEach(cf=>{
+    const val = det[cf.key];
+    if(!val || !val.length) return;
+    const labels = val.map(v=>{const c=cf.choices.find(x=>x.id===v);return c?c.label:v;});
+    parts.push(labels.join(', '));
+  });
+  if(def.text && det[def.text.key]) parts.push(det[def.text.key]);
+  return parts.length ? '(' + parts.join('; ') + ')' : '';
+}
+
 function nihssOutputText(){
   const bd = nihssBreakdown();
   const lines = [];
@@ -3532,15 +3655,49 @@ function nihssOutputText(){
       scoreLabel = '– ikke skåret –';
     } else {
       const choice = it.choices.find(c=>c.score===sel);
-      scoreLabel = `${sel} – ${choice ? choice.label : ''}`;
+      scoreLabel = `${sel}: ${choice ? choice.label : ''}`;
+      const detailStr = nihssShowDetails ? nihssDetailText(it.key) : '';
+      if(detailStr) scoreLabel += ' ' + detailStr;
       anyScored = true;
       if(sel !== 'UN') total += parseInt(sel,10);
     }
     lines.push(`${it.label}: ${scoreLabel}`);
   });
   lines.push('');
-  lines.push(anyScored ? `Totalskår: ${total} av maksimalt 42 poeng` : 'Totalskår: ikke beregnet — ingen punkter skåret ennå.');
+  lines.push(anyScored ? `NIHSS totalskår: ${total} poeng` : 'Totalskår: ikke beregnet — ingen punkter skåret ennå.');
   return lines.join('\n');
+}
+
+function renderNihssDetails(){
+  const container = document.getElementById('nihss-detail-container');
+  if(!container) return;
+  if(!nihssShowDetails){ container.innerHTML=''; return; }
+  const bd = nihssBreakdown();
+  let html = '<div style="font-family:\'IBM Plex Sans\'; font-size:.8rem; color:var(--ink-muted); margin-bottom:8px;">Tilleggsdetaljer vises i parentes i resultatfeltet.</div>';
+  NIHSS_ITEMS.forEach(it=>{
+    const def = NIHSS_DETAIL_DEFS[it.key];
+    if(!def) return;
+    const sel = bd[it.key];
+    if(!sel || sel==='' || sel==='0') return; // only show when non-zero score
+    const det = nihssDetails[it.key] || {};
+    let fieldsHtml = '';
+    (def.chips||[]).forEach(cf=>{
+      const curVals = det[cf.key] || [];
+      const btns = cf.choices.map(c=>{
+        const isSel = cf.multi ? curVals.includes(c.id) : (det[cf.key]===c.id);
+        return `<button type="button" class="nihss-detail-chip ${isSel?'selected':''}" data-dkey="${it.key}" data-dfield="${cf.key}" data-dval="${c.id}" data-dmulti="${cf.multi?'1':'0'}">${c.label}</button>`;
+      }).join('');
+      fieldsHtml += `<div class="nihss-detail-label">${cf.label}</div><div class="nihss-detail-chips">${btns}</div>`;
+    });
+    if(def.text){
+      fieldsHtml += `<div class="nihss-detail-label">${def.text.label}</div><input type="text" class="nihss-detail-text" data-dtkey="${it.key}" data-dtfield="${def.text.key}" value="${det[def.text.key]||''}" placeholder="skriv inn..." />`;
+    }
+    html += `<div style="margin-bottom:10px; padding:8px; background:#F6F8FF; border:1px solid var(--border); border-radius:7px;">
+      <div style="font-weight:600; font-size:.8rem; margin-bottom:6px; color:var(--ink);">${it.label}</div>
+      ${fieldsHtml}
+    </div>`;
+  });
+  container.innerHTML = html || '<div style="color:var(--ink-muted); font-size:.8rem;">Sett poengsum ≥1 på et punkt for å se tilleggsdetaljer.</div>';
 }
 
 function renderNihssCalc(){
@@ -3552,10 +3709,50 @@ function renderNihssCalc(){
   container.innerHTML = subFieldHTML(item, opt, sf);
 }
 
+function nihssAbnText(){
+  const bd = nihssBreakdown();
+  const parts = [];
+  NIHSS_ITEMS.forEach(it=>{
+    const sel = bd[it.key];
+    if(!sel || sel==='0' || sel==='' || sel===null || sel===undefined) return;
+    if(sel==='UN'){ parts.push(`${it.label}: ikke testbart`); return; }
+    const choice = it.choices.find(c=>c.score===sel);
+    const detStr = nihssShowDetails ? nihssDetailText(it.key) : '';
+    parts.push(`${it.label}: ${sel} – ${choice?choice.label:''}${detStr?' '+detStr:''}`);
+  });
+  return parts.join('\n') || '(ingen avvikende funn registrert)';
+}
+
+function nihssOutputHTML(){
+  /* Rich HTML for copy-with-formatting */
+  const bd = nihssBreakdown();
+  const lines = [];
+  let total = 0, anyScored = false;
+  NIHSS_ITEMS.forEach(it=>{
+    const sel = bd[it.key];
+    let scoreLabel;
+    if(!sel || sel===''){ scoreLabel = '<em style="color:#888">– ikke skåret –</em>'; }
+    else {
+      const choice = it.choices.find(c=>c.score===sel);
+      const detStr = nihssShowDetails ? nihssDetailText(it.key) : '';
+      const isAbn = sel!=='0' && sel!=='';
+      let txt = `${sel}: ${choice?choice.label:''}${detStr?' '+detStr:''}`;
+      if(isAbn) txt = styledPart(txt,'abnormal');
+      scoreLabel = txt; anyScored=true;
+      if(sel!=='UN') total+=parseInt(sel,10);
+    }
+    lines.push(`${it.label}: ${scoreLabel}`);
+  });
+  lines.push('');
+  lines.push(anyScored?`NIHSS totalskår: <b>${total}</b> poeng`:'Totalskår: ikke beregnet.');
+  return lines.join('<br>');
+}
+
 function renderNihssOutput(){
   const body = document.getElementById('nihss-output-body');
-  if(!body) return;
-  body.textContent = nihssOutputText();
+  if(body) body.textContent = nihssOutputText();
+  const abn = document.getElementById('nihss-abn-body');
+  if(abn) abn.textContent = nihssAbnText();
 }
 
 function refreshNihssTabIfBuilt(){
@@ -3588,67 +3785,155 @@ function buildNihssTab(){
       </section>
 
       <aside class="note-panel">
+        <div class="exam-toolbar" style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+          <div class="toggle-wrap">
+            <label class="switch">
+              <input type="checkbox" class="abnormalItalicToggle" id="nihss-italic-toggle"/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik kursiv</span>
+            <label class="switch" style="margin-left:10px;">
+              <input type="checkbox" class="abnormalBoldToggle" id="nihss-bold-toggle"/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik fet</span>
+            <label class="switch" style="margin-left:10px;">
+              <input type="checkbox" class="abnormalUnderlineToggle" id="nihss-underline-toggle"/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik understrek</span>
+          </div>
+        </div>
         <div class="note-head">
           <div class="note-title">NIHSS-resultat</div>
         </div>
-        <div class="note-body" id="nihss-output-body"></div>
-        <div class="note-foot">
-          <button class="solid-btn copyBtn" id="nihss-copy-btn">Kopier resultat</button>
+        <div class="note-body" id="nihss-output-body" style="white-space:pre-wrap;"></div>
+        <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
+          <button class="solid-btn" id="nihss-copy-btn">Kopier resultat</button>
+          <button class="ghost-btn" id="nihss-copy-rich-btn" style="font-size:.78rem;">Kopier med formatering</button>
           <span class="copy-status" id="nihss-copy-status">Kopiert ✓</span>
         </div>
         <div class="note-divider"></div>
+        <div class="note-title" style="font-size:.82rem; margin-bottom:6px;">Avvikende funn</div>
+        <div id="nihss-abn-body" style="font-family:'IBM Plex Mono'; font-size:.82rem; color:var(--ink); min-height:28px; white-space:pre-wrap;"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="ghost-btn" id="nihss-copy-abn-btn" style="font-size:.78rem;">Kopier avvikende funn</button>
+          <span class="copy-status" id="nihss-copy-abn-status">Kopiert ✓</span>
+        </div>
+        <div class="note-divider"></div>
+        <button class="ghost-btn" id="nihss-detail-toggle-btn" style="width:100%; text-align:left; color:var(--teal); font-size:.8rem;">▶ Legg til tilleggsdetaljer</button>
+        <div id="nihss-detail-container" style="margin-top:8px;"></div>
+        <div class="note-divider" style="margin-top:12px;"></div>
         <button class="ghost-btn" id="nihss-reset-btn">Tilbakestill NIHSS</button>
       </aside>
     </main>
   `;
   renderNihssCalc();
   renderNihssOutput();
+  renderNihssDetails();
   attachNihssTabEvents();
+  /* Sync formatting toggles */
+  ['abnormalItalicToggle','abnormalBoldToggle','abnormalUnderlineToggle'].forEach(cls=>{
+    const el = document.getElementById('nihss-'+cls.replace('abnormal','').replace('Toggle','')+'-toggle');
+    if(el){
+      const map={ItalicToggle:()=>noteAbnormalItalic,BoldToggle:()=>noteAbnormalBold,UnderlineToggle:()=>noteAbnormalUnderline};
+      el.checked = map[cls.replace('abnormal','')]();
+    }
+  });
 }
 
 function attachNihssTabEvents(){
   const panel = document.getElementById('panel-nihss');
+
+  function reRenderAll(){
+    renderNihssCalc(); renderNihssOutput(); renderNihssDetails();
+    if(document.querySelector('.item-row[data-item-id="neuro_nihss"]')){
+      refreshItemRow('neuro_nihss'); renderNote('hjernenerver');
+    }
+  }
+
   panel.addEventListener('click', e => {
     const nihssBtn = e.target.closest('.nihss-score-btn');
     if(nihssBtn){
       applyNihssScore(nihssBtn.dataset.item, nihssBtn.dataset.option, nihssBtn.dataset.field, nihssBtn.dataset.nkey, nihssBtn.dataset.score);
-      renderNihssCalc();
-      renderNihssOutput();
-      if(document.querySelector('.item-row[data-item-id="neuro_nihss"]')){
-        refreshItemRow('neuro_nihss');
-        renderNote('hjernenerver');
-      }
-      return;
+      reRenderAll(); return;
     }
 
+    /* Detail chip toggle */
+    const detChip = e.target.closest('.nihss-detail-chip');
+    if(detChip){
+      const {dkey, dfield, dval, dmulti} = detChip.dataset;
+      nihssDetails[dkey] = nihssDetails[dkey] || {};
+      if(dmulti==='1'){
+        const arr = nihssDetails[dkey][dfield] || [];
+        const idx = arr.indexOf(dval);
+        if(idx>=0) arr.splice(idx,1); else arr.push(dval);
+        nihssDetails[dkey][dfield] = arr;
+      } else {
+        nihssDetails[dkey][dfield] = nihssDetails[dkey][dfield]===dval ? null : dval;
+      }
+      renderNihssDetails(); renderNihssOutput(); return;
+    }
+
+    /* Detail toggle button */
+    const detToggle = e.target.closest('#nihss-detail-toggle-btn');
+    if(detToggle){
+      nihssShowDetails = !nihssShowDetails;
+      detToggle.textContent = (nihssShowDetails?'▼':'▶') + ' Legg til tilleggsdetaljer';
+      renderNihssDetails(); renderNihssOutput(); return;
+    }
+
+    /* Plain copy */
     const copyBtn = e.target.closest('#nihss-copy-btn');
     if(copyBtn){
       const text = nihssOutputText();
       const status = document.getElementById('nihss-copy-status');
-      (async () => {
+      (async()=>{
         try{ await navigator.clipboard.writeText(text); }
-        catch(err){
-          const ta = document.createElement('textarea');
-          ta.value = text; document.body.appendChild(ta); ta.select();
-          document.execCommand('copy'); document.body.removeChild(ta);
-        }
-        status.classList.add('show');
-        setTimeout(()=>status.classList.remove('show'), 1600);
-      })();
-      return;
+        catch(err){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+        status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600);
+      })(); return;
+    }
+
+    /* Rich copy */
+    const richBtn = e.target.closest('#nihss-copy-rich-btn');
+    if(richBtn){
+      const html = nihssOutputHTML();
+      const status = document.getElementById('nihss-copy-status');
+      copyWithRichText(html, nihssOutputText(), status); return;
+    }
+
+    /* Abn copy */
+    const abnBtn = e.target.closest('#nihss-copy-abn-btn');
+    if(abnBtn){
+      const text = nihssAbnText();
+      const status = document.getElementById('nihss-copy-abn-status');
+      (async()=>{
+        try{ await navigator.clipboard.writeText(text); }
+        catch(err){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+        status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600);
+      })(); return;
     }
 
     const resetBtn = e.target.closest('#nihss-reset-btn');
     if(resetBtn){
       subState['neuro_nihss'] = subState['neuro_nihss'] || {};
       subState['neuro_nihss']['utfort'] = { breakdown: {} };
-      renderNihssCalc();
-      renderNihssOutput();
-      if(document.querySelector('.item-row[data-item-id="neuro_nihss"]')){
-        refreshItemRow('neuro_nihss');
-        renderNote('hjernenerver');
-      }
-      return;
+      nihssDetails = {}; nihssShowDetails = false;
+      const detToggleBtn = document.getElementById('nihss-detail-toggle-btn');
+      if(detToggleBtn) detToggleBtn.textContent = '▶ Legg til tilleggsdetaljer';
+      reRenderAll(); return;
+    }
+  });
+
+  /* Detail text inputs */
+  panel.addEventListener('input', e => {
+    const dtInput = e.target.closest('.nihss-detail-text');
+    if(dtInput){
+      const {dtkey, dtfield} = dtInput.dataset;
+      nihssDetails[dtkey] = nihssDetails[dtkey] || {};
+      nihssDetails[dtkey][dtfield] = dtInput.value;
+      renderNihssOutput(); return;
     }
   });
 }
@@ -3881,6 +4166,14 @@ function orthoNoteData(){
   return out;
 }
 
+function formatRegionName(name){
+  let s = name;
+  if(regionNameFormat.bold)      s = `<strong>${s}</strong>`;
+  if(regionNameFormat.italic)    s = `<em>${s}</em>`;
+  if(regionNameFormat.underline) s = `<u>${s}</u>`;
+  return s + ':';
+}
+
 function renderOrthoNote(){
   const body = document.getElementById('ortho-note-body');
   if(!body) return;
@@ -3890,12 +4183,13 @@ function renderOrthoNote(){
     return;
   }
   body.innerHTML = data.map(sec=>{
-    const header = sec.showLabel ? `${sec.regionName}, ${sec.sideLabel}:` : `${sec.regionName}:`;
+    const rawHeader = sec.showLabel ? `${sec.regionName}, ${sec.sideLabel}` : sec.regionName;
+    const header = formatRegionName(rawHeader);
     const domLines = sec.domains.map(d=>{
       const partsHtml = d.parts.map(p=>styledPart(p.text, p.cls)).join('. ');
       return `<span class="nline" style="display:block;padding-left:16px;margin-bottom:2px;">${formatCategoryName(d.name)} ${partsHtml}.</span>`;
     }).join('');
-    return `<span class="nline" style="display:block;font-weight:600;margin-top:8px;">${header}</span>${domLines}`;
+    return `<span class="nline" style="display:block;margin-top:8px;">${header}</span>${domLines}`;
   }).join('');
 }
 
@@ -3905,6 +4199,18 @@ function orthoPlainText(){
     const domLines = sec.domains.map(d=>`  ${d.name}: ${d.parts.map(p=>p.text).join('. ')}.`).join('\n');
     return `${header}\n${domLines}`;
   }).join('\n\n');
+}
+
+function htmlOrthoText(){
+  return orthoNoteData().map(sec=>{
+    const rawHeader = sec.showLabel ? `${sec.regionName}, ${sec.sideLabel}` : sec.regionName;
+    const header = formatRegionName(rawHeader);
+    const domLines = sec.domains.map(d=>{
+      const partsHtml = d.parts.map(p=>styledPart(p.text, p.cls)).join('. ');
+      return `<div style="padding-left:16px">${formatCategoryName(d.name)} ${partsHtml}.</div>`;
+    }).join('');
+    return `<div>${header}</div>${domLines}`;
+  }).join('<br>');
 }
 
 /* Only abnormal general findings + non-normal movements, as one line */
@@ -4076,7 +4382,8 @@ function buildOrthoPanel(){
               <span class="slider"></span>
             </label>
             <span class="toggle-label">Avvik understrek</span>
-            <button type="button" class="ghost-btn openCatFormatBtn" style="margin-left:10px; font-size:.76rem; padding:5px 10px;">Aa kategorinavn ▾</button>
+            <button type="button" class="ghost-btn openCatFormatBtn" style="margin-left:10px; font-size:.76rem; padding:5px 10px;" title="Format undersøkelsesnavn (Inspeksjon:, Palpasjon: osv.)">Aa undersøkelse ▾</button>
+            <button type="button" class="ghost-btn openRegionFormatBtn" style="margin-left:6px; font-size:.76rem; padding:5px 10px;" title="Format kroppsdelnavn (Skulder:, Kne: osv.)">Aa kroppsdel ▾</button>
           </div>
         </div>
         <div class="note-head"><div class="note-title">Notat</div></div>
@@ -4124,9 +4431,9 @@ function buildOrthoPanel(){
 
     const copyBtn = e.target.closest('#ortho-copy-btn');
     if(copyBtn){
-      const text=orthoPlainText(); const status=document.getElementById('ortho-copy-status');
-      (async()=>{ try{await navigator.clipboard.writeText(text);}catch(err){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
-        status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600); })();
+      const html=htmlOrthoText(); const plain=orthoPlainText();
+      const status=document.getElementById('ortho-copy-status');
+      copyWithRichText(html, plain, status);
       return;
     }
 
