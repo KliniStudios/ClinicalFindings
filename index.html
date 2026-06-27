@@ -405,6 +405,69 @@
       </div>
 
       <div class="settings-card">
+        <h2>Kopiering og formatering</h2>
+        <div class="storage-note" style="margin:0 0 16px; padding:0; border:none;">
+          Velg kopieringsmetode og avvik-stil. Velg <strong>DOM-utvalg</strong> for best kompatibilitet med WordPad, LibreOffice og de fleste EPJ-systemer. <strong>ClipboardItem</strong> fungerer best i nyere Word og Google Docs.
+        </div>
+
+        <div class="field-row">
+          <label>Kopieringsmetode</label>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyMethod" id="copyMethodDom" value="dom" style="margin-top:2px;" />
+              <span><strong>DOM-utvalg (anbefalt)</strong> — bruker nettleserens innebygde kopiering. Beste kompatibilitet med WordPad, LibreOffice, eldre EPJ-systemer og Office.</span>
+            </label>
+            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyMethod" id="copyMethodApi" value="api" style="margin-top:2px;" />
+              <span><strong>ClipboardItem API</strong> — moderne metode. Fungerer i Chrome/Edge + Word og Google Docs, men kan feile i noen miljøer.</span>
+            </label>
+            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyMethod" id="copyMethodAuto" value="auto" style="margin-top:2px;" />
+              <span><strong>Automatisk</strong> — prøver DOM-utvalg, faller tilbake på ClipboardItem, deretter ren tekst.</span>
+            </label>
+            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyMethod" id="copyMethodPlain" value="plain" style="margin-top:2px;" />
+              <span><strong>Alltid ren tekst</strong> — ingen formatering kopieres, kun tekst. Fungerer overalt.</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-row" style="margin-top:18px;">
+          <label>Avvik-stil i kopiert tekst</label>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyAbnStyle" id="copyAbnStyleHtml" value="html" />
+              <span><strong>HTML</strong> — <strong>fet</strong> / <em>kursiv</em> / <u>understrek</u> via HTML-tagger. Støttet av Word, Google Docs, mange EPJ.</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyAbnStyle" id="copyAbnStyleMarkdown" value="markdown" />
+              <span><strong>Markdown</strong> — <code>**fet**</code> / <code>*kursiv*</code> / <code>__understrek__</code>. Synlig i Markdown-editorer.</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyAbnStyle" id="copyAbnStylePrefix" value="prefix" />
+              <span><strong>Prefiks</strong> — tekst foran hvert avvikende funn:</span>
+              <input type="text" id="copyAbnPrefixInput" placeholder="f.eks. ▶ " style="font-family:'IBM Plex Mono'; font-size:.82rem; padding:3px 8px; border:1px solid var(--border); border-radius:5px; width:90px;" />
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyAbnStyle" id="copyAbnStyleCaps" value="caps" />
+              <span><strong>Store bokstaver</strong> — avvikende funn skrives med STORE BOKSTAVER.</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyAbnStyle" id="copyAbnStyleNone" value="none" />
+              <span><strong>Ingen</strong> — ren tekst uten noen avvik-markering.</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-row" style="margin-top:14px;">
+          <label style="font-family:'IBM Plex Sans'; font-size:.8rem; color:var(--ink-muted);">Forhåndsvisning avvik-stil:</label>
+          <div id="copyStylePreview" style="font-family:'IBM Plex Sans'; font-size:.87rem; margin-top:6px; padding:8px 12px; background:#F5F7F7; border-radius:7px; border:1px solid var(--border);">
+            Normalfunn. <span id="copyStylePreviewAbn">Avvikende funn her.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card">
         <h2>Eksporter / importer</h2>
         <div class="field-row">
           <label>Innstillinger (skrift)</label>
@@ -1479,7 +1542,7 @@ let includeAllByTab = { hjernenerver:false, klinisk:false };
 let autoActivatedByTab = { hjernenerver:new Map(), klinisk:new Map() }; // itemId → optId
 let explicitlyClearedByTab = { hjernenerver:new Set(), klinisk:new Set() }; // items user has explicitly emptied
 let activeMainTab = 'hjernenerver';
-let settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14 };
+let settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14, copyMethod:'dom', copyAbnStyle:'html', copyAbnPrefix:'[AVVIK] ' };
 let customProfiles = [];
 let profileItemOverrides = {}; // {profileId: {cardId: {hidden:Set<itemId>, order:[itemId,...]}}}
 
@@ -1943,57 +2006,110 @@ function plainNoteTextStyled(tabId){
   return lines.map(l => `${l.num?l.num+'. ':''}${l.name}: ${l.parts.map(p=>styledPartPlain(p.text,p.cls)).join(' ')}`).join('\n');
 }
 
+/* ── Copy-time styling: respects settings.copyAbnStyle ── */
+function copyStyledPart(text, cls){
+  if(cls !== 'abnormal') return text;
+  const style = settings.copyAbnStyle || 'html';
+  switch(style){
+    case 'html': {
+      let s = text;
+      if(noteAbnormalBold)      s = '<strong>'+s+'</strong>';
+      if(noteAbnormalItalic)    s = '<em>'+s+'</em>';
+      if(noteAbnormalUnderline) s = '<u>'+s+'</u>';
+      return s;
+    }
+    case 'markdown': {
+      let s = text;
+      if(noteAbnormalBold)      s = '**'+s+'**';
+      if(noteAbnormalItalic)    s = '*'+s+'*';
+      if(noteAbnormalUnderline) s = '__'+s+'__';
+      return s;
+    }
+    case 'prefix':
+      return (settings.copyAbnPrefix || '[AVVIK] ') + text;
+    case 'caps':
+      return text.toUpperCase();
+    case 'none':
+    default:
+      return text;
+  }
+}
+
+/* Regenerate copy-HTML using copyStyledPart (may differ from display styledPart) */
+function buildCopyHTML(tabId){
+  const lines = noteLinesForTab(tabId);
+  return lines.lines.map(line=>{
+    const catHtml = formatCategoryName(line.name);
+    const partsHtml = line.parts.map(p=>copyStyledPart(p.text, p.cls)).join(' ');
+    return '<div>'+catHtml+' '+partsHtml+'</div>';
+  }).join('\n');
+}
+
 async function copyWithRichText(htmlContent, plainText, statusEl){
-  /* Extract body content from full HTML doc string */
-  const bodyMatch = htmlContent.match(/<body>([\s\S]*?)<\/body>/i);
-  const bodyHtml = bodyMatch ? bodyMatch[1] : htmlContent;
+  const method = settings.copyMethod || 'dom';
+
+  /* For plain method, always skip formatting */
+  if(method === 'plain'){
+    try{ await navigator.clipboard.writeText(plainText); }catch(e){
+      const ta=document.createElement('textarea');ta.value=plainText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    }
+    if(statusEl){statusEl.classList.add('show');setTimeout(()=>statusEl.classList.remove('show'),1600);}
+    return;
+  }
+
+  /* For markdown/prefix/caps styles, wrap in <pre> so structure is preserved */
+  const needsMarkdown = (settings.copyAbnStyle==='markdown' || settings.copyAbnStyle==='prefix' || settings.copyAbnStyle==='caps' || settings.copyAbnStyle==='none');
+  const htmlToSend = needsMarkdown
+    ? `<pre style="font-family:inherit;white-space:pre-wrap;">${plainText}</pre>`
+    : htmlContent;
+
+  const bodyMatch = htmlToSend.match(/<body>([\s\S]*?)<\/body>/i);
+  const bodyHtml = bodyMatch ? bodyMatch[1] : htmlToSend;
 
   let ok = false;
 
-  /* Method 1: render HTML in a contenteditable div, select it, execCommand copy.
-     This is the most reliable method for sandboxed iframes and produces a clipboard
-     entry Word/Google Docs can read with bold/italic/underline intact. */
-  try{
-    const div = document.createElement('div');
-    div.innerHTML = bodyHtml;
-    div.setAttribute('contenteditable', 'true');
-    div.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;white-space:pre-wrap;';
-    document.body.appendChild(div);
-    div.focus();
-    const range = document.createRange();
-    range.selectNodeContents(div);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-    ok = document.execCommand('copy');
-    sel.removeAllRanges();
-    document.body.removeChild(div);
-  }catch(e){ ok = false; }
-
-  /* Method 2: modern ClipboardItem API (Chrome 76+, needs focus + permission) */
-  if(!ok){
+  /* DOM-selection method — best compatibility (WordPad, LibreOffice, EPJ) */
+  const tryDom = async ()=>{
     try{
-      if(navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined'){
-        const hBlob = new Blob([htmlContent], {type:'text/html'});
-        const tBlob = new Blob([plainText], {type:'text/plain'});
-        await navigator.clipboard.write([new ClipboardItem({'text/html':hBlob,'text/plain':tBlob})]);
-        ok = true;
-      }
-    }catch(e){ ok = false; }
-  }
+      const div = document.createElement('div');
+      div.innerHTML = bodyHtml;
+      div.setAttribute('contenteditable','true');
+      div.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;white-space:pre-wrap;';
+      document.body.appendChild(div);
+      div.focus();
+      const range=document.createRange(); range.selectNodeContents(div);
+      const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      ok=document.execCommand('copy');
+      sel.removeAllRanges(); document.body.removeChild(div);
+    }catch(e){ ok=false; }
+  };
 
-  /* Method 3: plain text fallback */
+  /* ClipboardItem API method — modern, Word + Google Docs */
+  const tryApi = async ()=>{
+    try{
+      if(navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem!=='undefined'){
+        const hBlob=new Blob([htmlToSend],{type:'text/html'});
+        const tBlob=new Blob([plainText],{type:'text/plain'});
+        await navigator.clipboard.write([new ClipboardItem({'text/html':hBlob,'text/plain':tBlob})]);
+        ok=true;
+      }
+    }catch(e){ ok=false; }
+  };
+
+  if(method==='dom')        { await tryDom(); if(!ok) await tryApi(); }
+  else if(method==='api')   { await tryApi(); if(!ok) await tryDom(); }
+  else /* auto */           { await tryDom(); if(!ok) await tryApi(); }
+
+  /* Last resort plain text */
   if(!ok){
-    try{ await navigator.clipboard.writeText(plainText); ok=true; }
-    catch(e){
-      const ta=document.createElement('textarea'); ta.value=plainText;
-      document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); document.body.removeChild(ta); ok=true;
+    try{ await navigator.clipboard.writeText(plainText); }catch(e){
+      const ta=document.createElement('textarea');ta.value=plainText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
     }
   }
 
-  if(statusEl){ statusEl.classList.add('show'); setTimeout(()=>statusEl.classList.remove('show'),1600); }
+  if(statusEl){statusEl.classList.add('show');setTimeout(()=>statusEl.classList.remove('show'),1600);}
 }
+
 
 function renderNote(tabId){
   const body = document.getElementById('noteBody-'+tabId);
@@ -2952,21 +3068,21 @@ document.addEventListener('click', e => {
   if(italicToggle){
     noteAbnormalItalic = italicToggle.checked;
     document.querySelectorAll('.abnormalItalicToggle').forEach(el => el.checked = noteAbnormalItalic);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); updateCopyStylePreview();
     return;
   }
   const boldToggle = e.target.closest('.abnormalBoldToggle');
   if(boldToggle){
     noteAbnormalBold = boldToggle.checked;
     document.querySelectorAll('.abnormalBoldToggle').forEach(el => el.checked = noteAbnormalBold);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); updateCopyStylePreview();
     return;
   }
   const underlineToggle = e.target.closest('.abnormalUnderlineToggle');
   if(underlineToggle){
     noteAbnormalUnderline = underlineToggle.checked;
     document.querySelectorAll('.abnormalUnderlineToggle').forEach(el => el.checked = noteAbnormalUnderline);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); updateCopyStylePreview();
     return;
   }
   const regionFormatBtn = e.target.closest('.openRegionFormatBtn');
@@ -3078,6 +3194,56 @@ function applyRegFmt(){
   if(el) el.addEventListener('change', applyRegFmt);
 });
 
+/* ── Copy settings UI ── */
+function applyCopySettings(){
+  settings.copyMethod    = document.querySelector('input[name="copyMethod"]:checked')?.value || 'dom';
+  settings.copyAbnStyle  = document.querySelector('input[name="copyAbnStyle"]:checked')?.value || 'html';
+  settings.copyAbnPrefix = document.getElementById('copyAbnPrefixInput')?.value || '[AVVIK] ';
+  updateCopyStylePreview();
+  persistSettings();
+}
+function updateCopyStylePreview(){
+  const el = document.getElementById('copyStylePreviewAbn');
+  if(!el) return;
+  const sample = 'Avvikende funn her.';
+  const style = settings.copyAbnStyle || 'html';
+  switch(style){
+    case 'html': {
+      let s = sample;
+      if(noteAbnormalBold)      s = '<strong>'+s+'</strong>';
+      if(noteAbnormalItalic)    s = '<em>'+s+'</em>';
+      if(noteAbnormalUnderline) s = '<u>'+s+'</u>';
+      el.innerHTML = s; break;
+    }
+    case 'markdown': {
+      let s = sample;
+      if(noteAbnormalBold)      s = '**'+s+'**';
+      if(noteAbnormalItalic)    s = '*'+s+'*';
+      if(noteAbnormalUnderline) s = '__'+s+'__';
+      el.textContent = s; break;
+    }
+    case 'prefix':  el.textContent = (settings.copyAbnPrefix||'[AVVIK] ')+sample; break;
+    case 'caps':    el.textContent = sample.toUpperCase(); break;
+    default:        el.textContent = sample;
+  }
+}
+function syncCopySettingsUI(){
+  const mId = 'copyMethod' + (settings.copyMethod||'dom').charAt(0).toUpperCase() + (settings.copyMethod||'dom').slice(1);
+  const mEl = document.getElementById(mId);
+  if(mEl) mEl.checked = true;
+  const sId = 'copyAbnStyle' + (settings.copyAbnStyle||'html').charAt(0).toUpperCase() + (settings.copyAbnStyle||'html').slice(1);
+  const sEl = document.getElementById(sId);
+  if(sEl) sEl.checked = true;
+  const pi = document.getElementById('copyAbnPrefixInput');
+  if(pi) pi.value = settings.copyAbnPrefix||'[AVVIK] ';
+  updateCopyStylePreview();
+}
+['copyMethodDom','copyMethodApi','copyMethodAuto','copyMethodPlain',
+ 'copyAbnStyleHtml','copyAbnStyleMarkdown','copyAbnStylePrefix','copyAbnStyleCaps','copyAbnStyleNone'
+].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('change',applyCopySettings); });
+const _prefixInput = document.getElementById('copyAbnPrefixInput');
+if(_prefixInput) _prefixInput.addEventListener('input', applyCopySettings);
+
 function updateCatFormatPreview(){
   const prev = document.getElementById('catFmtPreview');
   if(!prev) return;
@@ -3089,7 +3255,7 @@ function applyCatFormat(){
   categoryNameFormat.italic = document.getElementById('catFmtItalic').checked;
   categoryNameFormat.underline = document.getElementById('catFmtUnderline').checked;
   updateCatFormatPreview();
-  renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote();
+  renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); updateCopyStylePreview();
 }
 
 ['catFmtBold','catFmtItalic','catFmtUnderline'].forEach(id => {
