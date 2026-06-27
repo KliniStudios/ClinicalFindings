@@ -2952,21 +2952,21 @@ document.addEventListener('click', e => {
   if(italicToggle){
     noteAbnormalItalic = italicToggle.checked;
     document.querySelectorAll('.abnormalItalicToggle').forEach(el => el.checked = noteAbnormalItalic);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote();
     return;
   }
   const boldToggle = e.target.closest('.abnormalBoldToggle');
   if(boldToggle){
     noteAbnormalBold = boldToggle.checked;
     document.querySelectorAll('.abnormalBoldToggle').forEach(el => el.checked = noteAbnormalBold);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote();
     return;
   }
   const underlineToggle = e.target.closest('.abnormalUnderlineToggle');
   if(underlineToggle){
     noteAbnormalUnderline = underlineToggle.checked;
     document.querySelectorAll('.abnormalUnderlineToggle').forEach(el => el.checked = noteAbnormalUnderline);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote();
     return;
   }
   const regionFormatBtn = e.target.closest('.openRegionFormatBtn');
@@ -3089,7 +3089,7 @@ function applyCatFormat(){
   categoryNameFormat.italic = document.getElementById('catFmtItalic').checked;
   categoryNameFormat.underline = document.getElementById('catFmtUnderline').checked;
   updateCatFormatPreview();
-  renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote();
+  renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote();
 }
 
 ['catFmtBold','catFmtItalic','catFmtUnderline'].forEach(id => {
@@ -3535,6 +3535,72 @@ function ekgNoteText(){
 }
 
 
+/* ── EKG: which parts are abnormal (flagged measurements or non-normal findings) ── */
+function ekgAbnParts(){
+  const abn = [];
+  const hr = parseNum(ekgState.hr);
+  if(!isNaN(hr) && (hr < 50 || hr > 100)) abn.push(`HR ${ekgState.hr} /min`);
+
+  const pq = parseNum(ekgState.pq);
+  if(!isNaN(pq) && pq > 200) abn.push(`PR-intervall ${ekgState.pq} ms (forlenget)`);
+
+  const qrs = parseNum(ekgState.qrs);
+  if(!isNaN(qrs) && qrs >= 120) abn.push(`QRS-tid ${ekgState.qrs} ms (grenblokk-grense)`);
+
+  if(ekgState.qtc){
+    const qtcVal = parseNum(ekgState.qtc);
+    const lim = ekgState.kjonn==='mann' ? 450 : ekgState.kjonn==='kvinne' ? 460 : null;
+    if(lim && qtcVal > lim) abn.push(`QTc ${ekgState.qtc} ms (forlenget)`);
+  }
+
+  if(ekgState.akse && ekgState.akse !== 'normal') abn.push(
+    {venstre:'Venstreakse', hoyre:'Høyreakse', ekstrem:'Ekstrem akse'}[ekgState.akse] || ekgState.akse
+  );
+
+  if(ekgState.q_bolk === 'ja') abn.push('Patologisk Q-takk' + (ekgState.q_leads?.length ? ' i '+ekgState.q_leads.join(', ') : ''));
+  if(ekgState.st === 'elevasjon') abn.push('ST-elevasjon' + (ekgState.st_leads?.length ? ' i '+ekgState.st_leads.join(', ') : ''));
+  if(ekgState.st === 'depresjon') abn.push('ST-depresjon' + (ekgState.st_leads?.length ? ' i '+ekgState.st_leads.join(', ') : ''));
+  if(ekgState.tbolge === 'inverterte') abn.push('Inverterte T-bølger' + (ekgState.tbolge_leads?.length ? ' i '+ekgState.tbolge_leads.join(', ') : ''));
+  if(ekgState.tbolge === 'spisse') abn.push('Spisse/hyperakutte T-takker' + (ekgState.tbolge_leads?.length ? ' i '+ekgState.tbolge_leads.join(', ') : ''));
+  if(ekgState.lvh === 'mulig') abn.push('Mulig VV-hypertrofi');
+  if(ekgState.lvh === 'tilstede') abn.push('VV-hypertrofi');
+  if(ekgState.rprogresjon === 'avvikende') abn.push('Avvikende R-progresjon');
+
+  if(ekgState.funn.size){
+    const names = [...ekgState.funn].map(id=>{ const c=CONDITIONS.find(x=>x.id===id); return c?c.name:id; });
+    abn.push(...names);
+  }
+  return abn;
+}
+
+function ekgAbnText(){
+  const parts = ekgAbnParts();
+  return parts.length ? parts.join('\n') : '(ingen avvikende funn registrert)';
+}
+
+function ekgNoteHTML(){
+  /* Wrap EKG note: measurements that are flagged get abnormal styling,
+     rest is plain. We split the plain note and re-tag known abnormal segments. */
+  const plain = ekgNoteText();
+  const abnParts = ekgAbnParts();
+  if(!abnParts.length || (!noteAbnormalBold && !noteAbnormalItalic && !noteAbnormalUnderline)){
+    return plain.replace(/\n/g,'<br>');
+  }
+  // Replace each abnormal part in the plain text with styled version
+  let html = plain.replace(/\n/g,'<br>');
+  abnParts.forEach(part=>{
+    const escaped = part.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    html = html.replace(new RegExp(escaped,'g'), styledPart(part,'abnormal'));
+  });
+  return html;
+}
+
+function ekgAbnHTML(){
+  const parts = ekgAbnParts();
+  if(!parts.length) return '<em style="color:var(--ink-muted)">(ingen avvikende funn registrert)</em>';
+  return parts.map(p=>styledPart(p,'abnormal')).join('<br>');
+}
+
 function calcBoxMs(speed, large){
   const ms = large ? (speed===25 ? 200 : 100) : (speed===25 ? 40 : 20);
   return ms;
@@ -3761,11 +3827,38 @@ function buildEkgPanel(){
         <ul class="ekg-suggestions" id="ekg-suggestions"></ul>
         <div class="ekg-hedge-note">Heuristiske p\u00e5minnelser \u2014 ikke en diagnose. Klinisk vurdering avgj\u00f8r relevans.</div>
         <div class="note-divider"></div>
+        <div class="exam-toolbar" style="margin-bottom:10px;">
+          <div class="toggle-wrap" style="flex-wrap:wrap; gap:6px;">
+            <label class="switch">
+              <input type="checkbox" class="abnormalItalicToggle" id="ekg-italic-toggle" ${noteAbnormalItalic?'checked':''}/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik kursiv</span>
+            <label class="switch" style="margin-left:8px;">
+              <input type="checkbox" class="abnormalBoldToggle" id="ekg-bold-toggle" ${noteAbnormalBold?'checked':''}/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik fet</span>
+            <label class="switch" style="margin-left:8px;">
+              <input type="checkbox" class="abnormalUnderlineToggle" id="ekg-underline-toggle" ${noteAbnormalUnderline?'checked':''}/>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Avvik understrek</span>
+          </div>
+        </div>
         <div class="note-head"><div class="note-title">Notat</div></div>
         <div class="note-body" id="ekg-note-body"></div>
-        <div class="note-foot">
-          <button class="solid-btn copyBtn" id="ekg-copy-btn">Kopier notat</button>
+        <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
+          <button class="solid-btn" id="ekg-copy-btn">Kopier notat</button>
+          <button class="ghost-btn" id="ekg-copy-rich-btn" style="font-size:.78rem;">Kopier med formatering</button>
           <span class="copy-status" id="ekg-copy-status">Kopiert \u2713</span>
+        </div>
+        <div class="note-divider"></div>
+        <div class="note-title" style="font-size:.82rem; margin-bottom:6px;">Avvikende funn</div>
+        <div class="note-body" id="ekg-abn-body" style="min-height:32px;"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="ghost-btn" id="ekg-copy-abn-btn" style="font-size:.78rem;">Kopier avvikende funn</button>
+          <span class="copy-status" id="ekg-copy-abn-status">Kopiert \u2713</span>
         </div>
       </aside>
     </main>
@@ -3817,8 +3910,9 @@ function updateEkgSuggestions(){
 
 function updateEkgNote(){
   const body = document.getElementById('ekg-note-body');
-  if(!body) return;
-  body.textContent = ekgNoteText();
+  if(body) body.innerHTML = ekgNoteHTML();   // styled: bold/italic/underline on abnormal parts
+  const abn = document.getElementById('ekg-abn-body');
+  if(abn) abn.textContent = ekgAbnText();    // plain text — no extra formatting
 }
 
 function attachEkgEvents(){
@@ -4077,6 +4171,18 @@ function attachEkgEvents(){
         status.classList.add('show');
         setTimeout(()=>status.classList.remove('show'), 1600);
       })();
+      return;
+    }
+
+    const richBtn = e.target.closest('#ekg-copy-rich-btn');
+    if(richBtn){
+      copyWithRichText(ekgNoteHTML(), ekgNoteText(), document.getElementById('ekg-copy-status'));
+      return;
+    }
+
+    const abnCopyBtn = e.target.closest('#ekg-copy-abn-btn');
+    if(abnCopyBtn){
+      copyWithRichText(ekgAbnHTML(), ekgAbnText(), document.getElementById('ekg-copy-abn-status'));
       return;
     }
   });
