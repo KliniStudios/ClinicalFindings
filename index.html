@@ -309,7 +309,7 @@
     <div>
       <div class="eyebrow">Strukturert klinisk dokumentasjon</div>
       <h1>Klinisk dokumentasjon</h1>
-      <div class="subtitle">Klikk gjennom funn — notatet bygges automatisk. Innstillinger og profiler er ikke garantert lagret — husk å eksportere lokalt via Innstillinger-fanen.</div>
+      <div class="subtitle">Klikk gjennom funn. Notatet bygges automatisk. Innstillinger og profiler er ikke garantert lagret; husk å eksportere lokalt via Innstillinger-fanen.</div>
     </div>
   </header>
 
@@ -330,6 +330,7 @@
     <button class="tab-btn" data-tab="nihss">NIHSS</button>
     <button class="tab-btn" data-tab="ekg">EKG</button>
     <button class="tab-btn" data-tab="ortho">Ortopedi</button>
+    <button class="tab-btn" data-tab="sokrates">SOKRATES</button>
     <button class="tab-btn" data-tab="innstillinger">Innstillinger</button>
   </nav>
 
@@ -345,6 +346,7 @@
 
   <!-- ORTHO -->
   <section class="tab-panel" id="panel-ortho"></section>
+  <section class="tab-panel" id="panel-sokrates"></section>
 
   <!-- INNSTILLINGER -->
   <section class="tab-panel" id="panel-innstillinger">
@@ -372,7 +374,7 @@
       </div>
 
       <div class="settings-card">
-        <h2>Profiler — hvilke organsystemer skal vises</h2>
+        <h2>Profiler: hvilke organsystemer skal vises</h2>
         <div class="profile-list" id="profileList"></div>
         <div class="builder">
           <h3 style="font-family:'IBM Plex Mono'; font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); margin:0 0 10px;">Lag ny profil</h3>
@@ -384,7 +386,7 @@
 
       <div class="settings-card wide">
         <h2>Egendefinerte seksjoner under Klinisk undersøkelse</h2>
-        <div class="storage-note" style="margin:0 0 16px; padding:0; border:none;">Lag egne seksjoner satt sammen av enkeltfunn fra hvor som helst i Klinisk undersøkelse. Et funn kan kun ligge i én egendefinert seksjon av gangen — det fjernes da fra sin opprinnelige plassering, slik at det aldri vises (eller telles) to ganger. Egendefinerte seksjoner vises uavhengig av aktiv profil.</div>
+        <div class="storage-note" style="margin:0 0 16px; padding:0; border:none;">Lag egne seksjoner satt sammen av enkeltfunn fra hvor som helst i Klinisk undersøkelse. Et funn kan kun ligge i én egendefinert seksjon av gangen: det fjernes da fra sin opprinnelige plassering slik at det aldri vises eller telles to ganger. Egendefinerte seksjoner vises uavhengig av aktiv profil.</div>
         <div class="section-list" id="sectionList"></div>
         <div class="builder">
           <h3 style="font-family:'IBM Plex Mono'; font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); margin:0 0 10px;" id="sectionBuilderTitle">Ny seksjon</h3>
@@ -415,23 +417,23 @@
           <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodDom" value="dom" style="margin-top:2px;" />
-              <span><strong>DOM-utvalg (Word / WordPad / LibreOffice)</strong> — anbefalt for Office-programmer. Nettleseren skriver CF_RTF + CF_HTML til utklippstavlen, som gir formatering i Word, WordPad og LibreOffice.</span>
+              <span><strong>DOM-utvalg (Word / WordPad / LibreOffice)</strong>: anbefalt for Office-programmer. Nettleseren skriver CF_RTF + CF_HTML til utklippstavlen, som gir formatering i Word, WordPad og LibreOffice.</span>
             </label>
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodEpj" value="epj" style="margin-top:2px;" />
-              <span><strong>EPJ / journalprogram (anbefalt for journalsystemer)</strong> — bruker ClipboardItem API med inline CSS-stiler (<code>style="font-weight:bold"</code> i stedet for <code>&lt;strong&gt;</code>). Fungerer i DIPS, journalsystemer og LibreOffice Writer som leser <code>text/html</code>.</span>
+              <span><strong>EPJ / journalprogram (anbefalt for journalsystemer)</strong>: bruker ClipboardItem API med inline CSS-stiler (<code>style="font-weight:bold"</code> i stedet for <code>&lt;strong&gt;</code>). Fungerer i DIPS, journalsystemer og LibreOffice Writer som leser <code>text/html</code>.</span>
             </label>
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodApi" value="api" style="margin-top:2px;" />
-              <span><strong>ClipboardItem API</strong> — moderne metode. Fungerer i Chrome/Edge + Word og Google Docs, men kan feile i noen miljøer.</span>
+              <span><strong>ClipboardItem API</strong>: moderne metode. Fungerer i Chrome/Edge + Word og Google Docs, men kan feile i noen miljøer.</span>
             </label>
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodAuto" value="auto" style="margin-top:2px;" />
-              <span><strong>Automatisk</strong> — prøver DOM-utvalg, faller tilbake på ClipboardItem, deretter ren tekst.</span>
+              <span><strong>Automatisk</strong>: prøver DOM-utvalg, faller tilbake på ClipboardItem, deretter ren tekst.</span>
             </label>
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodPlain" value="plain" style="margin-top:2px;" />
-              <span><strong>Alltid ren tekst</strong> — ingen formatering kopieres, kun tekst. Fungerer overalt.</span>
+              <span><strong>Alltid ren tekst</strong>: ingen formatering kopieres, kun tekst. Fungerer overalt.</span>
             </label>
           </div>
         </div>
@@ -441,24 +443,24 @@
           <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyAbnStyle" id="copyAbnStyleHtml" value="html" />
-              <span><strong>HTML</strong> — <strong>fet</strong> / <em>kursiv</em> / <u>understrek</u> via HTML-tagger. Støttet av Word, Google Docs, mange EPJ.</span>
+              <span><strong>HTML</strong>: <strong>fet</strong> / <em>kursiv</em> / <u>understrek</u> via HTML-tagger. Støttet av Word, Google Docs, mange EPJ.</span>
             </label>
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyAbnStyle" id="copyAbnStyleMarkdown" value="markdown" />
-              <span><strong>Markdown</strong> — <code>**fet**</code> / <code>*kursiv*</code> / <code>__understrek__</code>. Synlig i Markdown-editorer.</span>
+              <span><strong>Markdown</strong>: <code>**fet**</code> / <code>*kursiv*</code> / <code>__understrek__</code>. Synlig i Markdown-editorer.</span>
             </label>
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyAbnStyle" id="copyAbnStylePrefix" value="prefix" />
-              <span><strong>Prefiks</strong> — tekst foran hvert avvikende funn:</span>
+              <span><strong>Prefiks</strong>: tekst foran hvert avvikende funn:</span>
               <input type="text" id="copyAbnPrefixInput" placeholder="f.eks. ▶ " style="font-family:'IBM Plex Mono'; font-size:.82rem; padding:3px 8px; border:1px solid var(--border); border-radius:5px; width:90px;" />
             </label>
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyAbnStyle" id="copyAbnStyleCaps" value="caps" />
-              <span><strong>Store bokstaver</strong> — avvikende funn skrives med STORE BOKSTAVER.</span>
+              <span><strong>Store bokstaver</strong>: avvikende funn skrives med STORE BOKSTAVER.</span>
             </label>
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyAbnStyle" id="copyAbnStyleNone" value="none" />
-              <span><strong>Ingen</strong> — ren tekst uten noen avvik-markering.</span>
+              <span><strong>Ingen</strong>: ren tekst uten noen avvik-markering.</span>
             </label>
           </div>
         </div>
@@ -531,9 +533,9 @@
         <li>Alle avvikende funn er registrert manuelt</li>
         <li>Funn som ikke er undersøkt, er fjernet fra notatet</li>
       </ul>
-      <p style="margin:0; font-size:.8rem; color:var(--ink-muted);">Teksten som genereres er kun et utkast — ansvarlig kliniker godkjenner den endelige journalteksten.</p>
+      <p style="margin:0; font-size:.8rem; color:var(--ink-muted);">Teksten som genereres er kun et utkast. Ansvarlig kliniker godkjenner den endelige journalteksten.</p>
     </div>
-    <button type="button" class="solid-btn" id="normalfunnWarningClose" style="width:100%;">Forstått — jeg går gjennom funnene</button>
+    <button type="button" class="solid-btn" id="normalfunnWarningClose" style="width:100%;">Forstått, jeg går gjennom funnene</button>
   </div>
 </div>
 
@@ -541,7 +543,7 @@
 <div class="modal-overlay" id="brukervilkarOverlay">
   <div class="modal-box" style="max-width:660px; max-height:82vh; overflow-y:auto;">
     <button type="button" class="modal-close-x" data-close-modal="brukervilkarOverlay">&times;</button>
-    <div class="modal-title">Brukervilkår — v005 · 24.06.2026</div>
+    <div class="modal-title">Brukervilkår · v005 · 24.06.2026</div>
     <div style="font-family:'IBM Plex Sans'; font-size:.83rem; line-height:1.8; color:var(--ink);">
       <p><strong>1. Formål og avgrensning</strong><br>
       Dette verktøyet er et teknisk dokumentasjons- og formatteringsverktøy. Formålet er å hjelpe brukeren med å omforme brukerens egne, manuelt registrerte kliniske opplysninger og funn til forslag til strukturert eller løpende tekst.<br>
@@ -741,22 +743,22 @@ const NIHSS_ITEMS = [
     {score:'2', label:'Delvis parese (total/nesten total parese av nedre ansiktshalvdel)'},
     {score:'3', label:'Total parese, en- eller bilateralt'}
   ]},
-  { key:'5a', label:'5a. Motorikk, arm – venstre', choices:[
+  { key:'5a', label:'5a. Motorikk, arm, venstre', choices:[
     {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
     {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
     {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
   ]},
-  { key:'5b', label:'5b. Motorikk, arm – høyre', choices:[
+  { key:'5b', label:'5b. Motorikk, arm, høyre', choices:[
     {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
     {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
     {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
   ]},
-  { key:'6a', label:'6a. Motorikk, ben – venstre', choices:[
+  { key:'6a', label:'6a. Motorikk, ben, venstre', choices:[
     {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
     {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
     {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
   ]},
-  { key:'6b', label:'6b. Motorikk, ben – høyre', choices:[
+  { key:'6b', label:'6b. Motorikk, ben, høyre', choices:[
     {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
     {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
     {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
@@ -822,9 +824,9 @@ const HJERNENERVER = [
           return 'Velg GCS-score';
         },
         subFields:[
-          {key:'e', type:'chips', label:'Eye opening (E)', choices:[{id:'4',label:'4 – spontant'},{id:'3',label:'3 – ved tiltale'},{id:'2',label:'2 – ved smerte'},{id:'1',label:'1 – ingen åpning'}]},
-          {key:'v', type:'chips', label:'Verbal (V)', choices:[{id:'5',label:'5 – orientert'},{id:'4',label:'4 – forvirret'},{id:'3',label:'3 – usammenhengende ord'},{id:'2',label:'2 – uforståelige lyder'},{id:'1',label:'1 – ingen respons'}]},
-          {key:'m', type:'chips', label:'Motorisk (M)', choices:[{id:'6',label:'6 – etterkommer oppfordring'},{id:'5',label:'5 – lokaliserer smerte'},{id:'4',label:'4 – normal fleksjon'},{id:'3',label:'3 – abnorm fleksjon'},{id:'2',label:'2 – ekstensjon'},{id:'1',label:'1 – ingen respons'}]}
+          {key:'e', type:'chips', label:'Eye opening (E)', choices:[{id:'4',label:'4: spontant'},{id:'3',label:'3: ved tiltale'},{id:'2',label:'2: ved smerte'},{id:'1',label:'1: ingen åpning'}]},
+          {key:'v', type:'chips', label:'Verbal (V)', choices:[{id:'5',label:'5: orientert'},{id:'4',label:'4: forvirret'},{id:'3',label:'3: usammenhengende ord'},{id:'2',label:'2: uforståelige lyder'},{id:'1',label:'1: ingen respons'}]},
+          {key:'m', type:'chips', label:'Motorisk (M)', choices:[{id:'6',label:'6: etterkommer oppfordring'},{id:'5',label:'5: lokaliserer smerte'},{id:'4',label:'4: normal fleksjon'},{id:'3',label:'3: abnorm fleksjon'},{id:'2',label:'2: ekstensjon'},{id:'1',label:'1: ingen respons'}]}
         ],
         template:(L)=>{
           const e = L.e ? parseInt(L.e,10) : null;
@@ -835,7 +837,7 @@ const HJERNENERVER = [
           if(v!=null) parts.push(`V${v}`);
           if(m!=null) parts.push(`M${m}`);
           if(e!=null && v!=null && m!=null) return `GCS ${e+v+m} (${parts.join('')}).`;
-          if(parts.length) return `GCS ikke 15 (${parts.join('')} — ufullstendig skåret).`;
+          if(parts.length) return `GCS ikke 15 (${parts.join('')}, ufullstendig skåret).`;
           return 'GCS ikke 15 (delskår ikke angitt).';
         }}
     ]},
@@ -852,7 +854,7 @@ const HJERNENERVER = [
     { id:'neuro_nihss', label:'NIHSS', options:[
       {id:'ikke', cls:'normal', text:'NIHSS ikke utført.'},
       {id:'utfort', cls:'abnormal',
-        subFields:[{key:'breakdown', type:'nihss', label:'NIHSS — velg poengsum for hvert punkt'}],
+        subFields:[{key:'breakdown', type:'nihss', label:'NIHSS: velg poengsum for hvert punkt'}],
         template:(L)=>{
           const b = L.breakdown;
           if(!b) return 'NIHSS utført.';
@@ -1119,7 +1121,7 @@ const HJERNENERVER = [
         subFields:[{key:'tilstand', type:'chips', multi:true, label:'Ved', choices:[{id:'apen',label:'åpne øyne'},{id:'lukket',label:'lukkede øyne'}]}],
         template:(L)=> L.tilstand ? `Positiv Romberg, ${L.tilstand}.` : 'Positiv Romberg.'}
     ]},
-    { id:'ov_cerebellar', label:'Cerebellære tegn (intensjonstremor · dysmetri · dysdiadokokinesi · rebound · ataksi — side: flervalg per funn)', options:[
+    { id:'ov_cerebellar', label:'Cerebellære tegn (intensjonstremor, dysmetri, dysdiadokokinesi, rebound, ataksi: side flervalg per funn)', options:[
       {id:'normal', cls:'normal', text:'Ingen intensjonstremor, dysmetri eller dysdiadokokinesi.'},
       {id:'tremor', cls:'abnormal',
         subFields:[{key:'side', type:'chips', multi:true, label:'intensjonstremor', choices:[{id:'hoyre',label:'høyre arm'},{id:'venstre',label:'venstre arm'},{id:'bilateral',label:'bilateralt'}]}],
@@ -1533,9 +1535,9 @@ const BUILTIN_PROFILES = [
 
 /* ============================== STATE ==============================
    activeOptions[itemId] = array of currently active option ids (0, 1, or many).
-   Nothing is pre-selected — an item with an empty array contributes nothing
+   Nothing is pre-selected: an item with an empty array contributes nothing
    to the note unless "Normalfunn for alle" is on for that tab.
-   subState[itemId][optionId] = { fieldKey: value } — sub-detail values scoped
+   subState[itemId][optionId] = { fieldKey: value }: sub-detail values scoped
    per active option, so two simultaneously active options each keep their own.
 */
 const activeOptions = {};
@@ -1896,7 +1898,7 @@ function buildExamPanel(tabId){
     </div>
 
     <div class="paste-panel" id="pastePanel-${tabId}">
-      <p>Lim inn et eksisterende notat under. Appen tolker teksten, setter tilhørende knapper og markerer funnene som behandlet — reversibelt, du kan justere videre etterpå.</p>
+      <p>Lim inn et eksisterende notat under. Appen tolker teksten, setter tilhørende knapper og markerer funnene som behandlet (reversibelt, du kan justere videre etterpå).</p>
       <textarea id="pasteInput-${tabId}" placeholder="Lim inn notatteksten her…"></textarea>
       <div class="row">
         <button class="solid-btn parseBtn" data-tab="${tabId}">Tolk og oppdater</button>
@@ -2719,7 +2721,7 @@ document.getElementById('saveSectionBtn').addEventListener('click', () => {
 });
 
 /* ════════════════════════════════════════════════════════════
-   CARD ITEM EDITOR — full rewrite
+   CARD ITEM EDITOR: full rewrite
 ════════════════════════════════════════════════════════════ */
 let _editCardId = null;
 let _editorItems = []; // [{id, label, visible, custom?, customDef?}]
@@ -2974,7 +2976,7 @@ function renderCardOrderList(){
   list.innerHTML = cards.map((c,i) => {
     const isHidden = hidden.includes(c.id);
     const visIcon = isHidden ? '👁️‍🗨️' : '👁️';
-    const visTitle = isHidden ? 'Skjult i aktiv profil — klikk for å vise' : 'Synlig — klikk for å skjule';
+    const visTitle = isHidden ? 'Skjult i aktiv profil, klikk for å vise' : 'Synlig, klikk for å skjule';
     const editBtn = `<button type="button" class="move-btn" data-edit-card-items="${c.id}" title="Rediger innhold og rekkefølge" style="font-size:.8rem;">✏️</button>`;
     return `
     <div class="order-row" style="${isHidden?'opacity:.5;':''}">
@@ -3083,7 +3085,7 @@ document.getElementById('importSettingsFile').addEventListener('change', e => {
       persistSettings();
       showImportStatus('Innstillinger importert.', true);
     }catch(err){
-      showImportStatus('Kunne ikke lese filen — ugyldig JSON.', false);
+      showImportStatus('Kunne ikke lese filen: ugyldig JSON.', false);
     }
   };
   reader.readAsText(file);
@@ -3113,7 +3115,7 @@ document.getElementById('importProfilesFile').addEventListener('change', e => {
       persistProfiles();
       showImportStatus(count ? `${count} profil(er) importert og lagt til eksisterende.` : 'Fant ingen gyldige profiler i filen.', !!count);
     }catch(err){
-      showImportStatus('Kunne ikke lese filen — forventet en liste med profiler.', false);
+      showImportStatus('Kunne ikke lese filen: forventet en liste med profiler.', false);
     }
   };
   reader.readAsText(file);
@@ -3123,7 +3125,7 @@ document.getElementById('importProfilesFile').addEventListener('change', e => {
 /* ============================== SETTINGS: RESET ============================== */
 document.getElementById('resetSettingsBtn').addEventListener('click', () => {
   document.getElementById('confirmModalTitle').textContent = 'Tilbakestille alle innstillinger?';
-  document.getElementById('confirmModalBody').textContent = 'Dette nullstiller skriftvalg, sletter alle egendefinerte profiler, egendefinerte seksjoner og rekkefølgen på seksjoner. Undersøkelsesfunn påvirkes ikke — de lagres aldri uansett. Dette kan ikke angres.';
+  document.getElementById('confirmModalBody').textContent = 'Dette nullstiller skriftvalg, sletter alle egendefinerte profiler, egendefinerte seksjoner og rekkefølgen på seksjoner. Undersøkelsesfunn påvirkes ikke (de lagres aldri). Dette kan ikke angres.';
   document.getElementById('confirmModalOverlay').classList.add('open');
 });
 /* ── Global modal close: X buttons + backdrop + Lukk buttons ── */
@@ -3154,21 +3156,21 @@ document.addEventListener('click', e => {
   if(italicToggle){
     noteAbnormalItalic = italicToggle.checked;
     document.querySelectorAll('.abnormalItalicToggle').forEach(el => el.checked = noteAbnormalItalic);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); updateCopyStylePreview();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); if(typeof renderSokratesNote==='function') renderSokratesNote(); updateCopyStylePreview();
     return;
   }
   const boldToggle = e.target.closest('.abnormalBoldToggle');
   if(boldToggle){
     noteAbnormalBold = boldToggle.checked;
     document.querySelectorAll('.abnormalBoldToggle').forEach(el => el.checked = noteAbnormalBold);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); updateCopyStylePreview();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); if(typeof renderSokratesNote==='function') renderSokratesNote(); updateCopyStylePreview();
     return;
   }
   const underlineToggle = e.target.closest('.abnormalUnderlineToggle');
   if(underlineToggle){
     noteAbnormalUnderline = underlineToggle.checked;
     document.querySelectorAll('.abnormalUnderlineToggle').forEach(el => el.checked = noteAbnormalUnderline);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); updateCopyStylePreview();
+    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); if(typeof renderSokratesNote==='function') renderSokratesNote(); updateCopyStylePreview();
     return;
   }
   const regionFormatBtn = e.target.closest('.openRegionFormatBtn');
@@ -3341,7 +3343,7 @@ function applyCatFormat(){
   categoryNameFormat.italic = document.getElementById('catFmtItalic').checked;
   categoryNameFormat.underline = document.getElementById('catFmtUnderline').checked;
   updateCatFormatPreview();
-  renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); updateCopyStylePreview();
+  renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); if(typeof renderSokratesNote==='function') renderSokratesNote(); updateCopyStylePreview();
 }
 
 ['catFmtBold','catFmtItalic','catFmtUnderline'].forEach(id => {
@@ -3439,6 +3441,7 @@ async function init(){
   buildNihssTab();
   buildEkgPanel();
   buildOrthoPanel();
+  buildSokratesPanel();
 }
 /* init() is called from the last script block, after all tab modules are defined */
 
@@ -3494,7 +3497,7 @@ const CONDITIONS = [
     link:'https://sml.snl.no/atrieflimmer',
     source:'Store medisinske leksikon / ESC 2020 (Hindricks et al., Eur Heart J 2021)',
     criteria:[
-      'Fravær av distinkte, regelmessige P-bølger — uregelmessig grunnlinje (fibrillasjonsbølger 350–600/min).',
+      'Fravær av distinkte, regelmessige P-bølger; uregelmessig grunnlinje (fibrillasjonsbølger 350–600/min).',
       'Uregelmessige RR-intervaller (irregularly irregular) uten fast mønster.',
       'Smale QRS-komplekser dersom ingen grenblokk foreligger.',
       'EKG-dokumentasjon kreves: ≥30 sekunder på enkeltavledning, eller 12-avlednings-EKG.',
@@ -3517,7 +3520,7 @@ const CONDITIONS = [
     source:'Store medisinske leksikon / ESC 2021 Cardiac Pacing (Glikson et al.)',
     criteria:[
       'PQ-intervall > 200 ms (P-start til Q-begynnelse).',
-      'Alle P-bølger ledes til ventriklene — ingen manglende QRS.',
+      'Alle P-bølger ledes til ventriklene, ingen manglende QRS.',
       'Normalt QRS med mindre annen ledningsforstyrrelse foreligger.',
       'Oftest benign; hos veltrente er det normalt. Nyoppstått: vurder underliggende årsak.',
       'Kilde: Glikson M et al., 2021 ESC Guidelines on Cardiac Pacing, Eur Heart J 2021;42:3427–3520.'
@@ -3539,7 +3542,7 @@ const CONDITIONS = [
     source:'Store medisinske leksikon / ESC 2021 Cardiac Pacing',
     criteria:[
       'Konstant PQ-intervall med plutselig manglende QRS (ingen progressiv forlengelse).',
-      'Infranodalt blokk (His-bunt eller grennivå) — QRS kan være bredt.',
+      'Infranodalt blokk (His-bunt eller grennivå) : QRS kan være bredt.',
       'Mer alvorlig enn Mobitz I; økt risiko for overgang til totalblokk.',
       'Pacemakeroppfølging bør vurderes ved symptomer eller progredierende blokk.',
       'Kilde: Glikson M et al., 2021 ESC Guidelines on Cardiac Pacing, Eur Heart J 2021;42:3427–3520.'
@@ -3560,7 +3563,7 @@ const CONDITIONS = [
     link:'https://sml.snl.no/Wolff-Parkinson-Whites_syndrom',
     source:'Store medisinske leksikon / ESC 2019 SVT (Brugada et al.)',
     criteria:[
-      'Kort PQ-intervall (< 120 ms) — preeksitasjon via aksessorisk bane.',
+      'Kort PQ-intervall (< 120 ms) : preeksitasjon via aksessorisk bane.',
       'Delta-bølge: sløret oppadgående helling ved begynnelsen av QRS-komplekset.',
       'Bredt QRS-kompleks (≥ 110–120 ms) pga. fusjon av normal og aksessorisk ledning.',
       'Sekundære ST- og T-forandringer i motsatt retning av delta-bølgen.',
@@ -3576,8 +3579,8 @@ const CONDITIONS = [
       'Brede, nottede R-bølger i avledning I, aVL, V5–V6 (M-konfigurasjon).',
       'Fravær av septale Q-bølger i avledning I og V5–V6.',
       'QS- eller rS-mønster i V1 (dyp negativ defleksjon).',
-      'Sekundære ST-T-forandringer kan likne infarkt — tolkning er vanskeliggjort.',
-      'Venstre grenblokk bør utredes — skyldes som regel underliggende hjertesykdom.',
+      'Sekundære ST-T-forandringer kan likne infarkt : tolkning er vanskeliggjort.',
+      'Venstre grenblokk bør utredes : skyldes som regel underliggende hjertesykdom.',
       'Kilde: Surawicz B et al., Circulation 2009;119:e235–e240.'
     ]
   },
@@ -3779,7 +3782,7 @@ function ekgNoteText(){
   if(ekgState.showAssessment){
     const sugg = generateSuggestions();
     if(sugg.length){
-      note += '\n\nVurdering (forslag — ikke endelig, klinisk skjønn avgjør relevans):\n';
+      note += '\n\nVurdering (forslag, ikke endelig, klinisk skjønn avgjør relevans):\n';
       note += sugg.map(s=>'- '+s).join('\n');
     }
   }
@@ -4531,7 +4534,7 @@ function nihssOutputText(){
     const sel = bd[it.key];
     let scoreLabel;
     if(sel===null || sel===undefined || sel===''){
-      scoreLabel = '– ikke skåret –';
+      scoreLabel = 'ikke skåret';
     } else {
       const choice = it.choices.find(c=>c.score===sel);
       scoreLabel = `${sel}: ${choice ? choice.label : ''}`;
@@ -4610,7 +4613,7 @@ function nihssOutputHTML(){
   NIHSS_ITEMS.forEach(it=>{
     const sel = bd[it.key];
     let scoreLabel;
-    if(!sel || sel===''){ scoreLabel = '<em style="color:#888">– ikke skåret –</em>'; }
+    if(!sel || sel===''){ scoreLabel = '<em style="color:#888">ikke skåret</em>'; }
     else {
       const choice = it.choices.find(c=>c.score===sel);
       const detStr = nihssShowDetails ? nihssDetailText(it.key) : '';
@@ -4682,7 +4685,20 @@ function buildNihssTab(){
             </label>
             <span class="toggle-label">Avvik understrek</span>
           </div>
+          <div class="toolbar-actions">
+            <button class="ghost-btn" id="nihss-paste-toggle">Lim inn eksisterende notat ↧</button>
+          </div>
         </div>
+
+        <div class="paste-panel" id="nihss-paste-panel">
+          <p>Lim inn et eksisterende NIHSS-notat. Appen gjenkjenner poengsum per punkt og fyller ut kalkulatoren.</p>
+          <textarea id="nihss-paste-input" placeholder="Lim inn NIHSS-teksten her…"></textarea>
+          <div class="row">
+            <button class="solid-btn" id="nihss-parse-btn">Tolk og oppdater</button>
+            <span class="parse-status" id="nihss-parse-status"></span>
+          </div>
+        </div>
+
         <div class="note-head">
           <div class="note-title">NIHSS-resultat</div>
         </div>
@@ -4732,6 +4748,34 @@ function attachNihssTabEvents(){
   }
 
   panel.addEventListener('click', e => {
+    /* Paste panel toggle */
+    if(e.target.closest('#nihss-paste-toggle')){
+      document.getElementById('nihss-paste-panel').classList.toggle('open');
+      return;
+    }
+    /* Parse pasted NIHSS note */
+    if(e.target.closest('#nihss-parse-btn')){
+      const raw = document.getElementById('nihss-paste-input').value.trim();
+      const statusEl = document.getElementById('nihss-parse-status');
+      if(!raw){ statusEl.textContent='Lim inn tekst først.'; return; }
+      let matched = 0;
+      NIHSS_ITEMS.forEach(it=>{
+        const scores = it.choices.map(c=>c.score).filter(s=>s!==null&&s!==undefined);
+        const key = it.key.replace('.','\\.');
+        for(const sc of scores){
+          const pat = new RegExp('\\b'+key+'[^\\n]{0,30}?\\b'+sc+'\\b','i');
+          if(pat.test(raw)){
+            applyNihssScore(it.key,'utfort','breakdown',it.key,sc);
+            matched++; break;
+          }
+        }
+      });
+      reRenderAll();
+      statusEl.textContent = matched ? matched+' punkt(er) gjenkjent.' : 'Ingen punkter gjenkjent.';
+      statusEl.style.color = matched ? 'var(--teal)' : 'var(--clay)';
+      return;
+    }
+
     const nihssBtn = e.target.closest('.nihss-score-btn');
     if(nihssBtn){
       applyNihssScore(nihssBtn.dataset.item, nihssBtn.dataset.option, nihssBtn.dataset.field, nihssBtn.dataset.nkey, nihssBtn.dataset.score);
@@ -5264,6 +5308,18 @@ function buildOrthoPanel(){
             <button type="button" class="ghost-btn openCatFormatBtn" style="margin-left:10px; font-size:.76rem; padding:5px 10px;" title="Format undersøkelsesnavn (Inspeksjon:, Palpasjon: osv.)">Aa undersøkelse ▾</button>
             <button type="button" class="ghost-btn openRegionFormatBtn" style="margin-left:6px; font-size:.76rem; padding:5px 10px;" title="Format kroppsdelnavn (Skulder:, Kne: osv.)">Aa kroppsdel ▾</button>
           </div>
+          <div class="toolbar-actions">
+            <button class="ghost-btn" id="ortho-paste-toggle">Lim inn eksisterende notat ↧</button>
+          </div>
+        </div>
+
+        <div class="paste-panel" id="ortho-paste-panel">
+          <p>Lim inn et eksisterende ortopedi-notat. Appen gjenkjenner funn og fyller ut relevante felt automatisk.</p>
+          <textarea id="ortho-paste-input" placeholder="Lim inn ortopedi-teksten her…"></textarea>
+          <div class="row">
+            <button class="solid-btn" id="ortho-parse-btn">Tolk og oppdater</button>
+            <span class="parse-status" id="ortho-parse-status"></span>
+          </div>
         </div>
         <div class="note-head"><div class="note-title">Notat</div></div>
         <div class="note-body" id="ortho-note-body"></div>
@@ -5293,6 +5349,42 @@ function buildOrthoPanel(){
   renderOrthoAbnSummary();
 
   panel.addEventListener('click', e=>{
+    /* Ortho paste panel toggle */
+    if(e.target.closest('#ortho-paste-toggle')){
+      document.getElementById('ortho-paste-panel').classList.toggle('open');
+      return;
+    }
+    /* Parse pasted ortho note */
+    if(e.target.closest('#ortho-parse-btn')){
+      const raw = document.getElementById('ortho-paste-input').value.trim();
+      const statusEl = document.getElementById('ortho-parse-status');
+      if(!raw){ statusEl.textContent='Lim inn tekst først.'; return; }
+      const norm = s=>s.toLowerCase().replace(/\s+/g,' ').trim();
+      const normDoc = norm(raw);
+      let matched = 0;
+      ORTHO_REGIONS.forEach(reg=>{
+        if(!normDoc.includes(norm(reg.name))) return;
+        ORTHO_SIDES.forEach(side=>{
+          ORTHO_DOMAINS.forEach(domain=>{
+            const defs = ORTHO_FINDINGS[domain];
+            [...defs.normal, ...defs.abnormal].forEach(f=>{
+              if(norm(f.label) && normDoc.includes(norm(f.label))){
+                orthoState.findings[reg.id] = orthoState.findings[reg.id] || {};
+                orthoState.findings[reg.id][side.id] = orthoState.findings[reg.id][side.id] || {};
+                orthoState.findings[reg.id][side.id][domain] = orthoState.findings[reg.id][side.id][domain] || new Set();
+                orthoState.findings[reg.id][side.id][domain].add(f.id);
+                matched++;
+              }
+            });
+          });
+        });
+      });
+      renderOrthoNote(); renderOrthoAbnSummary();
+      statusEl.textContent = matched ? matched+' funn gjenkjent.' : 'Ingen funn gjenkjent.';
+      statusEl.style.color = matched ? 'var(--teal)' : 'var(--clay)';
+      return;
+    }
+
     const regBtn = e.target.closest('[data-region]');
     if(regBtn){ orthoState.region = orthoState.region===regBtn.dataset.region?null:regBtn.dataset.region; panel.querySelectorAll('[data-region]').forEach(b=>b.classList.toggle('selected',b.dataset.region===orthoState.region)); renderOrthoSidePicker(); renderOrthoFindings(); return; }
 
@@ -5331,9 +5423,506 @@ function buildOrthoPanel(){
 </script>
 
 <script>
-/* ============================== FINAL INIT (called after all modules are defined) ============================== */
-init();
+/* ════════════════════════════════
+   SOKRATES — komplett implementasjon v2
+════════════════════════════════ */
+
+/* ── Chip definitions (match user's list exactly) ── */
+const SOK_DEF = {
+  S:{ letter:'S', name:'Sted / lokalisasjon', q:'Hvor sitter smerten? Pek med én finger.',
+    groups:[
+      {g:'Thorax / hjerte', ids:[
+        ['retrosternal','Retrosternal'],['venstre_thorax','Venstre thorax'],['høyre_thorax','Høyre thorax'],['diffust_thorax','Diffust i thorax']
+      ]},
+      {g:'Abdomen', ids:[
+        ['epigastrium','Epigastriet'],['periumbilicalt','Periumbilicalt'],['rlq','Høyre fossa (iliacal)'],['llq','Venstre fossa (iliacal)'],
+        ['flanke_h','Høyre flanke'],['flanke_v','Venstre flanke'],['hypogastrium','Hypogastrium'],['diffust_abd','Diffust abdomen']
+      ]},
+      {g:'Rygg / columna', ids:[
+        ['lumbalt','Lumbalt'],['dorsalt','Dorsalt'],['interskapu','Interskapulært'],['cervikalt','Cervikalt / nakke']
+      ]},
+      {g:'Andre', ids:[
+        ['skulder_v','Skulder venstre'],['skulder_h','Skulder høyre'],['kjeve_lok','Kjeve'],['arm_lok','Arm'],
+        ['lyske_h','Lyske høyre'],['lyske_v','Lyske venstre']
+      ]}
+    ]
+  },
+  O:{ letter:'O', name:'Oppstart / debut', q:'Når startet det? Akutt, gradvis, etter traume/anstrengelse?',
+    groups:[{g:'', ids:[
+      ['akutt','Akutt'],['gradvis','Gradvis'],['plutselig','Plutselig'],
+      ['anstrengelse_deb','Etter anstrengelse'],['hvile_deb','I hvile'],
+      ['maten','Etter måltid'],['traume','Etter traume']
+    ]}]
+  },
+  C:{ letter:'K', name:'Karakter / kvalitet', q:'Trykkende, stikkende, klemmende, brennende, rivende, murrende, kolikk?',
+    groups:[{g:'', ids:[
+      ['trykkende','Trykkende'],['stikkende','Stikkende'],['klemmende','Klemmende'],
+      ['brennende','Brennende'],['rivende','Rivende'],['murrende','Murrende'],
+      ['kolikk','Kolikkpreget'],['dunkende','Dunkende'],['verkende','Verkende'],['skarende','Skjærende']
+    ]}]
+  },
+  R:{ letter:'R', name:'Stråling / utbredelse', q:'Stråler smerten noe sted?',
+    groups:[{g:'', ids:[
+      ['ingen_str','Ingen stråling'],['v_arm','Venstre arm'],['h_arm','Høyre arm'],
+      ['begge_armer','Begge armer'],['kjeve','Kjeve'],['hals','Hals'],['rygg_str','Rygg'],
+      ['skulder_str','Skulder'],['lyske_str','Lyske'],['lar','Lår']
+    ]}],
+    normalIds:['ingen_str']
+  },
+  A:{ letter:'A', name:'Ledsagende symptomer', q:'Kvalme, tungpust, svette, feber, synkope, svimmelhet?',
+    groups:[{g:'', ids:[
+      ['ingen_led','Ingen ledsagende symptomer'],
+      ['kvalme','Kvalme'],['oppkast','Oppkast'],['tungpust','Tungpust / dyspné'],
+      ['kaldsvette','Kaldsvette'],['svette','Svetting'],['feber','Feber'],
+      ['synkope','Synkope'],['svimmel','Svimmelhet'],['palpitasjoner','Palpitasjoner'],
+      ['nevro','Nevrologiske symptomer'],['vannlating','Vannlatingsplager'],['avforing','Avføringsendring']
+    ]}],
+    normalIds:['ingen_led']
+  },
+  T:{ letter:'T', name:'Tidsforløp / varighet', q:'Konstant eller anfallsvis? Varighet?',
+    groups:[{g:'', ids:[
+      ['konstant','Konstant'],['anfallsvis','Anfallsvis'],['intermittent','Intermitterende'],
+      ['okende','Økende'],['avtagende','Avtagende'],['recidiv','Residiverende']
+    ]}]
+  },
+  Ef:{ letter:'E', name:'Forverrende faktorer', q:'Hva gjør det verre?',
+    groups:[{g:'', ids:[
+      ['f_anstrengelse','Anstrengelse'],['f_bevegelse','Bevegelse'],['f_respirasjon','Dyp respirasjon'],
+      ['f_palpasjon','Palpasjon'],['f_hoste','Hoste'],['f_mat','Matinntak'],['f_stilling','Stilling'],['f_stress','Stress']
+    ]}]
+  },
+  El:{ letter:'E', name:'Lindrende faktorer', q:'Hva gjør det bedre?',
+    groups:[{g:'', ids:[
+      ['l_hvile','Hvile'],['l_stilling','Stillingsendring'],['l_nitro','Nitroglyserin'],
+      ['l_analgetika','Analgetika'],['l_antacida','Antacida'],['l_mat','Mat'],['l_varme','Varme']
+    ]}]
+  }
+};
+
+const SOK_KEYS = ['S','O','C','R','A','T','Ef','El'];
+
+let sokratesState = {};
+function sokratesReset(){
+  sokratesState = {
+    S:{v:new Set(),t:''}, O:{v:new Set(),t:''}, C:{v:new Set(),t:''},
+    R:{v:new Set(),t:''}, A:{v:new Set(),t:''}, T:{v:new Set(),t:'',dur:''},
+    Ef:{v:new Set(),t:''}, El:{v:new Set(),t:''},
+    S2:{na:null,verste:null,etter:null,t:''}
+  };
+}
+sokratesReset();
+let sokratesFormat = 'structured';
+
+/* ── Text helpers ── */
+function sokIds(key){ return SOK_DEF[key]?.groups.flatMap(g=>g.ids)||[]; }
+function sokLabel(key, id){ const pair=sokIds(key).find(p=>p[0]===id); return pair?pair[1]:id; }
+function sokVals(key){ const st=sokratesState[key]; return st?st.v:new Set(); }
+function sokSelected(key){ return [...sokVals(key)].map(id=>sokLabel(key,id)).join(', '); }
+function isNormalChip(key,id){ return (SOK_DEF[key]?.normalIds||[]).includes(id); }
+
+function sokLineE(){
+  const f = [[...sokratesState.Ef.v].map(id=>sokLabel('Ef',id)).join(', '), sokratesState.Ef.t].filter(Boolean).join('. ');
+  const l = [[...sokratesState.El.v].map(id=>sokLabel('El',id)).join(', '), sokratesState.El.t].filter(Boolean).join('. ');
+  const parts=[];
+  if(f) parts.push('Forverret av: '+f);
+  if(l) parts.push('Lindres av: '+l);
+  return parts.join('. ');
+}
+function sokLineNRS(){
+  const {na,verste,etter}=sokratesState.S2;
+  const p=[];
+  if(na!==null) p.push('NRS '+na+'/10 nå');
+  if(verste!==null) p.push(verste+'/10 på det verste');
+  if(etter!==null) p.push(etter+'/10 etter behandling');
+  return p.join(', ');
+}
+function sokLine(key){
+  if(key==='Ef'||key==='El') return sokLineE();
+  if(key==='S2') return [sokLineNRS(), sokratesState.S2.t].filter(Boolean).join('. ');
+  const st=sokratesState[key];
+  const chips=[...st.v].filter(id=>!isNormalChip(key,id)).map(id=>sokLabel(key,id)).join(', ');
+  const norm=[...st.v].filter(id=>isNormalChip(key,id)).map(id=>sokLabel(key,id)).join(', ');
+  const parts=[];
+  if(chips) parts.push(chips);
+  if(norm&&!chips) parts.push(norm);
+  if(key==='T'&&st.dur) parts.unshift('Ca. '+st.dur);
+  if(st.t) parts.push(st.t);
+  return parts.join('. ');
+}
+function sokHasContent(key){
+  if(key==='Ef') return sokratesState.Ef.v.size>0||!!sokratesState.Ef.t;
+  if(key==='El') return sokratesState.El.v.size>0||!!sokratesState.El.t;
+  if(key==='S2'){const{na,verste,etter}=sokratesState.S2;return na!==null||verste!==null||etter!==null||!!sokratesState.S2.t;}
+  const st=sokratesState[key];
+  return st&&(st.v.size>0||!!st.t);
+}
+function sokIsAbn(key){
+  if(!sokHasContent(key)) return false;
+  if(key==='R'&&sokratesState.R.v.size===1&&sokratesState.R.v.has('ingen_str')&&!sokratesState.R.t) return false;
+  if(key==='A'&&sokratesState.A.v.size===1&&sokratesState.A.v.has('ingen_led')&&!sokratesState.A.t) return false;
+  return true;
+}
+
+/* ── Note generation ── */
+const SOK_LABELS_STRUCT = {S:'S (lokalisasjon)',O:'O (debut)',C:'K (karakter)',R:'R (stråling)',A:'A (ledsagende)',T:'T (tidsforløp)',Ef:'E (faktorer)',S2:'S (styrke)'};
+const ALL_KEYS_ORDERED = ['S','O','C','R','A','T','Ef','S2'];
+
+/* ── One-liner segment builder: returns [{text, cls}] so styling can apply per-segment ── */
+function sokratesOnelinerSegments(){
+  const segs=[];
+  const loc=sokLine('S'), kar=sokLine('C'), deb=sokLine('O');
+  const str=sokLine('R'), led=sokLine('A'), tid=sokLine('T');
+  const fak=sokLineE(), nrs=[sokLineNRS(), sokratesState.S2.t].filter(Boolean).join(', ');
+
+  const clsFor = key => sokIsAbn(key) ? 'abnormal' : 'normal';
+
+  if(loc&&kar) segs.push({text:loc+' '+kar.toLowerCase()+' smerte', cls: clsFor('S')==='abnormal'||clsFor('C')==='abnormal' ? 'abnormal':'normal'});
+  else if(loc) segs.push({text:loc+' smerte', cls:clsFor('S')});
+  else if(kar) segs.push({text:kar.toLowerCase()+' smerte', cls:clsFor('C')});
+
+  if(deb) segs.push({text:'debut: '+deb.toLowerCase(), cls:clsFor('O')});
+  if(str&&!str.toLowerCase().startsWith('ingen')) segs.push({text:'stråling til '+str.toLowerCase(), cls:'abnormal'});
+  if(led&&!led.toLowerCase().startsWith('ingen')) segs.push({text:'ledsaget av '+led.toLowerCase(), cls:'abnormal'});
+  if(tid) segs.push({text:tid.toLowerCase(), cls:clsFor('T')});
+  if(fak) segs.push({text:fak.toLowerCase(), cls:'abnormal'});
+  if(nrs) segs.push({text:nrs, cls:clsFor('S2')});
+
+  return segs;
+}
+
+function sokratesNoteText(){
+  if(sokratesFormat==='structured'){
+    return ALL_KEYS_ORDERED.map(k=>`${SOK_LABELS_STRUCT[k]}: ${sokLine(k)||'(ikke angitt)'}`).join('\n');
+  }
+  const segs=sokratesOnelinerSegments();
+  if(!segs.length) return '(ingen funn registrert)';
+  const s=segs.map(x=>x.text).join(', ');
+  return 'SOKRATES: '+s.charAt(0).toUpperCase()+s.slice(1)+'.';
+}
+
+function sokratesAbnText(){
+  const lines=ALL_KEYS_ORDERED.filter(k=>sokIsAbn(k)).map(k=>{
+    const lbl={S:'S',O:'O',C:'K',R:'R',A:'A',T:'T',Ef:'E',S2:'S'};
+    return `${lbl[k]}: ${sokLine(k)}`;
+  });
+  return lines.join('\n')||'(ingen klinisk relevante funn registrert)';
+}
+
+function sokratesNoteHTML(){
+  if(sokratesFormat==='oneliner'){
+    const segs=sokratesOnelinerSegments();
+    if(!segs.length) return '(ingen funn registrert)';
+    const styledSegs = segs.map(x=>styledPart(x.text, x.cls));
+    // Capitalize first visible character of the first segment's plain text before styling was applied —
+    // simplest robust approach: capitalize on the plain join, then re-derive styled join with same casing.
+    const plainFirst = segs[0].text;
+    const capFirst = plainFirst.charAt(0).toUpperCase()+plainFirst.slice(1);
+    const firstStyled = styledPart(capFirst, segs[0].cls);
+    const rest = styledSegs.slice(1);
+    return 'SOKRATES: '+[firstStyled, ...rest].join(', ')+'.';
+  }
+  const plain=sokratesNoteText();
+  if(!noteAbnormalBold&&!noteAbnormalItalic&&!noteAbnormalUnderline) return plain.replace(/\n/g,'<br>');
+  return plain.split('\n').map(line=>{
+    const ci=line.indexOf(':');
+    if(ci<0) return line;
+    const lbl=line.substring(0,ci+1), val=line.substring(ci+1);
+    const keyEntry=Object.entries(SOK_LABELS_STRUCT).find(([,v])=>lbl.startsWith(v.split(' ')[0]));
+    const isAbn=keyEntry?sokIsAbn(keyEntry[0]):false;
+    return `<strong>${lbl}</strong>${isAbn?styledPart(val,'abnormal'):val}`;
+  }).join('<br>');
+}
+function sokratesAbnHTML(){
+  const p=sokratesAbnText();
+  if(p.startsWith('(ingen')) return `<em style="color:var(--ink-muted)">${p}</em>`;
+  if(!noteAbnormalBold&&!noteAbnormalItalic&&!noteAbnormalUnderline) return p.replace(/\n/g,'<br>');
+  return p.split('\n').map(l=>styledPart(l,'abnormal')).join('<br>');
+}
+
+function renderSokratesNote(){
+  const nb=document.getElementById('sok-note-body');
+  const ab=document.getElementById('sok-abn-body');
+  if(nb) nb.innerHTML=sokratesNoteHTML();
+  if(ab) ab.innerHTML=sokratesAbnHTML();
+}
+
+/* ── Build panel ── */
+function sokChipHTML(key, id, label, norm){
+  const sel=sokVals(key).has(id);
+  const cls=`chip-btn ${norm?'':'abnormal'} ${sel?'selected':''} sok-chip`;
+  return `<button type="button" class="${cls}" tabindex="-1"
+    data-sk="${key}" data-si="${id}" aria-pressed="${sel}">${label}</button>`;
+}
+
+function sokGroupHTML(key){
+  const def=SOK_DEF[key];
+  if(!def) return '';
+  return def.groups.map(g=>`
+    ${g.g?`<div class="subfield-label" style="font-size:.72rem;color:var(--ink-muted);margin:6px 0 3px">${g.g}</div>`:''}
+    <div class="chip-row" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px;">
+      ${g.ids.map(([id,lbl])=>sokChipHTML(key,id,lbl,isNormalChip(key,id))).join('')}
+    </div>`).join('');
+}
+
+function sokNRSRow(label, field){
+  const cur=sokratesState.S2[field];
+  const btns=[0,1,2,3,4,5,6,7,8,9,10].map(n=>{
+    const hue=n===0?'#43A047':n<=3?'#7CB342':n<=5?'#FDD835':n<=7?'#FB8C00':'#E53935';
+    const sel=cur===n;
+    return `<button type="button" class="sok-nrs-btn ${sel?'selected':''}"
+      data-nf="${field}" data-nv="${n}" tabindex="-1"
+      style="width:34px;height:34px;border-radius:6px;border:2px solid ${sel?hue:hue+'55'};
+             background:${sel?hue+'33':'#fff'};color:${hue};font-weight:700;font-size:.84rem;cursor:pointer;">${n}</button>`;
+  }).join('');
+  return `<div style="margin-bottom:10px">
+    <div class="subfield-label" style="font-size:.77rem;margin-bottom:4px">${label}</div>
+    <div class="chip-row" style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+      ${btns}
+      <button type="button" class="sok-nrs-clear" data-nf="${field}" tabindex="-1"
+        style="height:34px;padding:0 10px;border-radius:6px;border:1px solid var(--border);
+               background:none;font-size:.75rem;color:var(--ink-muted);cursor:pointer">✕</button>
+    </div>
+  </div>`;
+}
+
+function sokCard(id, letterEl, nameEl, qEl, bodyHTML, focusKey){
+  return `<div class="card" id="sok-card-${id}" style="margin-bottom:14px">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+      <span style="font-family:'IBM Plex Mono';font-size:1.5rem;font-weight:700;color:var(--teal);min-width:26px">${letterEl}</span>
+      <div>
+        <div style="font-family:'IBM Plex Sans';font-weight:600;font-size:.9rem">${nameEl}</div>
+        <div style="font-family:'IBM Plex Sans';font-size:.75rem;color:var(--ink-muted);margin-top:1px;font-style:italic">${qEl}</div>
+      </div>
+    </div>
+    <div class="sok-chip-area" data-fk="${focusKey||id}" tabindex="0" role="group" aria-label="${nameEl}">
+      ${bodyHTML}
+    </div>
+  </div>`;
+}
+
+function buildSokratesPanel(){
+  const panel=document.getElementById('panel-sokrates');
+  if(!panel) return;
+
+  const ta=(key,ph,rows=2)=>`<textarea class="sok-txt" data-tk="${key}" rows="${rows}"
+    placeholder="${ph}"
+    style="width:100%;box-sizing:border-box;font-family:'IBM Plex Mono';font-size:.8rem;border:1px solid var(--border);border-radius:7px;padding:8px 10px;resize:vertical;margin-top:6px;color:var(--ink);">${key==='T'?sokratesState.T.t:key==='Ef'?sokratesState.Ef.t:key==='El'?sokratesState.El.t:key==='S2'?sokratesState.S2.t:(sokratesState[key]?.t||'')}</textarea>`;
+
+  const cardS  = sokCard('S','S','Sted / lokalisasjon','Hvor sitter smerten? Pek med én finger.',sokGroupHTML('S')+ta('S','Fritekst lokalisasjon…'),'S');
+  const cardO  = sokCard('O','O','Oppstart / debut','Når startet det? Akutt, gradvis, etter traume/anstrengelse?',sokGroupHTML('O')+ta('O','Fritekst debut…'),'O');
+  const cardC  = sokCard('C','K','Karakter / kvalitet','Trykkende, stikkende, klemmende, brennende, rivende, murrende, kolikkpreget?',sokGroupHTML('C')+ta('C','Fritekst karakter…'),'C');
+  const cardR  = sokCard('R','R','Stråling / utbredelse','Stråler smerten noe sted?',sokGroupHTML('R')+ta('R','Fritekst stråling…'),'R');
+  const cardA  = sokCard('A','A','Ledsagende symptomer','Kvalme, tungpust, kaldsvette, feber, synkope, svimmelhet?',sokGroupHTML('A')+ta('A','Fritekst ledsagende…'),'A');
+  const cardT  = sokCard('T','T','Tidsforløp / varighet','Konstant eller anfallsvis?',
+    sokGroupHTML('T')+
+    `<div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+      <label style="font-family:'IBM Plex Sans';font-size:.8rem;white-space:nowrap;color:var(--ink-muted)">Varighet:</label>
+      <input type="text" class="sok-dur" value="${sokratesState.T.dur}" placeholder="f.eks. 30 min, 2 timer"
+        style="flex:1;font-family:'IBM Plex Sans';font-size:.84rem;padding:5px 10px;border:1px solid var(--border);border-radius:7px"/>
+    </div>`+ta('T','Fritekst tidsforløp…'),'T');
+  const cardE  = sokCard('E','E','Forverrende / lindrende faktorer','Hva gjør det verre? Hva gjør det bedre?',
+    `<div class="subfield-label" style="font-size:.77rem;color:var(--clay);font-weight:600;margin-bottom:4px">Forverrende</div>
+    <div class="chip-row" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">
+      ${SOK_DEF.Ef.groups[0].ids.map(([id,lbl])=>sokChipHTML('Ef',id,lbl,false)).join('')}
+    </div>${ta('Ef','Fritekst forverrende…',1)}
+    <div class="subfield-label" style="font-size:.77rem;color:var(--teal);font-weight:600;margin:10px 0 4px">Lindrende</div>
+    <div class="chip-row" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">
+      ${SOK_DEF.El.groups[0].ids.map(([id,lbl])=>sokChipHTML('El',id,lbl,false)).join('')}
+    </div>${ta('El','Fritekst lindrende…',1)}`,'E');
+  const cardS2 = sokCard('S2','S','Styrke / NRS','NRS 0–10: nå, på det verste, etter behandling?',
+    sokNRSRow('NRS nå','na')+sokNRSRow('NRS på det verste','verste')+sokNRSRow('NRS etter behandling','etter')+ta('S2','Fritekst / kommentar…',1),'S2');
+
+  panel.innerHTML=`
+  <main class="layout">
+    <section class="cardList">${cardS}${cardO}${cardC}${cardR}${cardA}${cardT}${cardE}${cardS2}</section>
+    <aside class="note-panel">
+      <div class="exam-toolbar" style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div class="toggle-wrap" style="flex-wrap:wrap;gap:6px">
+          <label class="switch"><input type="checkbox" class="abnormalItalicToggle" id="sok-italic" ${noteAbnormalItalic?'checked':''}/><span class="slider"></span></label>
+          <span class="toggle-label">Avvik kursiv</span>
+          <label class="switch" style="margin-left:8px"><input type="checkbox" class="abnormalBoldToggle" id="sok-bold" ${noteAbnormalBold?'checked':''}/><span class="slider"></span></label>
+          <span class="toggle-label">Avvik fet</span>
+          <label class="switch" style="margin-left:8px"><input type="checkbox" class="abnormalUnderlineToggle" id="sok-under" ${noteAbnormalUnderline?'checked':''}/><span class="slider"></span></label>
+          <span class="toggle-label">Avvik understrek</span>
+        </div>
+        <div class="toolbar-actions">
+          <button class="ghost-btn" id="sok-paste-toggle">Lim inn eksisterende ↧</button>
+          <button class="ghost-btn" id="sok-reset-btn">Tilbakestill</button>
+        </div>
+      </div>
+
+      <div class="paste-panel" id="sok-paste-panel">
+        <p>Lim inn et eksisterende SOKRATES-notat. Nøkkelord gjenkjennes og feltene fylles ut automatisk.</p>
+        <textarea id="sok-paste-input" placeholder="Lim inn teksten her…"></textarea>
+        <div class="row">
+          <button class="solid-btn" id="sok-parse-btn">Tolk og oppdater</button>
+          <span class="parse-status" id="sok-parse-status"></span>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-family:'IBM Plex Sans';font-size:.79rem;color:var(--ink-muted)">Format:</span>
+        <button type="button" class="chip-btn ${sokratesFormat==='structured'?'selected':''}" id="sok-fmt-s">S: / O: / K: / …</button>
+        <button type="button" class="chip-btn ${sokratesFormat==='oneliner'?'selected':''}" id="sok-fmt-o">Én-linjes resymé</button>
+      </div>
+
+      <div class="note-head"><div class="note-title">Notat</div></div>
+      <div class="note-body" id="sok-note-body" style="white-space:pre-wrap"></div>
+      <div class="note-foot" style="gap:8px;flex-wrap:wrap">
+        <button class="solid-btn" id="sok-copy-btn">Kopier notat</button>
+        <button class="ghost-btn" id="sok-copy-rich-btn" style="font-size:.78rem">Kopier med formatering</button>
+        <span class="copy-status" id="sok-copy-status">Kopiert ✓</span>
+      </div>
+      <div class="note-divider"></div>
+      <div class="note-title" style="font-size:.82rem;margin-bottom:6px;color:var(--clay)">Avvikende / klinisk relevante funn</div>
+      <div class="note-body" id="sok-abn-body" style="white-space:pre-wrap"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="ghost-btn" id="sok-copy-abn-btn" style="font-size:.78rem">Kopier avvikende funn</button>
+        <span class="copy-status" id="sok-copy-abn-status">Kopiert ✓</span>
+      </div>
+    </aside>
+  </main>`;
+
+  renderSokratesNote();
+
+  if(!panel.dataset.sokEvt){
+    panel.dataset.sokEvt='1';
+    attachSokratesEvents(panel);
+  }
+}
+
+function attachSokratesEvents(panel){
+  /* ── Click handler ── */
+  panel.addEventListener('click', e=>{
+    /* Chip toggle */
+    const chip=e.target.closest('.sok-chip');
+    if(chip){
+      const key=chip.dataset.sk, id=chip.dataset.si;
+      const st=sokratesState[key];
+      if(!st) return;
+      if(st.v.has(id)) st.v.delete(id);
+      else st.v.add(id);
+      chip.classList.toggle('selected', st.v.has(id));
+      chip.setAttribute('aria-pressed', st.v.has(id));
+      renderSokratesNote();
+      return;
+    }
+    /* NRS button */
+    const nrsBtn=e.target.closest('.sok-nrs-btn');
+    if(nrsBtn){
+      const f=nrsBtn.dataset.nf, v=parseInt(nrsBtn.dataset.nv);
+      sokratesState.S2[f]=sokratesState.S2[f]===v?null:v;
+      buildSokratesPanel(); return;
+    }
+    const nrsClear=e.target.closest('.sok-nrs-clear');
+    if(nrsClear){ sokratesState.S2[nrsClear.dataset.nf]=null; buildSokratesPanel(); return; }
+    /* Format */
+    if(e.target.closest('#sok-fmt-s')){ sokratesFormat='structured'; buildSokratesPanel(); return; }
+    if(e.target.closest('#sok-fmt-o')){ sokratesFormat='oneliner';   buildSokratesPanel(); return; }
+    /* Paste toggle */
+    if(e.target.closest('#sok-paste-toggle')){ document.getElementById('sok-paste-panel').classList.toggle('open'); return; }
+    /* Reset */
+    if(e.target.closest('#sok-reset-btn')){ sokratesReset(); buildSokratesPanel(); return; }
+    /* Parse */
+    if(e.target.closest('#sok-parse-btn')){
+      const raw=document.getElementById('sok-paste-input').value.trim();
+      const st2=document.getElementById('sok-parse-status');
+      if(!raw){ st2.textContent='Lim inn tekst først.'; return; }
+      const norm=s=>s.toLowerCase().replace(/\s+/g,' ').trim();
+      const doc=norm(raw);
+      let n=0;
+      ['S','O','C','R','A','T','Ef','El'].forEach(k=>{
+        const def=SOK_DEF[k]; if(!def) return;
+        def.groups.forEach(g=>g.ids.forEach(([id,lbl])=>{
+          if(doc.includes(norm(lbl))){ sokratesState[k].v.add(id); n++; }
+        }));
+      });
+      buildSokratesPanel();
+      st2.textContent=n?n+' nøkkelord gjenkjent.':'Ingen gjenkjent.';
+      st2.style.color=n?'var(--teal)':'var(--clay)';
+      return;
+    }
+    /* Copy plain */
+    if(e.target.closest('#sok-copy-btn')){
+      const s=document.getElementById('sok-copy-status');
+      navigator.clipboard.writeText(sokratesNoteText()).catch(()=>{
+        const ta=document.createElement('textarea');ta.value=sokratesNoteText();
+        document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+      }).finally(()=>{s.classList.add('show');setTimeout(()=>s.classList.remove('show'),1600);});
+      return;
+    }
+    if(e.target.closest('#sok-copy-rich-btn')){ copyWithRichText(sokratesNoteHTML(),sokratesNoteText(),document.getElementById('sok-copy-status')); return; }
+    if(e.target.closest('#sok-copy-abn-btn')){ copyWithRichText(sokratesAbnHTML(),sokratesAbnText(),document.getElementById('sok-copy-abn-status')); return; }
+  });
+
+  /* ── Input handler ── */
+  panel.addEventListener('input', e=>{
+    const txt=e.target.closest('.sok-txt');
+    if(txt){
+      const k=txt.dataset.tk;
+      if(k==='S2') sokratesState.S2.t=txt.value;
+      else if(sokratesState[k]) sokratesState[k].t=txt.value;
+      renderSokratesNote(); return;
+    }
+    const dur=e.target.closest('.sok-dur');
+    if(dur){ sokratesState.T.dur=dur.value; renderSokratesNote(); return; }
+  });
+
+  /* ── Keyboard navigation ── */
+  panel.addEventListener('keydown', e=>{
+    const area=e.target.closest('.sok-chip-area');
+    if(!area) return;
+
+    const chips=[...area.querySelectorAll('.sok-chip,.sok-nrs-btn')];
+    if(!chips.length) return;
+    const cur=area.querySelector('.sok-chip:focus,.sok-nrs-btn:focus');
+    const idx=cur?chips.indexOf(cur):0;
+    let next=-1;
+
+    if(e.key==='ArrowRight') next=(idx+1)%chips.length;
+    else if(e.key==='ArrowLeft') next=(idx-1+chips.length)%chips.length;
+    else if(e.key==='ArrowDown'){
+      // Move to next chip area or text field below
+      const allFocusable=[...panel.querySelectorAll('.sok-chip-area, .sok-txt, .sok-dur')];
+      const areaIdx=allFocusable.indexOf(area);
+      if(areaIdx<allFocusable.length-1){ e.preventDefault(); allFocusable[areaIdx+1].focus(); return; }
+    }
+    else if(e.key==='ArrowUp'){
+      const allFocusable=[...panel.querySelectorAll('.sok-chip-area, .sok-txt, .sok-dur')];
+      const areaIdx=allFocusable.indexOf(area);
+      if(areaIdx>0){ e.preventDefault(); allFocusable[areaIdx-1].focus(); return; }
+    }
+    else if(e.key==='Enter'||e.key===' '){
+      if(cur){ e.preventDefault(); cur.click(); return; }
+    }
+
+    if(next>=0){ e.preventDefault(); chips[next].focus(); chips[next].scrollIntoView({block:'nearest'}); }
+  });
+
+  /* When a chip area receives focus, focus first (or last focused) chip */
+  panel.addEventListener('focus', e=>{
+    const area=e.target.closest('.sok-chip-area');
+    if(!area||e.target!==area) return;
+    const first=area.querySelector('.sok-chip,.sok-nrs-btn');
+    if(first) first.focus();
+  }, true);
+
+  /* Tab from text area goes to next text area (skip chip areas) */
+  panel.addEventListener('keydown', e=>{
+    if(e.key!=='Tab') return;
+    const txt=e.target.closest('.sok-txt,.sok-dur');
+    if(!txt) return;
+    const allTxt=[...panel.querySelectorAll('.sok-txt,.sok-dur')];
+    const i=allTxt.indexOf(txt);
+    if(!e.shiftKey&&i<allTxt.length-1){ e.preventDefault(); allTxt[i+1].focus(); }
+    else if(e.shiftKey&&i>0){ e.preventDefault(); allTxt[i-1].focus(); }
+  }, true);
+}
 </script>
 
+<script>
+/* ============================== FINAL INIT (called after ALL modules, including SOKRATES, are defined) ============================== */
+init();
+</script>
 </body>
 </html>
