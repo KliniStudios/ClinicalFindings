@@ -415,7 +415,11 @@
           <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodDom" value="dom" style="margin-top:2px;" />
-              <span><strong>DOM-utvalg (anbefalt)</strong> — bruker nettleserens innebygde kopiering. Beste kompatibilitet med WordPad, LibreOffice, eldre EPJ-systemer og Office.</span>
+              <span><strong>DOM-utvalg (Word / WordPad / LibreOffice)</strong> — anbefalt for Office-programmer. Nettleseren skriver CF_RTF + CF_HTML til utklippstavlen, som gir formatering i Word, WordPad og LibreOffice.</span>
+            </label>
+            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
+              <input type="radio" name="copyMethod" id="copyMethodEpj" value="epj" style="margin-top:2px;" />
+              <span><strong>EPJ / journalprogram (anbefalt for journalsystemer)</strong> — bruker ClipboardItem API med inline CSS-stiler (<code>style="font-weight:bold"</code> i stedet for <code>&lt;strong&gt;</code>). Fungerer i DIPS, journalsystemer og LibreOffice Writer som leser <code>text/html</code>.</span>
             </label>
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodApi" value="api" style="margin-top:2px;" />
@@ -2035,15 +2039,81 @@ function copyStyledPart(text, cls){
   }
 }
 
-/* Regenerate copy-HTML using copyStyledPart (may differ from display styledPart) */
-function buildCopyHTML(tabId){
+/* ── Inline-CSS variants for EPJ / LibreOffice compatibility ── */
+function copyStyledPartInline(text, cls){
+  if(cls !== 'abnormal') return text;
+  const st = [];
+  if(noteAbnormalBold)      st.push('font-weight:bold');
+  if(noteAbnormalItalic)    st.push('font-style:italic');
+  if(noteAbnormalUnderline) st.push('text-decoration:underline');
+  return st.length ? `<span style="${st.join(';')}">${text}</span>` : text;
+}
+function formatCategoryNameInline(name){
+  const st = [];
+  if(categoryNameFormat.bold)      st.push('font-weight:bold');
+  if(categoryNameFormat.italic)    st.push('font-style:italic');
+  if(categoryNameFormat.underline) st.push('text-decoration:underline');
+  const s = name + ':';
+  return st.length ? `<span style="${st.join(';')}">${s}</span>` : s;
+}
+
+/* Central copy-HTML generator: picks semantic vs inline-CSS based on settings */
+function getCopyHTML(tabId){
+  const method = settings.copyMethod || 'dom';
   const lines = noteLinesForTab(tabId);
+  const useInline = (method === 'epj');
+  const partFn  = useInline ? copyStyledPartInline : copyStyledPart;
+  const catFn   = useInline ? formatCategoryNameInline : formatCategoryName;
   return lines.lines.map(line=>{
-    const catHtml = formatCategoryName(line.name);
-    const partsHtml = line.parts.map(p=>copyStyledPart(p.text, p.cls)).join(' ');
-    return '<div>'+catHtml+' '+partsHtml+'</div>';
+    const partsHtml = line.parts.map(p=>partFn(p.text, p.cls)).join(' ');
+    return '<div>'+catFn(line.name)+' '+partsHtml+'</div>';
   }).join('\n');
 }
+function getOrthoCopyHTML(){
+  const method = settings.copyMethod || 'dom';
+  const useInline = (method === 'epj');
+  const partFn = useInline ? copyStyledPartInline : copyStyledPart;
+  const catFn  = useInline ? formatCategoryNameInline : formatCategoryName;
+  const regFn  = useInline
+    ? (name)=>{ const st=[];
+        if(regionNameFormat.bold) st.push('font-weight:bold');
+        if(regionNameFormat.italic) st.push('font-style:italic');
+        if(regionNameFormat.underline) st.push('text-decoration:underline');
+        const s=name+':'; return st.length?`<span style="${st.join(';')}">${s}</span>`:s; }
+    : formatRegionName;
+  return orthoNoteData().map(sec=>{
+    const rawHeader = sec.showLabel ? `${sec.regionName}, ${sec.sideLabel}` : sec.regionName;
+    const domLines = sec.domains.map(d=>{
+      const partsHtml = d.parts.map(p=>partFn(p.text, p.cls)).join('. ');
+      return `<div style="padding-left:16px">${catFn(d.name)} ${partsHtml}.</div>`;
+    }).join('');
+    return `<div>${regFn(rawHeader)}</div>${domLines}`;
+  }).join('<br>');
+}
+function getEkgCopyHTML(){
+  const method = settings.copyMethod || 'dom';
+  const useInline = (method === 'epj');
+  if(!useInline) return ekgNoteHTML();
+  /* Inline-CSS version of ekgNoteHTML */
+  const plain = ekgNoteText();
+  const abnParts = ekgAbnParts();
+  if(!abnParts.length) return plain.replace(/\n/g,'<br>');
+  let html = plain.replace(/\n/g,'<br>');
+  const st = [];
+  if(noteAbnormalBold)      st.push('font-weight:bold');
+  if(noteAbnormalItalic)    st.push('font-style:italic');
+  if(noteAbnormalUnderline) st.push('text-decoration:underline');
+  if(st.length){
+    abnParts.forEach(part=>{
+      const esc = part.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      html = html.replace(new RegExp(esc,'g'),`<span style="${st.join(';')}">${part}</span>`);
+    });
+  }
+  return html;
+}
+
+/* Legacy: kept for display rendering — uses semantic tags */
+function buildCopyHTML(tabId){ return getCopyHTML(tabId); }
 
 async function copyWithRichText(htmlContent, plainText, statusEl){
   const method = settings.copyMethod || 'dom';
@@ -2068,7 +2138,23 @@ async function copyWithRichText(htmlContent, plainText, statusEl){
 
   let ok = false;
 
-  /* DOM-selection method — best compatibility (WordPad, LibreOffice, EPJ) */
+  if(method === 'epj'){
+    /* EPJ / journalprogram mode:
+       Uses ClipboardItem API with inline-CSS HTML.
+       No DOM-selection: avoids RTF conversion issues in EPJ systems.
+       HTML uses <span style="font-weight:bold"> instead of <strong>
+       for maximum compatibility with LibreOffice and EPJ readers. */
+    try{
+      if(navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined'){
+        const hBlob = new Blob([htmlToSend], {type:'text/html'});
+        const tBlob = new Blob([plainText],  {type:'text/plain'});
+        await navigator.clipboard.write([new ClipboardItem({'text/html':hBlob,'text/plain':tBlob})]);
+        if(statusEl){statusEl.classList.add('show');setTimeout(()=>statusEl.classList.remove('show'),1600);}
+        return;
+      }
+    }catch(e){ /* fall through to DOM method */ }
+    /* Fallback: DOM selection */
+  }
   const tryDom = async ()=>{
     try{
       const div = document.createElement('div');
@@ -2316,7 +2402,7 @@ function renderAbnormalSummary(tabId){
     if(copyBtn){
       const tab = copyBtn.dataset.tab;
       const status = document.getElementById('copyStatus-'+tab);
-      copyWithRichText(htmlNoteText(tab), plainNoteTextStyled(tab), status);
+      copyWithRichText(getCopyHTML(tab), plainNoteTextStyled(tab), status);
       return;
     }
 
@@ -3238,7 +3324,7 @@ function syncCopySettingsUI(){
   if(pi) pi.value = settings.copyAbnPrefix||'[AVVIK] ';
   updateCopyStylePreview();
 }
-['copyMethodDom','copyMethodApi','copyMethodAuto','copyMethodPlain',
+['copyMethodDom','copyMethodEpj','copyMethodApi','copyMethodAuto','copyMethodPlain',
  'copyAbnStyleHtml','copyAbnStyleMarkdown','copyAbnStylePrefix','copyAbnStyleCaps','copyAbnStyleNone'
 ].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('change',applyCopySettings); });
 const _prefixInput = document.getElementById('copyAbnPrefixInput');
@@ -4342,7 +4428,7 @@ function attachEkgEvents(){
 
     const richBtn = e.target.closest('#ekg-copy-rich-btn');
     if(richBtn){
-      copyWithRichText(ekgNoteHTML(), ekgNoteText(), document.getElementById('ekg-copy-status'));
+      copyWithRichText(getEkgCopyHTML(), ekgNoteText(), document.getElementById('ekg-copy-status'));
       return;
     }
 
@@ -5224,7 +5310,7 @@ function buildOrthoPanel(){
 
     const copyBtn = e.target.closest('#ortho-copy-btn');
     if(copyBtn){
-      const html=htmlOrthoText(); const plain=orthoPlainText();
+      const html=getOrthoCopyHTML(); const plain=orthoPlainText();
       const status=document.getElementById('ortho-copy-status');
       copyWithRichText(html, plain, status);
       return;
