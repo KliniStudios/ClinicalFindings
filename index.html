@@ -299,6 +299,14 @@
   .modal-close-x{position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--ink-muted);padding:4px 8px;border-radius:4px;}
   .modal-close-x:hover{color:var(--ink);background:#f0f0f0;}
   .modal-box{position:relative;}
+
+  /* ===== SIRS / qSOFA tab ===== */
+  .sep-row{padding:10px 0; border-bottom:1px solid var(--border);}
+  .sep-row:last-child{border-bottom:none;}
+  .sep-row-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .sep-auto-tag{font-family:'IBM Plex Mono'; font-size:.68rem; color:var(--ink-muted);}
+  .sep-auto-tag.manual{color:var(--clay);}
+  .sep-q{font-family:'IBM Plex Sans'; font-size:.74rem; color:var(--ink-muted); font-style:italic; margin:2px 0 7px;}
   ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
 </style>
 </head>
@@ -328,6 +336,8 @@
     <button class="tab-btn active" data-tab="hjernenerver">Hjernenerver</button>
     <button class="tab-btn" data-tab="klinisk">Klinisk undersøkelse</button>
     <button class="tab-btn" data-tab="nihss">NIHSS</button>
+    <button class="tab-btn" data-tab="ciwa">CIWA-Ar</button>
+    <button class="tab-btn" data-tab="sepsis">SIRS / qSOFA</button>
     <button class="tab-btn" data-tab="ekg">EKG</button>
     <button class="tab-btn" data-tab="ortho">Ortopedi</button>
     <button class="tab-btn" data-tab="sokrates">SOKRATES</button>
@@ -340,6 +350,12 @@
 
   <!-- NIHSS -->
   <section class="tab-panel" id="panel-nihss"></section>
+
+  <!-- CIWA-Ar -->
+  <section class="tab-panel" id="panel-ciwa"></section>
+
+  <!-- SIRS / qSOFA -->
+  <section class="tab-panel" id="panel-sepsis"></section>
 
   <!-- EKG -->
   <section class="tab-panel" id="panel-ekg"></section>
@@ -409,7 +425,7 @@
       <div class="settings-card">
         <h2>Kopiering og formatering</h2>
         <div class="storage-note" style="margin:0 0 16px; padding:0; border:none;">
-          Velg kopieringsmetode og avvik-stil. Velg <strong>DOM-utvalg</strong> for best kompatibilitet med WordPad, LibreOffice og de fleste EPJ-systemer. <strong>ClipboardItem</strong> fungerer best i nyere Word og Google Docs.
+          «Med formatering» legger teksten på utklippstavlen i flere formater samtidig (HTML, RTF og ren tekst), og programmet du limer inn i velger selv det beste det forstår. Hvis journalsystemet fjerner fet skrift, velg en tekstbasert avvik-stil under (f.eks. <strong>Store bokstaver</strong> eller <strong>Prefiks</strong>), så avvikene fortsatt skiller seg ut.
         </div>
 
         <div class="field-row">
@@ -417,23 +433,11 @@
           <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodDom" value="dom" style="margin-top:2px;" />
-              <span><strong>DOM-utvalg (Word / WordPad / LibreOffice)</strong>: anbefalt for Office-programmer. Nettleseren skriver CF_RTF + CF_HTML til utklippstavlen, som gir formatering i Word, WordPad og LibreOffice.</span>
-            </label>
-            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyMethod" id="copyMethodEpj" value="epj" style="margin-top:2px;" />
-              <span><strong>EPJ / journalprogram (anbefalt for journalsystemer)</strong>: bruker ClipboardItem API med inline CSS-stiler (<code>style="font-weight:bold"</code> i stedet for <code>&lt;strong&gt;</code>). Fungerer i DIPS, journalsystemer og LibreOffice Writer som leser <code>text/html</code>.</span>
-            </label>
-            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyMethod" id="copyMethodApi" value="api" style="margin-top:2px;" />
-              <span><strong>ClipboardItem API</strong>: moderne metode. Fungerer i Chrome/Edge + Word og Google Docs, men kan feile i noen miljøer.</span>
-            </label>
-            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyMethod" id="copyMethodAuto" value="auto" style="margin-top:2px;" />
-              <span><strong>Automatisk</strong>: prøver DOM-utvalg, faller tilbake på ClipboardItem, deretter ren tekst.</span>
+              <span><strong>Med formatering (anbefalt)</strong>: fet, kursiv og understrek følger med til Word, LibreOffice, Outlook, Google Docs og journalsystemer som støtter formatert innliming.</span>
             </label>
             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
               <input type="radio" name="copyMethod" id="copyMethodPlain" value="plain" style="margin-top:2px;" />
-              <span><strong>Alltid ren tekst</strong>: ingen formatering kopieres, kun tekst. Fungerer overalt.</span>
+              <span><strong>Alltid ren tekst</strong>: ingen formatering, kun tekst. Fungerer overalt.</span>
             </label>
           </div>
         </div>
@@ -515,7 +519,7 @@
   </div>
 
   <footer class="disclaimer">
-    <b>v005 · 24.06.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
+    <b>v006 · 18.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
     Kun dokumentasjons- og formatteringsstøtte. Verktøyet omformer brukerens egne registrerte opplysninger til tekstutkast og foretar ikke kliniske vurderinger. Kontrollér, korrigér og godkjenn alltid teksten før journalføring. Ikke legg inn identifiserende pasientopplysninger.
   </footer>
 </div>
@@ -543,7 +547,7 @@
 <div class="modal-overlay" id="brukervilkarOverlay">
   <div class="modal-box" style="max-width:660px; max-height:82vh; overflow-y:auto;">
     <button type="button" class="modal-close-x" data-close-modal="brukervilkarOverlay">&times;</button>
-    <div class="modal-title">Brukervilkår · v005 · 24.06.2026</div>
+    <div class="modal-title">Brukervilkår · v006 · 18.10.2026</div>
     <div style="font-family:'IBM Plex Sans'; font-size:.83rem; line-height:1.8; color:var(--ink);">
       <p><strong>1. Formål og avgrensning</strong><br>
       Dette verktøyet er et teknisk dokumentasjons- og formatteringsverktøy. Formålet er å hjelpe brukeren med å omforme brukerens egne, manuelt registrerte kliniske opplysninger og funn til forslag til strukturert eller løpende tekst.<br>
@@ -2044,11 +2048,15 @@ function copyStyledPart(text, cls){
 /* ── Inline-CSS variants for EPJ / LibreOffice compatibility ── */
 function copyStyledPartInline(text, cls){
   if(cls !== 'abnormal') return text;
-  const st = [];
-  if(noteAbnormalBold)      st.push('font-weight:bold');
-  if(noteAbnormalItalic)    st.push('font-style:italic');
-  if(noteAbnormalUnderline) st.push('text-decoration:underline');
-  return st.length ? `<span style="${st.join(';')}">${text}</span>` : text;
+  let s = text;
+  if(noteAbnormalUnderline) s = `<u style="text-decoration:underline">${s}</u>`;
+  if(noteAbnormalItalic)    s = `<i style="font-style:italic">${s}</i>`;
+  if(noteAbnormalBold)      s = `<b style="font-weight:bold">${s}</b>`;
+  return s;
+}
+/* Copy-time styling for a single part, honouring copy method + avvik-stil */
+function copyPart(text, cls){
+  return ((settings.copyAbnStyle||'html')==='html') ? copyStyledPartInline(text, cls) : copyStyledPart(text, cls);
 }
 function formatCategoryNameInline(name){
   const st = [];
@@ -2117,85 +2125,104 @@ function getEkgCopyHTML(){
 /* Legacy: kept for display rendering — uses semantic tags */
 function buildCopyHTML(tabId){ return getCopyHTML(tabId); }
 
+/* ── Clipboard: writes our own HTML (text/html) + plain text in one go.
+   Uses a one-off "copy" event so the browser puts EXACTLY this HTML on the
+   clipboard (no page CSS, grey background or webfonts leaking in). Word,
+   LibreOffice, Outlook, Google Docs and most EPJ systems read text/html.
+   Formatting is written both as tags (<b>/<i>/<u>) and inline CSS so every
+   program that understands either keeps it. ── */
+function normalizeCopyHTML(html){
+  let h = String(html||'');
+  const m = h.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if(m) h = m[1];
+  h = h.replace(/<strong(\s[^>]*)?>/gi,'<b style="font-weight:bold">').replace(/<\/strong>/gi,'</b>')
+       .replace(/<b>/gi,'<b style="font-weight:bold">')
+       .replace(/<em(\s[^>]*)?>/gi,'<i style="font-style:italic">').replace(/<\/em>/gi,'</i>')
+       .replace(/<i>/gi,'<i style="font-style:italic">')
+       .replace(/<u>/gi,'<u style="text-decoration:underline">');
+  return '<html><head><meta charset="utf-8"></head><body><!--StartFragment--><div>'+h+'</div><!--EndFragment--></body></html>';
+}
+/* Minimal HTML → RTF (for RichEdit-based programs such as WordPad).
+   Browsers may or may not expose this format to the OS; it is harmless if ignored. */
+function htmlToRtf(html){
+  let h = String(html||'');
+  const m = h.match(/<!--StartFragment-->([\s\S]*?)<!--EndFragment-->/); if(m) h = m[1];
+  const esc = t => t.replace(/\\/g,'\\\\').replace(/\{/g,'\\{').replace(/\}/g,'\\}')
+    .replace(/[^\x00-\x7f]/g, c => '\\u'+(c.charCodeAt(0)>32767?c.charCodeAt(0)-65536:c.charCodeAt(0))+'?');
+  const dec = t => t.replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
+  let out = '';
+  h.split(/(<[^>]+>)/).forEach(tok=>{
+    if(!tok) return;
+    if(tok[0] !== '<'){ out += esc(dec(tok)); return; }
+    const t = tok.toLowerCase();
+    if(/^<(b|strong)[\s>]/.test(t)) out += '{\\b ';
+    else if(/^<(i|em)[\s>]/.test(t)) out += '{\\i ';
+    else if(/^<u[\s>]/.test(t)) out += '{\\ul ';
+    else if(/^<\/(b|strong|i|em|u)>/.test(t)) out += '}';
+    else if(/^<br/.test(t) || /^<\/(div|p)>/.test(t)) out += '\\par\n';
+  });
+  out = out.replace(/(\\par\n)+$/,'');
+  return '{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Calibri;}}\\f0\\fs22 '+out+'}';
+}
+function escapeForPre(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 async function copyWithRichText(htmlContent, plainText, statusEl){
   const method = settings.copyMethod || 'dom';
+  const done = ()=>{ if(statusEl){ statusEl.classList.add('show'); setTimeout(()=>statusEl.classList.remove('show'),1600); } };
 
-  /* For plain method, always skip formatting */
-  if(method === 'plain'){
-    try{ await navigator.clipboard.writeText(plainText); }catch(e){
-      const ta=document.createElement('textarea');ta.value=plainText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  const writePlain = async ()=>{
+    try{ await navigator.clipboard.writeText(plainText); return true; }
+    catch(e){
+      const ta=document.createElement('textarea'); ta.value=plainText; ta.style.cssText='position:fixed;left:-9999px;top:0;';
+      document.body.appendChild(ta); ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(_){} document.body.removeChild(ta); return ok;
     }
-    if(statusEl){statusEl.classList.add('show');setTimeout(()=>statusEl.classList.remove('show'),1600);}
-    return;
-  }
-
-  /* For markdown/prefix/caps styles, wrap in <pre> so structure is preserved */
-  const needsMarkdown = (settings.copyAbnStyle==='markdown' || settings.copyAbnStyle==='prefix' || settings.copyAbnStyle==='caps' || settings.copyAbnStyle==='none');
-  const htmlToSend = needsMarkdown
-    ? `<pre style="font-family:inherit;white-space:pre-wrap;">${plainText}</pre>`
-    : htmlContent;
-
-  const bodyMatch = htmlToSend.match(/<body>([\s\S]*?)<\/body>/i);
-  const bodyHtml = bodyMatch ? bodyMatch[1] : htmlToSend;
-
-  let ok = false;
-
-  if(method === 'epj'){
-    /* EPJ / journalprogram mode:
-       Uses ClipboardItem API with inline-CSS HTML.
-       No DOM-selection: avoids RTF conversion issues in EPJ systems.
-       HTML uses <span style="font-weight:bold"> instead of <strong>
-       for maximum compatibility with LibreOffice and EPJ readers. */
-    try{
-      if(navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined'){
-        const hBlob = new Blob([htmlToSend], {type:'text/html'});
-        const tBlob = new Blob([plainText],  {type:'text/plain'});
-        await navigator.clipboard.write([new ClipboardItem({'text/html':hBlob,'text/plain':tBlob})]);
-        if(statusEl){statusEl.classList.add('show');setTimeout(()=>statusEl.classList.remove('show'),1600);}
-        return;
-      }
-    }catch(e){ /* fall through to DOM method */ }
-    /* Fallback: DOM selection */
-  }
-  const tryDom = async ()=>{
-    try{
-      const div = document.createElement('div');
-      div.innerHTML = bodyHtml;
-      div.setAttribute('contenteditable','true');
-      div.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;white-space:pre-wrap;';
-      document.body.appendChild(div);
-      div.focus();
-      const range=document.createRange(); range.selectNodeContents(div);
-      const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
-      ok=document.execCommand('copy');
-      sel.removeAllRanges(); document.body.removeChild(div);
-    }catch(e){ ok=false; }
   };
 
-  /* ClipboardItem API method — modern, Word + Google Docs */
-  const tryApi = async ()=>{
+  if(method === 'plain'){ await writePlain(); done(); return; }
+
+  /* Markdown/prefix/caps/none: the marking is in the text itself */
+  const textStyle = ['markdown','prefix','caps','none'].includes(settings.copyAbnStyle);
+  const html = normalizeCopyHTML(textStyle
+    ? `<div style="white-space:pre-wrap">${escapeForPre(plainText).replace(/\n/g,'<br>')}</div>`
+    : htmlContent);
+
+  /* 1) copy-event method: synchronous, keeps user activation, exact HTML */
+  let ok = false;
+  const onCopy = (e)=>{
+    try{
+      e.clipboardData.setData('text/html', html);
+      e.clipboardData.setData('text/plain', plainText);
+      try{ e.clipboardData.setData('text/rtf', htmlToRtf(html)); }catch(_){}
+      e.preventDefault();
+      ok = true;
+    }catch(_){ ok = false; }
+  };
+  document.addEventListener('copy', onCopy, true);
+  try{
+    /* execCommand('copy') needs a selection in some browsers (Safari) */
+    const ta=document.createElement('textarea'); ta.value=' '; ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0;';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }catch(_){ ok = false; }
+  document.removeEventListener('copy', onCopy, true);
+
+  /* 2) Async Clipboard API */
+  if(!ok){
     try{
       if(navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem!=='undefined'){
-        const hBlob=new Blob([htmlToSend],{type:'text/html'});
-        const tBlob=new Blob([plainText],{type:'text/plain'});
-        await navigator.clipboard.write([new ClipboardItem({'text/html':hBlob,'text/plain':tBlob})]);
-        ok=true;
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html],{type:'text/html'}),
+          'text/plain': new Blob([plainText],{type:'text/plain'})
+        })]);
+        ok = true;
       }
-    }catch(e){ ok=false; }
-  };
-
-  if(method==='dom')        { await tryDom(); if(!ok) await tryApi(); }
-  else if(method==='api')   { await tryApi(); if(!ok) await tryDom(); }
-  else /* auto */           { await tryDom(); if(!ok) await tryApi(); }
-
-  /* Last resort plain text */
-  if(!ok){
-    try{ await navigator.clipboard.writeText(plainText); }catch(e){
-      const ta=document.createElement('textarea');ta.value=plainText;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
-    }
+    }catch(_){ ok = false; }
   }
 
-  if(statusEl){statusEl.classList.add('show');setTimeout(()=>statusEl.classList.remove('show'),1600);}
+  /* 3) Last resort: plain text */
+  if(!ok) await writePlain();
+  done();
 }
 
 
@@ -3156,21 +3183,21 @@ document.addEventListener('click', e => {
   if(italicToggle){
     noteAbnormalItalic = italicToggle.checked;
     document.querySelectorAll('.abnormalItalicToggle').forEach(el => el.checked = noteAbnormalItalic);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); if(typeof renderSokratesNote==='function') renderSokratesNote(); updateCopyStylePreview();
+    refreshAllNotes();
     return;
   }
   const boldToggle = e.target.closest('.abnormalBoldToggle');
   if(boldToggle){
     noteAbnormalBold = boldToggle.checked;
     document.querySelectorAll('.abnormalBoldToggle').forEach(el => el.checked = noteAbnormalBold);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); if(typeof renderSokratesNote==='function') renderSokratesNote(); updateCopyStylePreview();
+    refreshAllNotes();
     return;
   }
   const underlineToggle = e.target.closest('.abnormalUnderlineToggle');
   if(underlineToggle){
     noteAbnormalUnderline = underlineToggle.checked;
     document.querySelectorAll('.abnormalUnderlineToggle').forEach(el => el.checked = noteAbnormalUnderline);
-    renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); if(typeof renderSokratesNote==='function') renderSokratesNote(); updateCopyStylePreview();
+    refreshAllNotes();
     return;
   }
   const regionFormatBtn = e.target.closest('.openRegionFormatBtn');
@@ -3220,6 +3247,18 @@ document.addEventListener('click', e => {
   }
 });
 
+/* Re-render every note panel after a formatting change */
+function refreshAllNotes(){
+  renderNote('hjernenerver'); renderNote('klinisk');
+  if(typeof renderOrthoNote==='function') renderOrthoNote();
+  if(typeof updateEkgNote==='function') updateEkgNote();
+  if(typeof renderSokratesNote==='function') renderSokratesNote();
+  if(typeof renderNihssOutput==='function') renderNihssOutput();
+  if(typeof renderCiwaOutput==='function') renderCiwaOutput();
+  if(typeof renderSepsisOutput==='function') renderSepsisOutput();
+  updateCopyStylePreview();
+}
+
 /* ── Brukervilkår open ── */
 document.getElementById('openBrukervilkar').addEventListener('click', e => {
   e.preventDefault();
@@ -3234,6 +3273,7 @@ document.addEventListener('keydown', e => {
   if(e.key !== ',') return;
   const el = document.activeElement;
   if(!el || el.tagName !== 'INPUT') return;
+  if(el.dataset && el.dataset.allowComma === '1') return;
   e.preventDefault();
   /* Insert a dot at cursor position */
   if(typeof el.setRangeText === 'function'){
@@ -3250,6 +3290,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('paste', e => {
   const el = document.activeElement;
   if(!el || el.tagName !== 'INPUT') return;
+  if(el.dataset && el.dataset.allowComma === '1') return;
   const t = (e.clipboardData||window.clipboardData).getData('text');
   if(/[,]/.test(t)){
     e.preventDefault();
@@ -3316,6 +3357,7 @@ function updateCopyStylePreview(){
   }
 }
 function syncCopySettingsUI(){
+  if(settings.copyMethod!=='plain') settings.copyMethod='dom';
   const mId = 'copyMethod' + (settings.copyMethod||'dom').charAt(0).toUpperCase() + (settings.copyMethod||'dom').slice(1);
   const mEl = document.getElementById(mId);
   if(mEl) mEl.checked = true;
@@ -3343,7 +3385,7 @@ function applyCatFormat(){
   categoryNameFormat.italic = document.getElementById('catFmtItalic').checked;
   categoryNameFormat.underline = document.getElementById('catFmtUnderline').checked;
   updateCatFormatPreview();
-  renderNote('hjernenerver'); renderNote('klinisk'); if(typeof renderOrthoNote==='function') renderOrthoNote(); if(typeof updateEkgNote==='function') updateEkgNote(); if(typeof renderSokratesNote==='function') renderSokratesNote(); updateCopyStylePreview();
+  refreshAllNotes();
 }
 
 ['catFmtBold','catFmtItalic','catFmtUnderline'].forEach(id => {
@@ -3407,16 +3449,17 @@ async function loadPersisted(){
 }
 
 async function resetAllSettings(){
-  settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14 };
+  settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14, copyMethod:'dom', copyAbnStyle:'html', copyAbnPrefix:'[AVVIK] ' };
   customProfiles = []; profileItemOverrides = {}; customTestDefs = [];
   activeProfileId = 'alle';
   customSections = [];
   cardOrder = [];
-  for(const key of ['displaySettings','customProfiles','activeProfileId','customSections','cardOrder']){
+  for(const key of ['displaySettings','customProfiles','activeProfileId','customSections','cardOrder','profileItemOverrides','customTestDefs']){
     lsDel(key);
     await wsDel(key);
   }
   applyFontSettings();
+  syncCopySettingsUI();
   renderProfileList();
   renderProfileCheckGroups();
   renderSectionList();
@@ -3430,6 +3473,7 @@ async function resetAllSettings(){
 async function init(){
   await loadPersisted();
   applyFontSettings();
+  syncCopySettingsUI();
   renderProfileList();
   renderProfileCheckGroups();
   renderTopPresetBar();
@@ -3439,6 +3483,8 @@ async function init(){
   buildExamPanel('hjernenerver');
   buildExamPanel('klinisk');
   buildNihssTab();
+  buildCiwaTab();
+  buildSepsisTab();
   buildEkgPanel();
   buildOrthoPanel();
   buildSokratesPanel();
@@ -3990,14 +4036,14 @@ function buildEkgPanel(){
     <div class="ekg-field-card"${redStyle} data-field-key="${f.key}">
       <div class="ekg-field-label">${f.label}</div>
       <div class="ekg-field-row">
-        <input type="text" inputmode="decimal" class="ekg-num-input" step="1" placeholder="–" id="ekg-input-${f.key}" data-field="${f.key}" />
+        <input type="text" inputmode="decimal" class="ekg-num-input" step="1" placeholder="–" id="ekg-input-${f.key}" data-field="${f.key}" value="${ekgState[f.key]||''}" />
         <span class="ekg-unit">${f.unit}</span>
         <span class="flag-badge" id="ekg-badge-${f.key}" style="display:none;"></span>
       </div>
       ${f.key==='qtc' ? `
         <div class="ekg-chip-row" id="ekg-kjonn-row">
-          <button type="button" class="ekg-chip" data-kjonn="mann">Mann</button>
-          <button type="button" class="ekg-chip" data-kjonn="kvinne">Kvinne</button>
+          <button type="button" class="ekg-chip ${ekgState.kjonn==='mann'?'selected':''}" data-kjonn="mann">Mann</button>
+          <button type="button" class="ekg-chip ${ekgState.kjonn==='kvinne'?'selected':''}" data-kjonn="kvinne">Kvinne</button>
         </div>` : ''}
       <div class="ekg-ref" id="ekg-ref-${f.key}">${refRangeText(f)}</div>
       ${redNote}
@@ -4440,11 +4486,9 @@ function attachEkgEvents(){
       copyWithRichText(ekgAbnHTML(), ekgAbnText(), document.getElementById('ekg-copy-abn-status'));
       return;
     }
-  });
 
-  document.getElementById('ekg-modal-close').addEventListener('click', closeEkgModal);
-  document.getElementById('ekg-modal-overlay').addEventListener('click', e => {
-    if(e.target.id === 'ekg-modal-overlay') closeEkgModal();
+    /* Modal close button (panel is rebuilt on paper-speed change, so handled by delegation) */
+    if(e.target.closest('#ekg-modal-close')){ closeEkgModal(); return; }
   });
 }
 
@@ -4461,7 +4505,8 @@ function openEkgModal(condition){
   document.getElementById('ekg-modal-overlay').classList.add('open');
 }
 function closeEkgModal(){
-  document.getElementById('ekg-modal-overlay').classList.remove('open');
+  const o = document.getElementById('ekg-modal-overlay');
+  if(o) o.classList.remove('open');
 }
 </script>
 
@@ -4517,8 +4562,9 @@ function nihssDetailText(key){
   if(!def) return '';
   const parts = [];
   (def.chips||[]).forEach(cf=>{
-    const val = det[cf.key];
+    let val = det[cf.key];
     if(!val || !val.length) return;
+    if(!Array.isArray(val)) val = [val];
     const labels = val.map(v=>{const c=cf.choices.find(x=>x.id===v);return c?c.label:v;});
     parts.push(labels.join(', '));
   });
@@ -4572,7 +4618,7 @@ function renderNihssDetails(){
       fieldsHtml += `<div class="nihss-detail-label">${cf.label}</div><div class="nihss-detail-chips">${btns}</div>`;
     });
     if(def.text){
-      fieldsHtml += `<div class="nihss-detail-label">${def.text.label}</div><input type="text" class="nihss-detail-text" data-dtkey="${it.key}" data-dtfield="${def.text.key}" value="${det[def.text.key]||''}" placeholder="skriv inn..." />`;
+      fieldsHtml += `<div class="nihss-detail-label">${def.text.label}</div><input type="text" class="nihss-detail-text" data-allow-comma="1" data-dtkey="${it.key}" data-dtfield="${def.text.key}" value="${det[def.text.key]||''}" placeholder="skriv inn..." />`;
     }
     html += `<div style="margin-bottom:10px; padding:8px; background:#F6F8FF; border:1px solid var(--border); border-radius:7px;">
       <div style="font-weight:600; font-size:.8rem; margin-bottom:6px; color:var(--ink);">${it.label}</div>
@@ -4605,7 +4651,7 @@ function nihssAbnText(){
   return parts.join('\n') || '(ingen avvikende funn registrert)';
 }
 
-function nihssOutputHTML(){
+function nihssOutputHTML(forCopy){
   /* Rich HTML for copy-with-formatting */
   const bd = nihssBreakdown();
   const lines = [];
@@ -4619,7 +4665,7 @@ function nihssOutputHTML(){
       const detStr = nihssShowDetails ? nihssDetailText(it.key) : '';
       const isAbn = sel!=='0' && sel!=='';
       let txt = `${sel}: ${choice?choice.label:''}${detStr?' '+detStr:''}`;
-      if(isAbn) txt = styledPart(txt,'abnormal');
+      if(isAbn) txt = forCopy ? copyPart(txt,'abnormal') : styledPart(txt,'abnormal');
       scoreLabel = txt; anyScored=true;
       if(sel!=='UN') total+=parseInt(sel,10);
     }
@@ -4630,11 +4676,18 @@ function nihssOutputHTML(){
   return lines.join('<br>');
 }
 
+function nihssAbnHTML(forCopy){
+  const t = nihssAbnText();
+  if(t.startsWith('(')) return `<em style="color:#888">${t}</em>`;
+  const fn = forCopy ? copyPart : styledPart;
+  return t.split('\n').map(l=>fn(l,'abnormal')).join('<br>');
+}
+
 function renderNihssOutput(){
   const body = document.getElementById('nihss-output-body');
-  if(body) body.textContent = nihssOutputText();
+  if(body) body.innerHTML = nihssOutputHTML();
   const abn = document.getElementById('nihss-abn-body');
-  if(abn) abn.textContent = nihssAbnText();
+  if(abn) abn.innerHTML = nihssAbnHTML();
 }
 
 function refreshNihssTabIfBuilt(){
@@ -4670,17 +4723,17 @@ function buildNihssTab(){
         <div class="exam-toolbar" style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border);">
           <div class="toggle-wrap">
             <label class="switch">
-              <input type="checkbox" class="abnormalItalicToggle" id="nihss-italic-toggle"/>
+              <input type="checkbox" class="abnormalItalicToggle" ${noteAbnormalItalic?'checked':''}/>
               <span class="slider"></span>
             </label>
             <span class="toggle-label">Avvik kursiv</span>
             <label class="switch" style="margin-left:10px;">
-              <input type="checkbox" class="abnormalBoldToggle" id="nihss-bold-toggle"/>
+              <input type="checkbox" class="abnormalBoldToggle" ${noteAbnormalBold?'checked':''}/>
               <span class="slider"></span>
             </label>
             <span class="toggle-label">Avvik fet</span>
             <label class="switch" style="margin-left:10px;">
-              <input type="checkbox" class="abnormalUnderlineToggle" id="nihss-underline-toggle"/>
+              <input type="checkbox" class="abnormalUnderlineToggle" ${noteAbnormalUnderline?'checked':''}/>
               <span class="slider"></span>
             </label>
             <span class="toggle-label">Avvik understrek</span>
@@ -4702,10 +4755,10 @@ function buildNihssTab(){
         <div class="note-head">
           <div class="note-title">NIHSS-resultat</div>
         </div>
-        <div class="note-body" id="nihss-output-body" style="white-space:pre-wrap;"></div>
+        <div class="note-body" id="nihss-output-body" style="white-space:normal;"></div>
         <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
-          <button class="solid-btn" id="nihss-copy-btn">Kopier resultat</button>
-          <button class="ghost-btn" id="nihss-copy-rich-btn" style="font-size:.78rem;">Kopier med formatering</button>
+          <button class="solid-btn" id="nihss-copy-rich-btn">Kopier resultat</button>
+          <button class="ghost-btn" id="nihss-copy-btn" style="font-size:.78rem;">Kopier som ren tekst</button>
           <span class="copy-status" id="nihss-copy-status">Kopiert ✓</span>
         </div>
         <div class="note-divider"></div>
@@ -4727,14 +4780,6 @@ function buildNihssTab(){
   renderNihssOutput();
   renderNihssDetails();
   attachNihssTabEvents();
-  /* Sync formatting toggles */
-  ['abnormalItalicToggle','abnormalBoldToggle','abnormalUnderlineToggle'].forEach(cls=>{
-    const el = document.getElementById('nihss-'+cls.replace('abnormal','').replace('Toggle','')+'-toggle');
-    if(el){
-      const map={ItalicToggle:()=>noteAbnormalItalic,BoldToggle:()=>noteAbnormalBold,UnderlineToggle:()=>noteAbnormalUnderline};
-      el.checked = map[cls.replace('abnormal','')]();
-    }
-  });
 }
 
 function attachNihssTabEvents(){
@@ -4759,15 +4804,16 @@ function attachNihssTabEvents(){
       const statusEl = document.getElementById('nihss-parse-status');
       if(!raw){ statusEl.textContent='Lim inn tekst først.'; return; }
       let matched = 0;
-      NIHSS_ITEMS.forEach(it=>{
-        const scores = it.choices.map(c=>c.score).filter(s=>s!==null&&s!==undefined);
-        const key = it.key.replace('.','\\.');
-        for(const sc of scores){
-          const pat = new RegExp('\\b'+key+'[^\\n]{0,30}?\\b'+sc+'\\b','i');
-          if(pat.test(raw)){
-            applyNihssScore(it.key,'utfort','breakdown',it.key,sc);
-            matched++; break;
-          }
+      raw.split(/\n/).forEach(line=>{
+        const m = line.match(/^\s*(1a|1b|1c|5a|5b|6a|6b|10|11|[2-9])\.?\s[^:]*:\s*(UN|\d)/i);
+        if(!m) return;
+        const key = m[1].toLowerCase();
+        const sc = m[2].toUpperCase();
+        const it = NIHSS_ITEMS.find(x=>x.key===key);
+        if(it && it.choices.some(c=>c.score===sc)){
+          const bd = nihssBreakdown();
+          if(bd[key]!==sc) applyNihssScore('neuro_nihss','utfort','breakdown',key,sc);
+          matched++;
         }
       });
       reRenderAll();
@@ -4821,7 +4867,7 @@ function attachNihssTabEvents(){
     /* Rich copy */
     const richBtn = e.target.closest('#nihss-copy-rich-btn');
     if(richBtn){
-      const html = nihssOutputHTML();
+      const html = nihssOutputHTML(true);
       const status = document.getElementById('nihss-copy-status');
       copyWithRichText(html, nihssOutputText(), status); return;
     }
@@ -4829,13 +4875,7 @@ function attachNihssTabEvents(){
     /* Abn copy */
     const abnBtn = e.target.closest('#nihss-copy-abn-btn');
     if(abnBtn){
-      const text = nihssAbnText();
-      const status = document.getElementById('nihss-copy-abn-status');
-      (async()=>{
-        try{ await navigator.clipboard.writeText(text); }
-        catch(err){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-        status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600);
-      })(); return;
+      copyWithRichText(nihssAbnHTML(true), nihssAbnText(), document.getElementById('nihss-copy-abn-status')); return;
     }
 
     const resetBtn = e.target.closest('#nihss-reset-btn');
@@ -5348,6 +5388,10 @@ function buildOrthoPanel(){
   renderOrthoNote();
   renderOrthoAbnSummary();
 
+  /* Attach the panel listener only once (buildOrthoPanel is called again on reset) */
+  if(panel.dataset.orthoEvt) return;
+  panel.dataset.orthoEvt = '1';
+
   panel.addEventListener('click', e=>{
     /* Ortho paste panel toggle */
     if(e.target.closest('#ortho-paste-toggle')){
@@ -5613,8 +5657,6 @@ function sokratesNoteHTML(){
     const segs=sokratesOnelinerSegments();
     if(!segs.length) return '(ingen funn registrert)';
     const styledSegs = segs.map(x=>styledPart(x.text, x.cls));
-    // Capitalize first visible character of the first segment's plain text before styling was applied —
-    // simplest robust approach: capitalize on the plain join, then re-derive styled join with same casing.
     const plainFirst = segs[0].text;
     const capFirst = plainFirst.charAt(0).toUpperCase()+plainFirst.slice(1);
     const firstStyled = styledPart(capFirst, segs[0].cls);
@@ -5627,7 +5669,7 @@ function sokratesNoteHTML(){
     const ci=line.indexOf(':');
     if(ci<0) return line;
     const lbl=line.substring(0,ci+1), val=line.substring(ci+1);
-    const keyEntry=Object.entries(SOK_LABELS_STRUCT).find(([,v])=>lbl.startsWith(v.split(' ')[0]));
+    const keyEntry=Object.entries(SOK_LABELS_STRUCT).find(([,v])=>lbl===v+':');
     const isAbn=keyEntry?sokIsAbn(keyEntry[0]):false;
     return `<strong>${lbl}</strong>${isAbn?styledPart(val,'abnormal'):val}`;
   }).join('<br>');
@@ -5686,7 +5728,7 @@ function sokNRSRow(label, field){
 }
 
 function sokCard(id, letterEl, nameEl, qEl, bodyHTML, focusKey){
-  return `<div class="card" id="sok-card-${id}" style="margin-bottom:14px">
+  return `<div class="exam-card" id="sok-card-${id}" style="margin-bottom:14px">
     <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
       <span style="font-family:'IBM Plex Mono';font-size:1.5rem;font-weight:700;color:var(--teal);min-width:26px">${letterEl}</span>
       <div>
@@ -5717,7 +5759,7 @@ function buildSokratesPanel(){
     sokGroupHTML('T')+
     `<div style="display:flex;align-items:center;gap:8px;margin-top:6px">
       <label style="font-family:'IBM Plex Sans';font-size:.8rem;white-space:nowrap;color:var(--ink-muted)">Varighet:</label>
-      <input type="text" class="sok-dur" value="${sokratesState.T.dur}" placeholder="f.eks. 30 min, 2 timer"
+      <input type="text" class="sok-dur" data-allow-comma="1" value="${sokratesState.T.dur}" placeholder="f.eks. 30 min, 2 timer"
         style="flex:1;font-family:'IBM Plex Sans';font-size:.84rem;padding:5px 10px;border:1px solid var(--border);border-radius:7px"/>
     </div>`+ta('T','Fritekst tidsforløp…'),'T');
   const cardE  = sokCard('E','E','Forverrende / lindrende faktorer','Hva gjør det verre? Hva gjør det bedre?',
@@ -5838,8 +5880,9 @@ function attachSokratesEvents(panel){
         }));
       });
       buildSokratesPanel();
-      st2.textContent=n?n+' nøkkelord gjenkjent.':'Ingen gjenkjent.';
-      st2.style.color=n?'var(--teal)':'var(--clay)';
+      const st3=document.getElementById('sok-parse-status');
+      st3.textContent=n?n+' nøkkelord gjenkjent.':'Ingen gjenkjent.';
+      st3.style.color=n?'var(--teal)':'var(--clay)';
       return;
     }
     /* Copy plain */
@@ -5872,6 +5915,7 @@ function attachSokratesEvents(panel){
   panel.addEventListener('keydown', e=>{
     const area=e.target.closest('.sok-chip-area');
     if(!area) return;
+    if(e.target.closest('.sok-txt,.sok-dur')) return;
 
     const chips=[...area.querySelectorAll('.sok-chip,.sok-nrs-btn')];
     if(!chips.length) return;
@@ -5882,7 +5926,6 @@ function attachSokratesEvents(panel){
     if(e.key==='ArrowRight') next=(idx+1)%chips.length;
     else if(e.key==='ArrowLeft') next=(idx-1+chips.length)%chips.length;
     else if(e.key==='ArrowDown'){
-      // Move to next chip area or text field below
       const allFocusable=[...panel.querySelectorAll('.sok-chip-area, .sok-txt, .sok-dur')];
       const areaIdx=allFocusable.indexOf(area);
       if(areaIdx<allFocusable.length-1){ e.preventDefault(); allFocusable[areaIdx+1].focus(); return; }
@@ -5921,7 +5964,682 @@ function attachSokratesEvents(panel){
 </script>
 
 <script>
-/* ============================== FINAL INIT (called after ALL modules, including SOKRATES, are defined) ============================== */
+/* ============================== CIWA-Ar TAB ==============================
+   Norsk versjon av CIWA-Ar (Vestre Viken / Haukeland, Tidsskr Nor Legeforen 2014;
+   tilgjengelig via Norsk legemiddelhåndbok og NFRAM), anbefalt av Helsedirektoratet
+   (Nasjonal faglig retningslinje for avrusning). Ti punkter, totalskår 0–67.
+   Verktøyet beregner kun sum og gir ingen kliniske anbefalinger. */
+
+const CIWA_ITEMS = [
+  { key:'kvalme', kw:'kvalme', label:'1. Kvalme og oppkast',
+    q:'«Har du kvalme? Har du kastet opp?» Observasjon.',
+    choices:[
+      {score:'0', label:'Ingen kvalme og ingen oppkast'},
+      {score:'1', label:'Mild kvalme uten oppkast'},
+      {score:'2', label:'(mellomtrinn)'},
+      {score:'3', label:'(mellomtrinn)'},
+      {score:'4', label:'Periodisk kvalme med brekninger'},
+      {score:'5', label:'(mellomtrinn)'},
+      {score:'6', label:'(mellomtrinn)'},
+      {score:'7', label:'Konstant kvalme, hyppige brekninger og oppkast'}
+    ]},
+  { key:'tremor', kw:'tremor', label:'2. Tremor',
+    q:'Armene strakt frem og fingrene spredt. Observasjon.',
+    choices:[
+      {score:'0', label:'Ingen tremor'},
+      {score:'1', label:'Ikke synlig, men kan kjennes fingertupp mot fingertupp'},
+      {score:'2', label:'(mellomtrinn)'},
+      {score:'3', label:'(mellomtrinn)'},
+      {score:'4', label:'Moderat tremor med armene strakt frem'},
+      {score:'5', label:'(mellomtrinn)'},
+      {score:'6', label:'(mellomtrinn)'},
+      {score:'7', label:'Kraftig tremor, også uten at armene er strakt frem'}
+    ]},
+  { key:'svette', kw:'svett', label:'3. Paroksysmal svetting',
+    q:'Observasjon.',
+    choices:[
+      {score:'0', label:'Ingen synlig svette'},
+      {score:'1', label:'Knapt merkbar svette, fuktige håndflater'},
+      {score:'2', label:'(mellomtrinn)'},
+      {score:'3', label:'(mellomtrinn)'},
+      {score:'4', label:'Svetteperler synlige i pannen'},
+      {score:'5', label:'(mellomtrinn)'},
+      {score:'6', label:'(mellomtrinn)'},
+      {score:'7', label:'Dryppende svett'}
+    ]},
+  { key:'angst', kw:'angst', label:'4. Angst',
+    q:'«Føler du deg nervøs eller engstelig?» Observasjon.',
+    choices:[
+      {score:'0', label:'Ingen angst, avslappet'},
+      {score:'1', label:'Lett engstelig'},
+      {score:'2', label:'(mellomtrinn)'},
+      {score:'3', label:'(mellomtrinn)'},
+      {score:'4', label:'Moderat engstelig eller på vakt, slik at angst kan antas'},
+      {score:'5', label:'(mellomtrinn)'},
+      {score:'6', label:'(mellomtrinn)'},
+      {score:'7', label:'Tilsvarer akutt panikktilstand, som ved alvorlig delirium eller akutte psykotiske reaksjoner'}
+    ]},
+  { key:'agitasjon', kw:'agitasjon', label:'5. Agitasjon (motorisk uro)',
+    q:'Observasjon.',
+    choices:[
+      {score:'0', label:'Normal aktivitet'},
+      {score:'1', label:'Noe økt aktivitet'},
+      {score:'2', label:'(mellomtrinn)'},
+      {score:'3', label:'(mellomtrinn)'},
+      {score:'4', label:'Moderat urolig og rastløs'},
+      {score:'5', label:'(mellomtrinn)'},
+      {score:'6', label:'(mellomtrinn)'},
+      {score:'7', label:'Går frem og tilbake under det meste av samtalen, eller kaster seg stadig rundt'}
+    ]},
+  { key:'taktil', kw:'taktil', label:'6. Taktile forstyrrelser',
+    q:'«Kjenner du kløe, prikking, brenning, nummenhet eller at noe kryper på eller under huden?»',
+    choices:[
+      {score:'0', label:'Ingen'},
+      {score:'1', label:'Svært lett kløe, prikking, brenning eller nummenhet'},
+      {score:'2', label:'Lett kløe, prikking, brenning eller nummenhet'},
+      {score:'3', label:'Moderat kløe, prikking, brenning eller nummenhet'},
+      {score:'4', label:'Moderat alvorlige hallusinasjoner'},
+      {score:'5', label:'Alvorlige hallusinasjoner'},
+      {score:'6', label:'Ekstremt alvorlige hallusinasjoner'},
+      {score:'7', label:'Kontinuerlige hallusinasjoner'}
+    ]},
+  { key:'auditiv', kw:'auditiv', label:'7. Auditive forstyrrelser',
+    q:'«Er du mer var for lyder rundt deg? Er de skarpe eller skremmende? Hører du noe som forstyrrer deg, eller ting du vet ikke er der?»',
+    choices:[
+      {score:'0', label:'Ingen'},
+      {score:'1', label:'Svært lett skarphet eller evne til å skremme'},
+      {score:'2', label:'Lett skarphet eller evne til å skremme'},
+      {score:'3', label:'Moderat skarphet eller evne til å skremme'},
+      {score:'4', label:'Moderat alvorlige hallusinasjoner'},
+      {score:'5', label:'Alvorlige hallusinasjoner'},
+      {score:'6', label:'Ekstremt alvorlige hallusinasjoner'},
+      {score:'7', label:'Kontinuerlige hallusinasjoner'}
+    ]},
+  { key:'visuell', kw:'visuell', label:'8. Visuelle forstyrrelser',
+    q:'«Virker lyset for sterkt? Har fargene endret seg? Gjør det vondt i øynene? Ser du noe som forstyrrer deg, eller ting du vet ikke er der?»',
+    choices:[
+      {score:'0', label:'Ingen'},
+      {score:'1', label:'Svært lett lysømfintlighet'},
+      {score:'2', label:'Lett lysømfintlighet'},
+      {score:'3', label:'Moderat lysømfintlighet'},
+      {score:'4', label:'Moderat alvorlige hallusinasjoner'},
+      {score:'5', label:'Alvorlige hallusinasjoner'},
+      {score:'6', label:'Ekstremt alvorlige hallusinasjoner'},
+      {score:'7', label:'Kontinuerlige hallusinasjoner'}
+    ]},
+  { key:'hodepine', kw:'hodepine', label:'9. Hodepine, trykk i hodet',
+    q:'«Føles det annerledes i hodet? Kjennes det som et bånd rundt hodet?» Svimmelhet skåres ikke.',
+    choices:[
+      {score:'0', label:'Ikke til stede'},
+      {score:'1', label:'Svært lett'},
+      {score:'2', label:'Lett'},
+      {score:'3', label:'Moderat'},
+      {score:'4', label:'Moderat alvorlig'},
+      {score:'5', label:'Alvorlig'},
+      {score:'6', label:'Svært alvorlig'},
+      {score:'7', label:'Ekstremt alvorlig'}
+    ]},
+  { key:'orientering', kw:'orient', label:'10. Orientering og omtåkethet',
+    q:'«Hvilken dag er det? Hvor er du? Hvem er jeg?» (Addisjon i serie.)',
+    choices:[
+      {score:'0', label:'Orientert og kan utføre addisjon i serie'},
+      {score:'1', label:'Kan ikke utføre addisjon i serie, eller usikker på dato'},
+      {score:'2', label:'Desorientert for dato med inntil 2 kalenderdager'},
+      {score:'3', label:'Desorientert for dato med mer enn 2 kalenderdager'},
+      {score:'4', label:'Desorientert for sted og/eller person'}
+    ]}
+];
+const CIWA_MAX = 67;
+
+let ciwaState = { scores:{}, tid:'', puls:'', bt:'' };
+
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtNo(v){ return String(v==null?'':v).replace('.',','); }
+function copyPlain(text, statusEl){
+  (async()=>{
+    try{ await navigator.clipboard.writeText(text); }
+    catch(err){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+    if(statusEl){ statusEl.classList.add('show'); setTimeout(()=>statusEl.classList.remove('show'),1600); }
+  })();
+}
+function formatToggleBarHTML(extraRightHTML){
+  return `<div class="exam-toolbar" style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+    <div class="toggle-wrap">
+      <label class="switch"><input type="checkbox" class="abnormalItalicToggle" ${noteAbnormalItalic?'checked':''}/><span class="slider"></span></label>
+      <span class="toggle-label">Avvik kursiv</span>
+      <label class="switch" style="margin-left:10px;"><input type="checkbox" class="abnormalBoldToggle" ${noteAbnormalBold?'checked':''}/><span class="slider"></span></label>
+      <span class="toggle-label">Avvik fet</span>
+      <label class="switch" style="margin-left:10px;"><input type="checkbox" class="abnormalUnderlineToggle" ${noteAbnormalUnderline?'checked':''}/><span class="slider"></span></label>
+      <span class="toggle-label">Avvik understrek</span>
+    </div>
+    <div class="toolbar-actions">${extraRightHTML||''}</div>
+  </div>`;
+}
+
+function ciwaChoiceText(it, sc){
+  const c = it.choices.find(x=>x.score===sc);
+  return (c && !c.label.startsWith('(')) ? c.label : 'mellomtrinn';
+}
+function ciwaTotals(){
+  let total = 0, scored = 0;
+  CIWA_ITEMS.forEach(it=>{ const s = ciwaState.scores[it.key]; if(s!=null){ total += parseInt(s,10); scored++; } });
+  return { total, scored };
+}
+function ciwaVitalsLine(){
+  const p = [];
+  if(ciwaState.tid)  p.push('Tidspunkt: '+ciwaState.tid);
+  if(ciwaState.puls) p.push('Puls: '+fmtNo(ciwaState.puls)+' /min');
+  if(ciwaState.bt)   p.push('BT: '+ciwaState.bt+' mmHg');
+  return p.join(' · ');
+}
+
+function ciwaOutputText(){
+  const lines = ['CIWA-Ar:'];
+  CIWA_ITEMS.forEach(it=>{
+    const s = ciwaState.scores[it.key];
+    lines.push(`${it.label}: ${s==null ? 'ikke skåret' : s+': '+ciwaChoiceText(it,s)}`);
+  });
+  lines.push('');
+  const {total, scored} = ciwaTotals();
+  if(!scored) lines.push('Totalskår: ikke beregnet, ingen punkter skåret ennå.');
+  else lines.push(`CIWA-Ar totalskår: ${total} av ${CIWA_MAX} poeng`+(scored<CIWA_ITEMS.length ? ` (${scored} av ${CIWA_ITEMS.length} punkter skåret)` : ''));
+  const v = ciwaVitalsLine(); if(v) lines.push(v);
+  return lines.join('\n');
+}
+function ciwaOutputHTML(forCopy){
+  const lines = ['<strong>CIWA-Ar:</strong>'];
+  CIWA_ITEMS.forEach(it=>{
+    const s = ciwaState.scores[it.key];
+    let val;
+    if(s==null) val = '<em style="color:#888">ikke skåret</em>';
+    else {
+      const txt = s+': '+ciwaChoiceText(it,s);
+      val = s!=='0' ? (forCopy ? copyPart(txt,'abnormal') : styledPart(txt,'abnormal')) : txt;
+    }
+    lines.push(`${it.label}: ${val}`);
+  });
+  lines.push('');
+  const {total, scored} = ciwaTotals();
+  lines.push(scored ? `CIWA-Ar totalskår: <b>${total}</b> av ${CIWA_MAX} poeng`+(scored<CIWA_ITEMS.length?` (${scored} av ${CIWA_ITEMS.length} punkter skåret)`:'') : 'Totalskår: ikke beregnet.');
+  const v = ciwaVitalsLine(); if(v) lines.push(escHtml(v));
+  return lines.join('<br>');
+}
+function ciwaAbnText(){
+  const parts = [];
+  CIWA_ITEMS.forEach(it=>{
+    const s = ciwaState.scores[it.key];
+    if(s==null || s==='0') return;
+    parts.push(`${it.label}: ${s} – ${ciwaChoiceText(it,s)}`);
+  });
+  return parts.join('\n') || '(ingen avvikende funn registrert)';
+}
+function ciwaAbnHTML(forCopy){
+  const t = ciwaAbnText();
+  if(t.startsWith('(')) return `<em style="color:#888">${t}</em>`;
+  return t.split('\n').map(l=>(forCopy?copyPart:styledPart)(escHtml(l),'abnormal')).join('<br>');
+}
+
+function renderCiwaCalc(){
+  const c = document.getElementById('ciwa-calc-container');
+  if(!c) return;
+  const {total, scored} = ciwaTotals();
+  const rows = CIWA_ITEMS.map(it=>{
+    const sel = ciwaState.scores[it.key];
+    const btns = it.choices.map(ch=>`<button type="button" class="nihss-score-btn ${sel===ch.score?'selected':''}" data-ciwa-key="${it.key}" data-ciwa-score="${ch.score}">${ch.score}: ${ch.label}</button>`).join('');
+    return `<div class="nihss-row">
+      <div class="nihss-row-label">${it.label}</div>
+      <div class="sep-q">${it.q}</div>
+      <div class="nihss-btn-group">${btns}</div></div>`;
+  }).join('');
+  c.innerHTML = `<div class="nihss-total-bar">CIWA-Ar-sum: <b>${scored?total:'–'}</b> av ${CIWA_MAX} poeng${scored?` · ${scored}/${CIWA_ITEMS.length} punkter skåret`:' · velg minst ett punkt under'}</div><div class="nihss-grid">${rows}</div>`;
+}
+function renderCiwaOutput(){
+  const b = document.getElementById('ciwa-output-body');
+  if(b) b.innerHTML = ciwaOutputHTML();
+  const a = document.getElementById('ciwa-abn-body');
+  if(a) a.innerHTML = ciwaAbnHTML();
+}
+
+function buildCiwaTab(){
+  const panel = document.getElementById('panel-ciwa');
+  const inp = 'font-family:\'IBM Plex Mono\'; font-size:.84rem; padding:6px 9px; border:1px solid var(--border); border-radius:7px; background:#FAFBFB;';
+  panel.innerHTML = `
+    <main class="layout">
+      <section class="cardList">
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">CIWA-Ar: Clinical Institute Withdrawal Assessment for Alcohol, revidert</span></div>
+          <div class="ekg-hedge-note" style="margin:0 0 14px;">Norsk versjon. Velg skår for hvert av de 10 punktene (punkt 1–9: 0–7, punkt 10: 0–4). Puls og blodtrykk noteres, men inngår ikke i skåren.</div>
+          <div style="display:flex; flex-wrap:wrap; gap:14px; margin-bottom:16px;">
+            <label style="font-size:.78rem; color:var(--ink-muted);">Tidspunkt<br><input type="text" id="ciwa-tid" data-allow-comma="1" value="${escHtml(ciwaState.tid)}" placeholder="f.eks. kl. 08.00" style="${inp} width:130px; margin-top:4px;"/></label>
+            <label style="font-size:.78rem; color:var(--ink-muted);">Puls (/min)<br><input type="text" inputmode="decimal" id="ciwa-puls" value="${escHtml(ciwaState.puls)}" placeholder="–" style="${inp} width:90px; margin-top:4px;"/></label>
+            <label style="font-size:.78rem; color:var(--ink-muted);">BT (mmHg)<br><input type="text" id="ciwa-bt" value="${escHtml(ciwaState.bt)}" placeholder="120/80" style="${inp} width:100px; margin-top:4px;"/></label>
+          </div>
+          <div id="ciwa-calc-container"></div>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Om CIWA-Ar og kilder</span></div>
+          <ul class="ekg-sources">
+            <li><b>Original:</b> Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. «Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar).» <em>Br J Addict</em> 1989;84(11):1353–1357. Skalaen er ikke opphavsrettslig beskyttet og kan brukes fritt.</li>
+            <li><b>Norsk versjon:</b> Oversatt av Vestre Viken og Haukeland universitetssjukehus (Tidsskr Nor Legeforen 2014). Fritt tilgjengelig via Norsk legemiddelhåndbok og Norsk forening for rus- og avhengighetsmedisin.</li>
+            <li><b>Helsedirektoratet:</b> Nasjonal faglig retningslinje for avrusning fra rusmidler og vanedannende legemidler anbefaler CIWA-Ar ved alkoholavhengighet for å vurdere om avrusning kan skje poliklinisk, vurdere behov for legemidler og følge forløpet. Krever opplæring.</li>
+            <li><b>Tolkning (til orientering):</b> En samlet skår på 10 eller høyere regnes vanligvis som tegn på moderat eller alvorlig abstinens. Grenseverdier og tiltak følger lokal prosedyre. Verktøyet beregner kun sum og gir ingen klinisk vurdering.</li>
+            <li><b>Begrensninger:</b> Forutsetter at pasienten kan kommunisere. Ikke utviklet for blandingsmisbruk eller benzodiazepinabstinens, og validiteten hos akutt somatisk syke er omdiskutert.</li>
+          </ul>
+        </div>
+      </section>
+
+      <aside class="note-panel">
+        ${formatToggleBarHTML('<button class="ghost-btn" id="ciwa-paste-toggle">Lim inn eksisterende notat ↧</button>')}
+
+        <div class="paste-panel" id="ciwa-paste-panel">
+          <p>Lim inn et eksisterende CIWA-Ar-notat. Appen gjenkjenner skår per punkt og fyller ut skjemaet.</p>
+          <textarea id="ciwa-paste-input" placeholder="Lim inn CIWA-teksten her…"></textarea>
+          <div class="row">
+            <button class="solid-btn" id="ciwa-parse-btn">Tolk og oppdater</button>
+            <span class="parse-status" id="ciwa-parse-status"></span>
+          </div>
+        </div>
+
+        <div class="note-head"><div class="note-title">CIWA-Ar-resultat</div></div>
+        <div class="note-body" id="ciwa-output-body" style="white-space:normal;"></div>
+        <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
+          <button class="solid-btn" id="ciwa-copy-rich-btn">Kopier resultat</button>
+          <button class="ghost-btn" id="ciwa-copy-btn" style="font-size:.78rem;">Kopier som ren tekst</button>
+          <span class="copy-status" id="ciwa-copy-status">Kopiert ✓</span>
+        </div>
+        <div class="note-divider"></div>
+        <div class="note-title" style="font-size:.82rem; margin-bottom:6px; color:var(--clay);">Avvikende funn</div>
+        <div id="ciwa-abn-body" style="font-family:'IBM Plex Mono'; font-size:.82rem; color:var(--ink); min-height:28px;"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="ghost-btn" id="ciwa-copy-abn-btn" style="font-size:.78rem;">Kopier avvikende funn</button>
+          <span class="copy-status" id="ciwa-copy-abn-status">Kopiert ✓</span>
+        </div>
+        <div class="note-divider" style="margin-top:12px;"></div>
+        <button class="ghost-btn" id="ciwa-reset-btn">Tilbakestill CIWA-Ar</button>
+      </aside>
+    </main>`;
+
+  renderCiwaCalc();
+  renderCiwaOutput();
+
+  if(!panel.dataset.ciwaEvt){
+    panel.dataset.ciwaEvt = '1';
+    attachCiwaEvents(panel);
+  }
+}
+
+function attachCiwaEvents(panel){
+  panel.addEventListener('click', e=>{
+    const sb = e.target.closest('[data-ciwa-score]');
+    if(sb){
+      const k = sb.dataset.ciwaKey, s = sb.dataset.ciwaScore;
+      if(ciwaState.scores[k]===s) delete ciwaState.scores[k]; else ciwaState.scores[k] = s;
+      renderCiwaCalc(); renderCiwaOutput();
+      return;
+    }
+    if(e.target.closest('#ciwa-paste-toggle')){
+      document.getElementById('ciwa-paste-panel').classList.toggle('open'); return;
+    }
+    if(e.target.closest('#ciwa-parse-btn')){
+      const raw = document.getElementById('ciwa-paste-input').value;
+      const st = document.getElementById('ciwa-parse-status');
+      if(!raw.trim()){ st.textContent='Lim inn tekst først.'; return; }
+      let n = 0;
+      raw.split(/\n/).forEach(line=>{
+        const low = line.toLowerCase();
+        const it = CIWA_ITEMS.find(x=>low.includes(x.kw));
+        if(!it) return;
+        const after = line.slice(low.indexOf(it.kw));
+        const m = after.match(/:\s*(\d)\b/) || after.match(/\b(\d)\b/);
+        if(m && it.choices.some(c=>c.score===m[1])){ ciwaState.scores[it.key] = m[1]; n++; }
+      });
+      renderCiwaCalc(); renderCiwaOutput();
+      st.textContent = n ? n+' punkt(er) gjenkjent.' : 'Ingen punkter gjenkjent.';
+      st.style.color = n ? 'var(--teal)' : 'var(--clay)';
+      return;
+    }
+    if(e.target.closest('#ciwa-copy-btn')){ copyPlain(ciwaOutputText(), document.getElementById('ciwa-copy-status')); return; }
+    if(e.target.closest('#ciwa-copy-rich-btn')){ copyWithRichText(ciwaOutputHTML(true), ciwaOutputText(), document.getElementById('ciwa-copy-status')); return; }
+    if(e.target.closest('#ciwa-copy-abn-btn')){ copyWithRichText(ciwaAbnHTML(true), ciwaAbnText(), document.getElementById('ciwa-copy-abn-status')); return; }
+    if(e.target.closest('#ciwa-reset-btn')){
+      ciwaState = { scores:{}, tid:'', puls:'', bt:'' };
+      buildCiwaTab(); return;
+    }
+  });
+
+  panel.addEventListener('input', e=>{
+    const map = {'ciwa-tid':'tid','ciwa-puls':'puls','ciwa-bt':'bt'};
+    const f = map[e.target.id];
+    if(f){ ciwaState[f] = e.target.value.trim(); renderCiwaOutput(); }
+  });
+}
+</script>
+
+<script>
+/* ============================== SIRS / qSOFA TAB ==============================
+   SIRS: ACCP/SCCM-konsensus (Bone et al., Chest 1992) – 4 kriterier.
+   qSOFA: Sepsis-3 (Singer et al. / Seymour et al., JAMA 2016) – 3 kriterier, 0–3 poeng.
+   Hvert kriterium kan settes manuelt (Ja/Nei) eller fylles automatisk fra målinger.
+   Verktøyet teller kun oppfylte kriterier og gir ingen klinisk vurdering. */
+
+const SEP_INPUTS = [
+  {key:'temp',   label:'Temperatur',               unit:'°C',      ph:'37.0'},
+  {key:'hr',     label:'Puls / hjertefrekvens',    unit:'/min',    ph:'–'},
+  {key:'rf',     label:'Respirasjonsfrekvens',     unit:'/min',    ph:'–'},
+  {key:'sbt',    label:'Systolisk blodtrykk',      unit:'mmHg',    ph:'–'},
+  {key:'gcs',    label:'GCS',                      unit:'(3–15)',  ph:'15'},
+  {key:'lpk',    label:'Leukocytter (LPK)',        unit:'× 10⁹/L', ph:'–'},
+  {key:'umodne', label:'Umodne former (stavkjernede)', unit:'%',   ph:'valgfritt'},
+  {key:'paco2',  label:'PaCO₂',                    unit:'kPa',     ph:'valgfritt'}
+];
+const SEP_SHORT = { temp:'T', hr:'Puls', rf:'RF', sbt:'Systolisk BT', gcs:'GCS', lpk:'LPK', umodne:'Umodne', paco2:'PaCO₂' };
+
+function sepNum(k){ const v = parseNum(sepsisState.vals[k]); return isNaN(v) ? null : v; }
+function sepValText(k){
+  const v = sepsisState.vals[k];
+  if(v==null || String(v).trim()==='') return null;
+  const inp = SEP_INPUTS.find(i=>i.key===k);
+  const unit = (k==='gcs') ? '' : ' '+inp.unit;
+  return `${SEP_SHORT[k]} ${fmtNo(String(v).trim())}${unit}`;
+}
+
+const SIRS_CRIT = [
+  { key:'s_temp', label:'1. Temperatur >38,0 °C eller <36,0 °C', q:'Kjernetemperatur.', vals:['temp'],
+    auto:()=>{ const t=sepNum('temp'); return t==null ? null : (t>38 || t<36); } },
+  { key:'s_hr', label:'2. Hjertefrekvens >90 /min', q:'Puls i hvile.', vals:['hr'],
+    auto:()=>{ const h=sepNum('hr'); return h==null ? null : h>90; } },
+  { key:'s_rf', label:'3. Respirasjonsfrekvens >20 /min eller PaCO₂ <4,3 kPa', q:'Tell respirasjonsfrekvensen i ett helt minutt. PaCO₂ fra blodgass.', vals:['rf','paco2'],
+    auto:()=>{ const r=sepNum('rf'), p=sepNum('paco2'); if(r==null && p==null) return null; return (r!=null && r>20) || (p!=null && p<4.3); } },
+  { key:'s_lpk', label:'4. Leukocytter >12 eller <4 × 10⁹/L, eller >10 % umodne former', q:'Fra blodprøve (LPK, eventuelt differensialtelling).', vals:['lpk','umodne'],
+    auto:()=>{ const l=sepNum('lpk'), u=sepNum('umodne'); if(l==null && u==null) return null; return (l!=null && (l>12 || l<4)) || (u!=null && u>10); } }
+];
+const QSOFA_CRIT = [
+  { key:'q_rf', label:'1. Respirasjonsfrekvens ≥22 /min', q:'Tell respirasjonsfrekvensen i ett helt minutt.', vals:['rf'],
+    auto:()=>{ const r=sepNum('rf'); return r==null ? null : r>=22; } },
+  { key:'q_mental', label:'2. Endret mental status (GCS <15)', q:'Nyoppstått forvirring eller nedsatt bevissthet.', vals:['gcs'],
+    auto:()=>{ const g=sepNum('gcs'); return g==null ? null : g<15; } },
+  { key:'q_bt', label:'3. Systolisk blodtrykk ≤100 mmHg', q:'Målt blodtrykk.', vals:['sbt'],
+    auto:()=>{ const b=sepNum('sbt'); return b==null ? null : b<=100; } }
+];
+
+let sepsisState = { vals:{}, manual:{}, tid:'', include:{sirs:true, qsofa:true} };
+function sepsisResetState(){ sepsisState = { vals:{}, manual:{}, tid:'', include:{sirs:true, qsofa:true} }; }
+
+/* → {val:'ja'|'nei'|null, src:'manuell'|'målt'|null} */
+function sepCrit(c){
+  if(sepsisState.manual[c.key]) return { val:sepsisState.manual[c.key], src:'manuell' };
+  const a = c.auto();
+  if(a===null) return { val:null, src:null };
+  return { val: a ? 'ja' : 'nei', src:'målt' };
+}
+function sepCount(list){
+  let met = 0, assessed = 0;
+  list.forEach(c=>{ const s = sepCrit(c); if(s.val){ assessed++; if(s.val==='ja') met++; } });
+  return { met, assessed, total:list.length };
+}
+function sepCritValues(c){
+  return c.vals.map(sepValText).filter(Boolean).join(', ');
+}
+function sepCritLine(c){
+  const s = sepCrit(c);
+  if(!s.val) return { text:`${c.label}: ikke vurdert`, cls:'none' };
+  const vt = sepCritValues(c);
+  const word = s.val==='ja' ? 'Ja' : 'Nei';
+  return { text:`${c.label}: ${word}${vt ? ' ('+vt+')' : ''}`, cls: s.val==='ja' ? 'abnormal' : 'normal' };
+}
+function sepMeasureLine(){
+  const p = SEP_INPUTS.map(i=>sepValText(i.key)).filter(Boolean);
+  return p.length ? 'Målinger: '+p.join(' · ') : '';
+}
+
+function sepBlocks(){
+  const blocks = [];
+  if(sepsisState.include.sirs){
+    const c = sepCount(SIRS_CRIT);
+    blocks.push({ title:'SIRS', lines:SIRS_CRIT.map(sepCritLine),
+      total: c.assessed ? `SIRS: ${c.met} av ${c.total} kriterier oppfylt`+(c.assessed<c.total?` (${c.assessed} av ${c.total} vurdert)`:'') : 'SIRS: ingen kriterier vurdert ennå.' });
+  }
+  if(sepsisState.include.qsofa){
+    const c = sepCount(QSOFA_CRIT);
+    blocks.push({ title:'qSOFA', lines:QSOFA_CRIT.map(sepCritLine),
+      total: c.assessed ? `qSOFA-skår: ${c.met} av ${c.total} poeng`+(c.assessed<c.total?` (${c.assessed} av ${c.total} vurdert)`:'') : 'qSOFA: ingen kriterier vurdert ennå.' });
+  }
+  return blocks;
+}
+
+function sepsisOutputText(){
+  const out = [];
+  sepBlocks().forEach(b=>{
+    out.push(b.title+':');
+    b.lines.forEach(l=>out.push(l.text));
+    out.push(b.total);
+    out.push('');
+  });
+  const m = sepMeasureLine(); if(m) out.push(m);
+  if(sepsisState.tid) out.push('Tidspunkt: '+sepsisState.tid);
+  return out.join('\n').trim() || '(ingen kriterier valgt)';
+}
+function sepsisOutputHTML(forCopy){
+  const out = [];
+  sepBlocks().forEach(b=>{
+    out.push(`<strong>${b.title}:</strong>`);
+    b.lines.forEach(l=>{
+      if(l.cls==='none') out.push(escHtml(l.text).replace(/ikke vurdert$/, '<em style="color:#888">ikke vurdert</em>'));
+      else out.push((forCopy?copyPart:styledPart)(escHtml(l.text), l.cls));
+    });
+    out.push(`<b>${escHtml(b.total)}</b>`);
+    out.push('');
+  });
+  const m = sepMeasureLine(); if(m) out.push(escHtml(m));
+  if(sepsisState.tid) out.push('Tidspunkt: '+escHtml(sepsisState.tid));
+  return out.join('<br>') || '<em style="color:#888">(ingen kriterier valgt)</em>';
+}
+function sepsisAbnText(){
+  const parts = [];
+  sepBlocks().forEach(b=>{
+    b.lines.filter(l=>l.cls==='abnormal').forEach(l=>parts.push(`${b.title} ${l.text}`));
+  });
+  return parts.join('\n') || '(ingen oppfylte kriterier registrert)';
+}
+function sepsisAbnHTML(forCopy){
+  const t = sepsisAbnText();
+  if(t.startsWith('(')) return `<em style="color:#888">${t}</em>`;
+  return t.split('\n').map(l=>(forCopy?copyPart:styledPart)(escHtml(l),'abnormal')).join('<br>');
+}
+
+function sepCritRowsHTML(list){
+  return list.map(c=>{
+    const s = sepCrit(c);
+    const tag = s.src==='manuell' ? ''
+              : s.src==='målt' ? '<span class="sep-auto-tag">fra målinger</span>'
+              : '<span class="sep-auto-tag">ikke vurdert</span>';
+    const vt = sepCritValues(c);
+    return `<div class="sep-row">
+      <div class="sep-row-head"><div class="nihss-row-label" style="margin:0;">${c.label}</div>${tag}</div>
+      <div class="sep-q">${c.q}${vt ? ' · Registrert: '+escHtml(vt) : ''}</div>
+      <div class="option-group">
+        <button type="button" class="option-btn abnormal ${s.val==='ja'?'selected':''}" data-sep-crit="${c.key}" data-sep-val="ja">Ja, oppfylt</button>
+        <button type="button" class="option-btn normal ${s.val==='nei'?'selected':''}" data-sep-crit="${c.key}" data-sep-val="nei">Nei</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSepsisCriteria(){
+  const sirsBox = document.getElementById('sep-sirs-container');
+  const qBox = document.getElementById('sep-qsofa-container');
+  if(sirsBox){
+    const c = sepCount(SIRS_CRIT);
+    sirsBox.innerHTML = `<div class="nihss-total-bar">SIRS: <b>${c.assessed?c.met:'–'}</b> av ${c.total} kriterier oppfylt${c.assessed?` · ${c.assessed}/${c.total} vurdert`:' · fyll inn målinger eller velg Ja/Nei'}</div>` + sepCritRowsHTML(SIRS_CRIT);
+  }
+  if(qBox){
+    const c = sepCount(QSOFA_CRIT);
+    qBox.innerHTML = `<div class="nihss-total-bar">qSOFA: <b>${c.assessed?c.met:'–'}</b> av ${c.total} poeng${c.assessed?` · ${c.assessed}/${c.total} vurdert`:' · fyll inn målinger eller velg Ja/Nei'}</div>` + sepCritRowsHTML(QSOFA_CRIT);
+  }
+}
+function renderSepsisOutput(){
+  const b = document.getElementById('sep-output-body');
+  if(b) b.innerHTML = sepsisOutputHTML();
+  const a = document.getElementById('sep-abn-body');
+  if(a) a.innerHTML = sepsisAbnHTML();
+}
+
+function buildSepsisTab(){
+  const panel = document.getElementById('panel-sepsis');
+  const inputsHtml = SEP_INPUTS.map(i=>`
+    <div class="ekg-field-card">
+      <div class="ekg-field-label">${i.label}</div>
+      <div class="ekg-field-row">
+        <input type="text" inputmode="decimal" class="ekg-num-input sep-input" data-sep-key="${i.key}" value="${escHtml(sepsisState.vals[i.key]||'')}" placeholder="${i.ph}" />
+        <span class="ekg-unit">${i.unit}</span>
+      </div>
+    </div>`).join('');
+
+  panel.innerHTML = `
+    <main class="layout">
+      <section class="cardList">
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Målinger</span></div>
+          <div class="ekg-hedge-note" style="margin:0 0 12px;">Fyll inn det som er målt. Kriteriene under markeres automatisk, og kan overstyres manuelt med Ja/Nei. Felter du lar stå tomme, gir «ikke vurdert».</div>
+          <div class="ekg-input-grid">${inputsHtml}</div>
+          <div style="margin-top:12px;">
+            <label style="font-size:.78rem; color:var(--ink-muted);">Tidspunkt<br><input type="text" id="sep-tid" data-allow-comma="1" value="${escHtml(sepsisState.tid)}" placeholder="f.eks. kl. 14.30" style="font-family:'IBM Plex Mono'; font-size:.84rem; padding:6px 9px; border:1px solid var(--border); border-radius:7px; background:#FAFBFB; width:140px; margin-top:4px;"/></label>
+          </div>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">SIRS: systemisk inflammatorisk responssyndrom</span></div>
+          <div id="sep-sirs-container"></div>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">qSOFA: quick Sequential Organ Failure Assessment</span></div>
+          <div id="sep-qsofa-container"></div>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Om SIRS og qSOFA, kilder</span></div>
+          <ul class="ekg-sources">
+            <li><b>SIRS:</b> Bone RC, Balk RA, Cerra FB et al. «Definitions for sepsis and organ failure and guidelines for the use of innovative therapies in sepsis.» ACCP/SCCM Consensus Conference. <em>Chest</em> 1992;101(6):1644–1655. Fire kriterier; to eller flere oppfylt utgjør SIRS etter denne definisjonen.</li>
+            <li><b>qSOFA / Sepsis-3:</b> Singer M, Deutschman CS, Seymour CW et al. «The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3).» <em>JAMA</em> 2016;315(8):801–810. Seymour CW et al. «Assessment of Clinical Criteria for Sepsis.» <em>JAMA</em> 2016;315(8):762–774. Tre kriterier, 0–3 poeng.</li>
+            <li><b>Screening:</b> Evans L et al. «Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021.» <em>Crit Care Med</em> 2021;49(11):e1063–e1143. Anbefaler å ikke bruke qSOFA alene som screeningverktøy, sammenlignet med SIRS, NEWS eller MEWS.</li>
+            <li><b>Norsk kontekst:</b> Følg lokal sepsisprosedyre og Helsedirektoratets nasjonale faglige retningslinje for antibiotikabruk i sykehus. Mange sykehus bruker NEWS2 i tillegg.</li>
+            <li><b>Avgrensning:</b> Verktøyet teller kun oppfylte kriterier ut fra det som er registrert. Det stiller ingen diagnose og gir ingen klinisk vurdering.</li>
+          </ul>
+        </div>
+      </section>
+
+      <aside class="note-panel">
+        ${formatToggleBarHTML('<button class="ghost-btn" id="sep-paste-toggle">Lim inn eksisterende notat ↧</button>')}
+
+        <div class="paste-panel" id="sep-paste-panel">
+          <p>Lim inn tekst med målinger (f.eks. «T 38,6 · Puls 112 · RF 24 · BT 95/60 · GCS 15 · LPK 14,2»). Appen fyller ut målefeltene.</p>
+          <textarea id="sep-paste-input" placeholder="Lim inn teksten her…"></textarea>
+          <div class="row">
+            <button class="solid-btn" id="sep-parse-btn">Tolk og oppdater</button>
+            <span class="parse-status" id="sep-parse-status"></span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Sans';font-size:.79rem;color:var(--ink-muted)">Ta med i notat:</span>
+          <button type="button" class="chip-btn ${sepsisState.include.sirs?'selected':''}" data-sep-include="sirs">SIRS</button>
+          <button type="button" class="chip-btn ${sepsisState.include.qsofa?'selected':''}" data-sep-include="qsofa">qSOFA</button>
+        </div>
+
+        <div class="note-head"><div class="note-title">SIRS / qSOFA-resultat</div></div>
+        <div class="note-body" id="sep-output-body" style="white-space:normal;"></div>
+        <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
+          <button class="solid-btn" id="sep-copy-rich-btn">Kopier resultat</button>
+          <button class="ghost-btn" id="sep-copy-btn" style="font-size:.78rem;">Kopier som ren tekst</button>
+          <span class="copy-status" id="sep-copy-status">Kopiert ✓</span>
+        </div>
+        <div class="note-divider"></div>
+        <div class="note-title" style="font-size:.82rem; margin-bottom:6px; color:var(--clay);">Oppfylte kriterier</div>
+        <div id="sep-abn-body" style="font-family:'IBM Plex Mono'; font-size:.82rem; color:var(--ink); min-height:28px;"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="ghost-btn" id="sep-copy-abn-btn" style="font-size:.78rem;">Kopier oppfylte kriterier</button>
+          <span class="copy-status" id="sep-copy-abn-status">Kopiert ✓</span>
+        </div>
+        <div class="note-divider" style="margin-top:12px;"></div>
+        <button class="ghost-btn" id="sep-reset-btn">Tilbakestill SIRS / qSOFA</button>
+      </aside>
+    </main>`;
+
+  renderSepsisCriteria();
+  renderSepsisOutput();
+
+  if(!panel.dataset.sepEvt){
+    panel.dataset.sepEvt = '1';
+    attachSepsisEvents(panel);
+  }
+}
+
+function sepsisParse(raw){
+  const grab = (re)=>{ const m = raw.match(re); return m ? m[1].replace(',','.') : null; };
+  const found = {
+    temp:   grab(/\b(?:temp(?:eratur)?|T)\.?\s*:?\s*(\d{2}(?:[.,]\d)?)\s*(?:°|grader|C\b)?/i),
+    hr:     grab(/\b(?:puls|hjertefrekvens|HF|HR)\s*:?\s*(\d{2,3})\b/i),
+    rf:     grab(/\b(?:RF|resp(?:irasjonsfrekvens)?|AF)\s*:?\s*(\d{1,2})\b/i),
+    sbt:    grab(/\b(?:BT|blodtrykk|systolisk(?:\s+BT)?)\s*:?\s*(\d{2,3})\b/i),
+    gcs:    grab(/\bGCS\s*:?\s*(\d{1,2})\b/i),
+    lpk:    grab(/\b(?:LPK|leukocytter|leuk)\s*:?\s*(\d{1,2}(?:[.,]\d+)?)/i),
+    umodne: grab(/\b(?:umodne|stavkjernede)[^\d\n]{0,20}(\d{1,2}(?:[.,]\d)?)/i),
+    paco2:  grab(/\bpa?co[2₂]\s*:?\s*(\d{1,2}(?:[.,]\d+)?)/i)
+  };
+  let n = 0;
+  Object.entries(found).forEach(([k,v])=>{ if(v!=null){ sepsisState.vals[k] = v; n++; } });
+  return n;
+}
+
+function attachSepsisEvents(panel){
+  panel.addEventListener('click', e=>{
+    const cb = e.target.closest('[data-sep-crit]');
+    if(cb){
+      const k = cb.dataset.sepCrit, v = cb.dataset.sepVal;
+      if(sepsisState.manual[k]===v) delete sepsisState.manual[k];
+      else sepsisState.manual[k] = v;
+      renderSepsisCriteria(); renderSepsisOutput();
+      return;
+    }
+    const inc = e.target.closest('[data-sep-include]');
+    if(inc){
+      const k = inc.dataset.sepInclude;
+      sepsisState.include[k] = !sepsisState.include[k];
+      inc.classList.toggle('selected', sepsisState.include[k]);
+      renderSepsisOutput();
+      return;
+    }
+    if(e.target.closest('#sep-paste-toggle')){ document.getElementById('sep-paste-panel').classList.toggle('open'); return; }
+    if(e.target.closest('#sep-parse-btn')){
+      const raw = document.getElementById('sep-paste-input').value;
+      if(!raw.trim()){ const s=document.getElementById('sep-parse-status'); s.textContent='Lim inn tekst først.'; return; }
+      const n = sepsisParse(raw);
+      buildSepsisTab();
+      document.getElementById('sep-paste-panel').classList.add('open');
+      document.getElementById('sep-paste-input').value = raw;
+      const st = document.getElementById('sep-parse-status');
+      st.textContent = n ? n+' måling(er) gjenkjent.' : 'Ingen målinger gjenkjent.';
+      st.style.color = n ? 'var(--teal)' : 'var(--clay)';
+      return;
+    }
+    if(e.target.closest('#sep-copy-btn')){ copyPlain(sepsisOutputText(), document.getElementById('sep-copy-status')); return; }
+    if(e.target.closest('#sep-copy-rich-btn')){ copyWithRichText(sepsisOutputHTML(true), sepsisOutputText(), document.getElementById('sep-copy-status')); return; }
+    if(e.target.closest('#sep-copy-abn-btn')){ copyWithRichText(sepsisAbnHTML(true), sepsisAbnText(), document.getElementById('sep-copy-abn-status')); return; }
+    if(e.target.closest('#sep-reset-btn')){ sepsisResetState(); buildSepsisTab(); return; }
+  });
+
+  panel.addEventListener('input', e=>{
+    const inp = e.target.closest('.sep-input');
+    if(inp){
+      sepsisState.vals[inp.dataset.sepKey] = inp.value.trim();
+      renderSepsisCriteria(); renderSepsisOutput();
+      return;
+    }
+    if(e.target.id==='sep-tid'){ sepsisState.tid = e.target.value.trim(); renderSepsisOutput(); }
+  });
+}
+</script>
+
+<script>
+/* ============================== FINAL INIT (called after ALL modules are defined) ============================== */
 init();
 </script>
 </body>
