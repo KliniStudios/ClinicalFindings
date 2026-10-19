@@ -384,6 +384,7 @@
       <div class="fmt-col">
         <h3>Kopiering</h3>
         <label class="fmt-opt"><input type="radio" name="copyMethod" id="copyMethodDom" value="dom" /><span><b>Med formatering (anbefalt)</b>: fet, kursiv og understrek følger med til Word, LibreOffice, Outlook, Google Docs og journalsystemer som tar imot formatert tekst.</span></label>
+        <label class="fmt-opt"><input type="radio" name="copyMethod" id="copyMethodRtf" value="rtf" /><span><b>Med formatering + RTF-fil (for WordPad og journalsystemer som leser RTF)</b>: kopierer som over, og laster i tillegg ned teksten som en .rtf-fil. Åpne filen, trykk Ctrl+A og Ctrl+C, og lim inn i journalsystemet. Da følger fet, kursiv og understrek med på samme måte som fra WordPad.</span></label>
         <label class="fmt-opt"><input type="radio" name="copyMethod" id="copyMethodPlain" value="plain" /><span><b>Alltid ren tekst</b>: ingen formatering.</span></label>
         <h3>Avvik-markering når teksten kopieres</h3>
         <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleHtml" value="html" /><span><b>Formatering (anbefalt)</b>: avvik får fet / kursiv / understrek som valgt til venstre.</span></label>
@@ -393,7 +394,7 @@
         <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleMarkdown" value="markdown" /><span><b>Markdown</b>: **fet** / *kursiv*.</span></label>
         <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleNone" value="none" /><span><b>Ingen markering</b>.</span></label>
         <div id="copyStylePreview" class="fmt-preview">Forhåndsvisning: Normalfunn. <span id="copyStylePreviewAbn">Avvikende funn her.</span></div>
-        <div class="fmt-hint" style="margin-top:6px;">Med formatering legges teksten på utklippstavlen både som HTML (Word, LibreOffice, Outlook, de fleste journalsystemer) og som ren tekst. WordPad leser bare RTF: fra Firefox følger formateringen med, fra Chrome/Edge som regel ikke. Forsvinner fet skrift i journalsystemet, velg «Store bokstaver» eller «Prefiks».</div>
+        <div class="fmt-hint" style="margin-top:6px;">Nettlesere (Chrome, Edge, Firefox) kan bare legge HTML og ren tekst på utklippstavlen, ikke RTF. Word, LibreOffice og Outlook leser HTML og beholder formateringen. WordPad og journalsystemer som bygger på samme tekstfelt leser bare RTF. For dem: velg «RTF-fil» over, eller lim inn i Word først og kopier videre derfra.</div>
       </div>
     </div>
   </details>
@@ -2233,7 +2234,7 @@ function htmlToRtf(html){
     else if(/^<br/.test(t) || /^<\/(div|p)>/.test(t)) out += '\\par\n';
   });
   out = out.replace(/(\\par\n)+$/,'');
-  return '{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Calibri;}}\\f0\\fs22 '+out+'}';
+  return '{\\rtf1\\ansi\\ansicpg1252\\deff0\\uc1{\\fonttbl{\\f0\\fswiss Calibri;}}\\f0\\fs22 '+out+'}';
 }
 function escapeForPre(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -2293,7 +2294,18 @@ async function copyWithRichText(htmlContent, plainText, statusEl){
 
   /* 3) Last resort: plain text */
   if(!ok) await writePlain();
+  if(method === 'rtf') downloadRtf(htmlToRtf(html));
   done();
+}
+function downloadRtf(rtf){
+  const tab = (typeof activeMainTab==='string' && activeMainTab) ? activeMainTab : 'notat';
+  const d = new Date(), pad = n=>String(n).padStart(2,'0');
+  const name = `notat-${tab}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.rtf`;
+  const blob = new Blob([rtf], {type:'application/rtf'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
 }
 
 
@@ -3470,7 +3482,7 @@ function syncFormatUI(){
   if(sum){
     const a = [noteAbnormalBold&&'fet', noteAbnormalItalic&&'kursiv', noteAbnormalUnderline&&'understrek'].filter(Boolean);
     const style = {html:'formatering', caps:'store bokstaver', prefix:'prefiks', markdown:'markdown', none:'ingen markering'}[settings.copyAbnStyle||'html'];
-    sum.textContent = `Avvik: ${a.length?a.join(' + '):'ingen formatering'} · Kopierer ${settings.copyMethod==='plain'?'som ren tekst':((settings.copyAbnStyle||'html')==='html'?'med formatering':'med avvik markert som '+style)}`;
+    sum.textContent = `Avvik: ${a.length?a.join(' + '):'ingen formatering'} · Kopierer ${(settings.copyMethod==='plain'?'som ren tekst':((settings.copyAbnStyle||'html')==='html'?'med formatering':'med avvik markert som '+style))+(settings.copyMethod==='rtf'?' + RTF-fil':'')}`;
   }
 }
 function saveFormatSettings(){
@@ -3513,7 +3525,7 @@ function updateCopyStylePreview(){
   }
 }
 function syncCopySettingsUI(){
-  if(settings.copyMethod!=='plain') settings.copyMethod='dom';
+  if(!['plain','rtf'].includes(settings.copyMethod)) settings.copyMethod='dom';
   const mId = 'copyMethod' + (settings.copyMethod||'dom').charAt(0).toUpperCase() + (settings.copyMethod||'dom').slice(1);
   const mEl = document.getElementById(mId);
   if(mEl) mEl.checked = true;
@@ -3524,7 +3536,7 @@ function syncCopySettingsUI(){
   if(pi) pi.value = settings.copyAbnPrefix||'[AVVIK] ';
   updateCopyStylePreview();
 }
-['copyMethodDom','copyMethodEpj','copyMethodApi','copyMethodAuto','copyMethodPlain',
+['copyMethodDom','copyMethodRtf','copyMethodEpj','copyMethodApi','copyMethodAuto','copyMethodPlain',
  'copyAbnStyleHtml','copyAbnStyleMarkdown','copyAbnStylePrefix','copyAbnStyleCaps','copyAbnStyleNone'
 ].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('change',applyCopySettings); });
 const _prefixInput = document.getElementById('copyAbnPrefixInput');
