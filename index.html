@@ -76,6 +76,18 @@
 
   main.layout{display:grid; grid-template-columns:1.32fr 1fr; gap:26px; align-items:start;}
   @media (max-width:920px){ main.layout{grid-template-columns:1fr;} .note-panel{position:static !important;} }
+  /* Wide screens: each half scrolls on its own, depending on where the cursor is */
+  @media (min-width:921px){
+    main.layout > .cardList,
+    main.layout > .note-panel{
+      position:sticky; top:12px;
+      max-height:calc(100vh - var(--lt, 12px) - 12px);
+      overflow-y:auto;
+      scrollbar-gutter:stable;
+    }
+    main.layout > .cardList{ padding:2px 8px 12px 2px; margin:-2px -8px 0 -2px; }
+    main.layout > .note-panel .note-body{ max-height:none; overflow:visible; }
+  }
 
   .exam-card{position:relative; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px 18px 22px; margin-bottom:14px; overflow:hidden; box-shadow:var(--shadow);}
   .exam-card.with-numeral{padding-left:92px;}
@@ -393,6 +405,16 @@
           <input type="text" id="copyAbnPrefixInput" data-allow-comma="1" placeholder="f.eks. ▶ " style="font-family:'IBM Plex Mono'; font-size:.8rem; padding:2px 6px; border:1px solid var(--border); border-radius:5px; width:80px;" /></label>
         <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleMarkdown" value="markdown" /><span><b>Markdown</b>: **fet** / *kursiv*.</span></label>
         <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleNone" value="none" /><span><b>Ingen markering</b>.</span></label>
+        <h3>Skrifttype i kopiert tekst</h3>
+        <label class="fmt-opt"><input type="checkbox" id="copyFontOn" /><span><b>Ta med skrifttype og størrelse</b>. Av (anbefalt): teksten får skrifttypen og størrelsen til programmet du limer inn i, og alt blir likt.</span></label>
+        <div class="fmt-opt" id="copyFontRow" style="padding-left:22px; gap:8px; align-items:center;">
+          <select id="copyFontFamily" style="width:auto; padding:3px 6px; font-size:.8rem;">
+            <option>Calibri</option><option>Arial</option><option>Segoe UI</option><option>Verdana</option><option>Times New Roman</option><option>Courier New</option>
+          </select>
+          <select id="copyFontSize" style="width:auto; padding:3px 6px; font-size:.8rem;">
+            <option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option>
+          </select><span class="fmt-hint">pt</span>
+        </div>
         <div id="copyStylePreview" class="fmt-preview">Forhåndsvisning: Normalfunn. <span id="copyStylePreviewAbn">Avvikende funn her.</span></div>
         <div class="fmt-hint" style="margin-top:6px;">Nettlesere (Chrome, Edge, Firefox) kan bare legge HTML og ren tekst på utklippstavlen, ikke RTF. Word, LibreOffice og Outlook leser HTML og beholder formateringen. WordPad og journalsystemer som bygger på samme tekstfelt leser bare RTF. For dem: velg «RTF-fil» over, eller lim inn i Word først og kopier videre derfra.</div>
       </div>
@@ -527,7 +549,7 @@
   </div>
 
   <footer class="disclaimer">
-    <b>v007 · 19.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
+    <b>v008 · 19.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
     Kun dokumentasjons- og formatteringsstøtte. Verktøyet omformer brukerens egne registrerte opplysninger til tekstutkast og foretar ikke kliniske vurderinger. Kontrollér, korrigér og godkjenn alltid teksten før journalføring. Ikke legg inn identifiserende pasientopplysninger.
   </footer>
 </div>
@@ -555,7 +577,7 @@
 <div class="modal-overlay" id="brukervilkarOverlay">
   <div class="modal-box" style="max-width:660px; max-height:82vh; overflow-y:auto;">
     <button type="button" class="modal-close-x" data-close-modal="brukervilkarOverlay">&times;</button>
-    <div class="modal-title">Brukervilkår · v007 · 19.10.2026</div>
+    <div class="modal-title">Brukervilkår · v008 · 19.10.2026</div>
     <div style="font-family:'IBM Plex Sans'; font-size:.83rem; line-height:1.8; color:var(--ink);">
       <p><strong>1. Formål og avgrensning</strong><br>
       Dette verktøyet er et teknisk dokumentasjons- og formatteringsverktøy. Formålet er å hjelpe brukeren med å omforme brukerens egne, manuelt registrerte kliniske opplysninger og funn til forslag til strukturert eller løpende tekst.<br>
@@ -1566,7 +1588,7 @@ let autoActivatedByTab = { hjernenerver:new Map(), klinisk:new Map() }; // itemI
 let explicitlyClearedByTab = { hjernenerver:new Set(), klinisk:new Set() }; // items user has explicitly emptied
 let activeMainTab = 'hjernenerver';
 const DEFAULT_SETTINGS = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14, copyMethod:'dom', copyAbnStyle:'html', copyAbnPrefix:'[AVVIK] ',
-  abnBold:true, abnItalic:false, abnUnderline:false, catFmt:{bold:true,italic:false,underline:false}, regFmt:{bold:true,italic:false,underline:false} };
+  abnBold:true, abnItalic:false, abnUnderline:false, copyFont:{on:false, family:'Calibri', size:11}, catFmt:{bold:true,italic:false,underline:false}, regFmt:{bold:true,italic:false,underline:false} };
 let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 let customProfiles = [];
 let profileItemOverrides = {}; // {profileId: {cardId: {hidden:Set<itemId>, order:[itemId,...]}}}
@@ -2212,7 +2234,14 @@ function normalizeCopyHTML(html){
        .replace(/<em(\s[^>]*)?>/gi,'<i style="font-style:italic">').replace(/<\/em>/gi,'</i>')
        .replace(/<i>/gi,'<i style="font-style:italic">')
        .replace(/<u>/gi,'<u style="text-decoration:underline">');
-  return '<html><head><meta charset="utf-8"></head><body><!--StartFragment--><div>'+h+'</div><!--EndFragment--></body></html>';
+  /* never carry colours, font families or sizes from the page */
+  h = h.replace(/\sstyle="([^"]*)"/gi, (all, css)=>{
+    const keep = css.split(';').map(x=>x.trim()).filter(x=>/^(font-weight|font-style|text-decoration|white-space)\s*:/i.test(x));
+    return keep.length ? ` style="${keep.join(';')}"` : '';
+  });
+  const cf = settings.copyFont || {};
+  const wrapStyle = cf.on ? ` style="font-family:'${cf.family||'Calibri'}'; font-size:${cf.size||11}pt"` : '';
+  return '<html><head><meta charset="utf-8"></head><body><!--StartFragment--><div'+wrapStyle+'>'+h+'</div><!--EndFragment--></body></html>';
 }
 /* Minimal HTML → RTF (for RichEdit-based programs such as WordPad).
    Browsers may or may not expose this format to the OS; it is harmless if ignored. */
@@ -2234,7 +2263,13 @@ function htmlToRtf(html){
     else if(/^<br/.test(t) || /^<\/(div|p)>/.test(t)) out += '\\par\n';
   });
   out = out.replace(/(\\par\n)+$/,'');
-  return '{\\rtf1\\ansi\\ansicpg1252\\deff0\\uc1{\\fonttbl{\\f0\\fswiss Calibri;}}\\f0\\fs22 '+out+'}';
+  const cf = settings.copyFont || {};
+  if(cf.on){
+    const fam = String(cf.family||'Calibri').replace(/[{}\\;]/g,'');
+    return '{\\rtf1\\ansi\\ansicpg1252\\deff0\\uc1{\\fonttbl{\\f0\\fnil '+fam+';}}\\f0\\fs'+(Math.round((+cf.size||11)*2))+' '+out+'}';
+  }
+  /* no font table / size: the receiving program's own font is used */
+  return '{\\rtf1\\ansi\\ansicpg1252\\uc1 '+out+'}';
 }
 function escapeForPre(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -3472,7 +3507,24 @@ function applyFormatSettings(){
   regionNameFormat   = Object.assign({bold:true,italic:false,underline:false}, settings.regFmt||{});
   syncFormatUI();
 }
+function syncCopyFontUI(){
+  const cf = settings.copyFont = Object.assign({on:false, family:'Calibri', size:11}, settings.copyFont||{});
+  const on = document.getElementById('copyFontOn'), fam = document.getElementById('copyFontFamily'), size = document.getElementById('copyFontSize'), row = document.getElementById('copyFontRow');
+  if(!on) return;
+  on.checked = !!cf.on; fam.value = cf.family; size.value = String(cf.size);
+  fam.disabled = size.disabled = !cf.on; row.style.opacity = cf.on ? '1' : '.45';
+}
+document.addEventListener('change', e=>{
+  if(!['copyFontOn','copyFontFamily','copyFontSize'].includes(e.target.id)) return;
+  settings.copyFont = {
+    on: document.getElementById('copyFontOn').checked,
+    family: document.getElementById('copyFontFamily').value,
+    size: +document.getElementById('copyFontSize').value
+  };
+  syncCopyFontUI(); syncFormatUI(); persistSettings();
+});
 function syncFormatUI(){
+  syncCopyFontUI();
   document.querySelectorAll('.abnormalBoldToggle').forEach(el=>el.checked=noteAbnormalBold);
   document.querySelectorAll('.abnormalItalicToggle').forEach(el=>el.checked=noteAbnormalItalic);
   document.querySelectorAll('.abnormalUnderlineToggle').forEach(el=>el.checked=noteAbnormalUnderline);
@@ -3482,7 +3534,8 @@ function syncFormatUI(){
   if(sum){
     const a = [noteAbnormalBold&&'fet', noteAbnormalItalic&&'kursiv', noteAbnormalUnderline&&'understrek'].filter(Boolean);
     const style = {html:'formatering', caps:'store bokstaver', prefix:'prefiks', markdown:'markdown', none:'ingen markering'}[settings.copyAbnStyle||'html'];
-    sum.textContent = `Avvik: ${a.length?a.join(' + '):'ingen formatering'} · Kopierer ${(settings.copyMethod==='plain'?'som ren tekst':((settings.copyAbnStyle||'html')==='html'?'med formatering':'med avvik markert som '+style))+(settings.copyMethod==='rtf'?' + RTF-fil':'')}`;
+    const cfs = settings.copyFont && settings.copyFont.on ? ` · ${settings.copyFont.family} ${settings.copyFont.size} pt` : '';
+    sum.textContent = `Avvik: ${a.length?a.join(' + '):'ingen formatering'}${cfs} · Kopierer ${(settings.copyMethod==='plain'?'som ren tekst':((settings.copyAbnStyle||'html')==='html'?'med formatering':'med avvik markert som '+style))+(settings.copyMethod==='rtf'?' + RTF-fil':'')}`;
   }
 }
 function saveFormatSettings(){
@@ -7322,8 +7375,23 @@ function buildNews2Tab(){
 </script>
 
 <script>
+/* Keep both scrollable halves inside the visible window: their height follows how far down the layout starts */
+function fitLayoutColumns(){
+  if(window.innerWidth <= 920) return;
+  document.querySelectorAll('.tab-panel.active main.layout').forEach(l=>{
+    const top = Math.max(12, Math.round(l.getBoundingClientRect().top));
+    l.style.setProperty('--lt', top+'px');
+  });
+}
+window.addEventListener('scroll', fitLayoutColumns, {passive:true});
+window.addEventListener('resize', fitLayoutColumns);
+document.addEventListener('click', e=>{ if(e.target.closest('.tab-btn, .fmt-panel > summary')) requestAnimationFrame(fitLayoutColumns); });
+document.addEventListener('toggle', ()=>requestAnimationFrame(fitLayoutColumns), true);
+</script>
+
+<script>
 /* ============================== FINAL INIT (called after ALL modules are defined) ============================== */
-init();
+init().then(fitLayoutColumns);
 </script>
 </body>
 </html>
