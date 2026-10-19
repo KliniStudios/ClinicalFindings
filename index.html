@@ -222,7 +222,7 @@
   .ortho-finding-chip.abn.selected{background:var(--clay); border-color:var(--clay);}
   .ortho-empty-state{font-family:'IBM Plex Sans'; font-size:.85rem; color:var(--ink-muted); font-style:italic; padding:20px 0;}
   .ortho-mov-table{display:flex; flex-direction:column; gap:6px; margin-top:4px;}
-  .ortho-mov-row{display:grid; grid-template-columns:140px 1fr; gap:8px; align-items:center; padding:4px 0; border-bottom:1px solid var(--border);}
+  .ortho-mov-row{display:grid; grid-template-columns:200px 1fr; gap:8px; align-items:center; padding:4px 0; border-bottom:1px solid var(--border);}
   .ortho-mov-row:last-child{border-bottom:none;}
   .ortho-mov-name{font-family:'IBM Plex Sans'; font-size:.8rem; font-weight:500; color:var(--ink);}
   .ortho-mov-btns{display:flex; flex-wrap:wrap; gap:4px;}
@@ -307,6 +307,25 @@
   .sep-auto-tag{font-family:'IBM Plex Mono'; font-size:.68rem; color:var(--ink-muted);}
   .sep-auto-tag.manual{color:var(--clay);}
   .sep-q{font-family:'IBM Plex Sans'; font-size:.74rem; color:var(--ink-muted); font-style:italic; margin:2px 0 7px;}
+  /* ===== Formatering og kopiering (top, collapsible) ===== */
+  .fmt-panel{background:#fff; border:1px solid var(--border); border-radius:var(--radius); margin:-8px 0 20px; box-shadow:var(--shadow);}
+  .fmt-panel > summary{cursor:pointer; list-style:none; padding:10px 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-family:'IBM Plex Sans'; font-size:.86rem;}
+  .fmt-panel > summary::-webkit-details-marker{display:none;}
+  .fmt-panel > summary::before{content:'▸'; color:var(--teal); transition:transform .15s ease;}
+  .fmt-panel[open] > summary::before{transform:rotate(90deg);}
+  .fmt-title{font-weight:600; color:var(--teal);}
+  .fmt-summary{color:var(--ink-muted); font-size:.78rem;}
+  .fmt-body{display:grid; grid-template-columns:1fr 1.4fr; gap:24px; padding:4px 18px 16px; border-top:1px solid var(--border);}
+  @media (max-width:820px){ .fmt-body{grid-template-columns:1fr;} }
+  .fmt-body h3{font-family:'IBM Plex Mono'; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); margin:14px 0 6px; font-weight:600;}
+  .fmt-opt{display:flex; align-items:flex-start; gap:7px; font-family:'IBM Plex Sans'; font-size:.82rem; margin:0 0 5px; cursor:pointer; line-height:1.45;}
+  .fmt-opt input{margin-top:3px;}
+  .fmt-col > .fmt-opt:has(input[type=checkbox]){display:inline-flex; margin-right:14px;}
+  .fmt-hint{font-family:'IBM Plex Sans'; font-size:.72rem; color:var(--ink-muted); text-transform:none; letter-spacing:0; font-weight:400; line-height:1.5;}
+  .fmt-preview{font-family:'IBM Plex Sans'; font-size:.84rem; margin-top:10px; padding:7px 11px; background:#F5F7F7; border-radius:7px; border:1px solid var(--border);}
+  /* the per-tab formatting toggles are replaced by the panel above */
+  .tab-panel .toggle-wrap:has(.abnormalBoldToggle){display:none;}
+  .tab-panel .exam-toolbar:not(:has(.toolbar-actions)):not(:has(.includeAllToggle)){display:none;}
   ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
 </style>
 </head>
@@ -338,11 +357,46 @@
     <button class="tab-btn" data-tab="nihss">NIHSS</button>
     <button class="tab-btn" data-tab="ciwa">CIWA-Ar</button>
     <button class="tab-btn" data-tab="sepsis">SIRS / qSOFA</button>
+    <button class="tab-btn" data-tab="news2">NEWS2</button>
     <button class="tab-btn" data-tab="ekg">EKG</button>
     <button class="tab-btn" data-tab="ortho">Ortopedi</button>
     <button class="tab-btn" data-tab="sokrates">SOKRATES</button>
     <button class="tab-btn" data-tab="innstillinger">Innstillinger</button>
   </nav>
+
+  <details class="fmt-panel" id="fmtPanel">
+    <summary><span class="fmt-title">Formatering og kopiering</span><span class="fmt-summary" id="fmtSummary"></span></summary>
+    <div class="fmt-body">
+      <div class="fmt-col">
+        <h3>Avvikende funn i notatet</h3>
+        <label class="fmt-opt"><input type="checkbox" class="abnormalBoldToggle" /> <b>Fet</b></label>
+        <label class="fmt-opt"><input type="checkbox" class="abnormalItalicToggle" /> <i>Kursiv</i></label>
+        <label class="fmt-opt"><input type="checkbox" class="abnormalUnderlineToggle" /> <u>Understrek</u></label>
+        <h3>Kategorinavn <span class="fmt-hint">(Cor:, Pulm:, Inspeksjon: …)</span></h3>
+        <label class="fmt-opt"><input type="checkbox" class="fmtCat" data-fmt="bold" /> <b>Fet</b></label>
+        <label class="fmt-opt"><input type="checkbox" class="fmtCat" data-fmt="italic" /> <i>Kursiv</i></label>
+        <label class="fmt-opt"><input type="checkbox" class="fmtCat" data-fmt="underline" /> <u>Understrek</u></label>
+        <h3>Kroppsdel i Ortopedi <span class="fmt-hint">(Skulder:, Kne: …)</span></h3>
+        <label class="fmt-opt"><input type="checkbox" class="fmtReg" data-fmt="bold" /> <b>Fet</b></label>
+        <label class="fmt-opt"><input type="checkbox" class="fmtReg" data-fmt="italic" /> <i>Kursiv</i></label>
+        <label class="fmt-opt"><input type="checkbox" class="fmtReg" data-fmt="underline" /> <u>Understrek</u></label>
+      </div>
+      <div class="fmt-col">
+        <h3>Kopiering</h3>
+        <label class="fmt-opt"><input type="radio" name="copyMethod" id="copyMethodDom" value="dom" /><span><b>Med formatering (anbefalt)</b>: fet, kursiv og understrek følger med til Word, LibreOffice, Outlook, Google Docs og journalsystemer som tar imot formatert tekst.</span></label>
+        <label class="fmt-opt"><input type="radio" name="copyMethod" id="copyMethodPlain" value="plain" /><span><b>Alltid ren tekst</b>: ingen formatering.</span></label>
+        <h3>Avvik-markering når teksten kopieres</h3>
+        <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleHtml" value="html" /><span><b>Formatering (anbefalt)</b>: avvik får fet / kursiv / understrek som valgt til venstre.</span></label>
+        <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleCaps" value="caps" /><span><b>Store bokstaver</b>: for systemer som fjerner all formatering.</span></label>
+        <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStylePrefix" value="prefix" /><span><b>Prefiks</b> foran avvik:</span>
+          <input type="text" id="copyAbnPrefixInput" data-allow-comma="1" placeholder="f.eks. ▶ " style="font-family:'IBM Plex Mono'; font-size:.8rem; padding:2px 6px; border:1px solid var(--border); border-radius:5px; width:80px;" /></label>
+        <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleMarkdown" value="markdown" /><span><b>Markdown</b>: **fet** / *kursiv*.</span></label>
+        <label class="fmt-opt"><input type="radio" name="copyAbnStyle" id="copyAbnStyleNone" value="none" /><span><b>Ingen markering</b>.</span></label>
+        <div id="copyStylePreview" class="fmt-preview">Forhåndsvisning: Normalfunn. <span id="copyStylePreviewAbn">Avvikende funn her.</span></div>
+        <div class="fmt-hint" style="margin-top:6px;">Med formatering legges teksten på utklippstavlen både som HTML (Word, LibreOffice, Outlook, de fleste journalsystemer) og som ren tekst. WordPad leser bare RTF: fra Firefox følger formateringen med, fra Chrome/Edge som regel ikke. Forsvinner fet skrift i journalsystemet, velg «Store bokstaver» eller «Prefiks».</div>
+      </div>
+    </div>
+  </details>
 
   <!-- HJERNENERVER + KLINISK share this template -->
   <section class="tab-panel active" id="panel-hjernenerver" data-exam-tab="hjernenerver"></section>
@@ -356,6 +410,9 @@
 
   <!-- SIRS / qSOFA -->
   <section class="tab-panel" id="panel-sepsis"></section>
+
+  <!-- NEWS2 -->
+  <section class="tab-panel" id="panel-news2"></section>
 
   <!-- EKG -->
   <section class="tab-panel" id="panel-ekg"></section>
@@ -424,57 +481,7 @@
 
       <div class="settings-card">
         <h2>Kopiering og formatering</h2>
-        <div class="storage-note" style="margin:0 0 16px; padding:0; border:none;">
-          «Med formatering» legger teksten på utklippstavlen i flere formater samtidig (HTML, RTF og ren tekst), og programmet du limer inn i velger selv det beste det forstår. Hvis journalsystemet fjerner fet skrift, velg en tekstbasert avvik-stil under (f.eks. <strong>Store bokstaver</strong> eller <strong>Prefiks</strong>), så avvikene fortsatt skiller seg ut.
-        </div>
-
-        <div class="field-row">
-          <label>Kopieringsmetode</label>
-          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
-            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyMethod" id="copyMethodDom" value="dom" style="margin-top:2px;" />
-              <span><strong>Med formatering (anbefalt)</strong>: fet, kursiv og understrek følger med til Word, LibreOffice, Outlook, Google Docs og journalsystemer som støtter formatert innliming.</span>
-            </label>
-            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyMethod" id="copyMethodPlain" value="plain" style="margin-top:2px;" />
-              <span><strong>Alltid ren tekst</strong>: ingen formatering, kun tekst. Fungerer overalt.</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="field-row" style="margin-top:18px;">
-          <label>Avvik-stil i kopiert tekst</label>
-          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyAbnStyle" id="copyAbnStyleHtml" value="html" />
-              <span><strong>HTML</strong>: <strong>fet</strong> / <em>kursiv</em> / <u>understrek</u> via HTML-tagger. Støttet av Word, Google Docs, mange EPJ.</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyAbnStyle" id="copyAbnStyleMarkdown" value="markdown" />
-              <span><strong>Markdown</strong>: <code>**fet**</code> / <code>*kursiv*</code> / <code>__understrek__</code>. Synlig i Markdown-editorer.</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyAbnStyle" id="copyAbnStylePrefix" value="prefix" />
-              <span><strong>Prefiks</strong>: tekst foran hvert avvikende funn:</span>
-              <input type="text" id="copyAbnPrefixInput" placeholder="f.eks. ▶ " style="font-family:'IBM Plex Mono'; font-size:.82rem; padding:3px 8px; border:1px solid var(--border); border-radius:5px; width:90px;" />
-            </label>
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyAbnStyle" id="copyAbnStyleCaps" value="caps" />
-              <span><strong>Store bokstaver</strong>: avvikende funn skrives med STORE BOKSTAVER.</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:'IBM Plex Sans'; font-size:.85rem;">
-              <input type="radio" name="copyAbnStyle" id="copyAbnStyleNone" value="none" />
-              <span><strong>Ingen</strong>: ren tekst uten noen avvik-markering.</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="field-row" style="margin-top:14px;">
-          <label style="font-family:'IBM Plex Sans'; font-size:.8rem; color:var(--ink-muted);">Forhåndsvisning avvik-stil:</label>
-          <div id="copyStylePreview" style="font-family:'IBM Plex Sans'; font-size:.87rem; margin-top:6px; padding:8px 12px; background:#F5F7F7; border-radius:7px; border:1px solid var(--border);">
-            Normalfunn. <span id="copyStylePreviewAbn">Avvikende funn her.</span>
-          </div>
-        </div>
+        <div class="storage-note" style="margin:0; padding:0; border:none;">Innstillingene for formatering og kopiering ligger nå i feltet «Formatering og kopiering» øverst, rett under fanene.</div>
       </div>
 
       <div class="settings-card">
@@ -519,7 +526,7 @@
   </div>
 
   <footer class="disclaimer">
-    <b>v006 · 18.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
+    <b>v007 · 19.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
     Kun dokumentasjons- og formatteringsstøtte. Verktøyet omformer brukerens egne registrerte opplysninger til tekstutkast og foretar ikke kliniske vurderinger. Kontrollér, korrigér og godkjenn alltid teksten før journalføring. Ikke legg inn identifiserende pasientopplysninger.
   </footer>
 </div>
@@ -547,7 +554,7 @@
 <div class="modal-overlay" id="brukervilkarOverlay">
   <div class="modal-box" style="max-width:660px; max-height:82vh; overflow-y:auto;">
     <button type="button" class="modal-close-x" data-close-modal="brukervilkarOverlay">&times;</button>
-    <div class="modal-title">Brukervilkår · v006 · 18.10.2026</div>
+    <div class="modal-title">Brukervilkår · v007 · 19.10.2026</div>
     <div style="font-family:'IBM Plex Sans'; font-size:.83rem; line-height:1.8; color:var(--ink);">
       <p><strong>1. Formål og avgrensning</strong><br>
       Dette verktøyet er et teknisk dokumentasjons- og formatteringsverktøy. Formålet er å hjelpe brukeren med å omforme brukerens egne, manuelt registrerte kliniske opplysninger og funn til forslag til strukturert eller løpende tekst.<br>
@@ -1059,9 +1066,11 @@ const HJERNENERVER = [
       {id:'hyper', cls:'abnormal',
         subFields:[
           {key:'reflek', type:'chips', multi:true, label:'Hyperrefleksi ved', choices:[{id:'bic',label:'biceps'},{id:'tri',label:'triceps'},{id:'brad',label:'brachioradialis'},{id:'pat',label:'patella'},{id:'ach',label:'achilles'}]},
-          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]},
+          {key:'grad', type:'reflexgrid', label:'Grad per refleks og side (valgfritt)', reflexKey:'reflek', sideKey:'side'}
         ],
         template:(L)=>{
+          if(L.grad) return 'Hyperrefleksi: '+L.grad+'.';
           let s = 'Hyperrefleksi';
           if(L.reflek) s += ' ('+L.reflek+')';
           if(L.side) s += ', '+L.side;
@@ -1070,9 +1079,11 @@ const HJERNENERVER = [
       {id:'hypo', cls:'abnormal',
         subFields:[
           {key:'reflek', type:'chips', multi:true, label:'Hyporefleksi ved', choices:[{id:'bic',label:'biceps'},{id:'tri',label:'triceps'},{id:'brad',label:'brachioradialis'},{id:'pat',label:'patella'},{id:'ach',label:'achilles'}]},
-          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]}
+          {key:'side', type:'chips', multi:true, label:'Side', choices:[{id:'hoyre',label:'høyre'},{id:'venstre',label:'venstre'},{id:'bilateral',label:'bilateralt'}]},
+          {key:'grad', type:'reflexgrid', label:'Grad per refleks og side (valgfritt)', reflexKey:'reflek', sideKey:'side'}
         ],
         template:(L)=>{
+          if(L.grad) return 'Hyporefleksi: '+L.grad+'.';
           let s = 'Hyporefleksi';
           if(L.reflek) s += ' ('+L.reflek+')';
           if(L.side) s += ', '+L.side;
@@ -1091,9 +1102,10 @@ const HJERNENERVER = [
         }},
       {id:'asymmetri', cls:'abnormal',
         subFields:[
-          {key:'reflek', type:'chips', multi:true, label:'Asymmetri ved', choices:[{id:'bic',label:'biceps'},{id:'tri',label:'triceps'},{id:'brad',label:'brachioradialis'},{id:'pat',label:'patella'},{id:'ach',label:'achilles'}]}
+          {key:'reflek', type:'chips', multi:true, label:'Asymmetri ved', choices:[{id:'bic',label:'biceps'},{id:'tri',label:'triceps'},{id:'brad',label:'brachioradialis'},{id:'pat',label:'patella'},{id:'ach',label:'achilles'}]},
+          {key:'grad', type:'reflexgrid', label:'Grad per refleks og side (valgfritt)', reflexKey:'reflek', sideKey:'side'}
         ],
-        template:(L)=> L.reflek ? `Asymmetriske reflekser (${L.reflek}).` : 'Asymmetriske reflekser.'}
+        template:(L)=> L.grad ? `Asymmetriske reflekser: ${L.grad}.` : (L.reflek ? `Asymmetriske reflekser (${L.reflek}).` : 'Asymmetriske reflekser.')}
     ]},
     { id:'ov_babinski', label:'Babinski', options:[
       {id:'normal', cls:'normal', text:'Nedadvendt babinski.'},
@@ -1552,7 +1564,9 @@ let includeAllByTab = { hjernenerver:false, klinisk:false };
 let autoActivatedByTab = { hjernenerver:new Map(), klinisk:new Map() }; // itemId → optId
 let explicitlyClearedByTab = { hjernenerver:new Set(), klinisk:new Set() }; // items user has explicitly emptied
 let activeMainTab = 'hjernenerver';
-let settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14, copyMethod:'dom', copyAbnStyle:'html', copyAbnPrefix:'[AVVIK] ' };
+const DEFAULT_SETTINGS = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14, copyMethod:'dom', copyAbnStyle:'html', copyAbnPrefix:'[AVVIK] ',
+  abnBold:true, abnItalic:false, abnUnderline:false, catFmt:{bold:true,italic:false,underline:false}, regFmt:{bold:true,italic:false,underline:false} };
+let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 let customProfiles = [];
 let profileItemOverrides = {}; // {profileId: {cardId: {hidden:Set<itemId>, order:[itemId,...]}}}
 
@@ -1667,11 +1681,50 @@ function subFieldValueLabel(sf, val){
   return c ? c.label : null;
 }
 
+/* ── Reflex grading (0, 1+, 2+, 3+, 4+) per reflex and side ── */
+const REFLEX_GRADES = [
+  {g:'0',  t:'0: ingen respons'}, {g:'1+', t:'1+: svak'}, {g:'2+', t:'2+: normal'},
+  {g:'3+', t:'3+: livlig'}, {g:'4+', t:'4+: med klonus'}
+];
+function reflexRowsFor(opt, sf, vals){
+  const rSf = opt.subFields.find(x=>x.key===sf.reflexKey);
+  const all = rSf ? rSf.choices : [];
+  const chosen = vals[sf.reflexKey] || [];
+  const grid = vals[sf.key] || {};
+  const rows = all.filter(c => !chosen.length || chosen.includes(c.id) || grid[c.id]);
+  const sides = vals[sf.sideKey] || [];
+  let cols = ['h','v'];
+  if(sf.sideKey && sides.length && !sides.includes('bilateral')){
+    cols = [];
+    if(sides.includes('hoyre')) cols.push('h');
+    if(sides.includes('venstre')) cols.push('v');
+  }
+  return { rows, cols, grid, chosen, all };
+}
+function reflexGridLabel(opt, sf, vals){
+  const { all, chosen, grid: rawGrid, cols } = reflexRowsFor(opt, sf, vals);
+  /* only count grades for sides that are currently shown */
+  const grid = {};
+  Object.entries(rawGrid).forEach(([k,r])=>{ grid[k] = { h: cols.includes('h') ? (r||{}).h : null, v: cols.includes('v') ? (r||{}).v : null }; });
+  if(!Object.values(grid).some(r => r.h || r.v)) return null;
+  const sideSf = opt.subFields.find(x=>x.key===sf.sideKey);
+  const sideTxt = sideSf ? subFieldValueLabel(sideSf, vals[sf.sideKey]) : null;
+  const parts = [];
+  all.forEach(c=>{
+    const r = grid[c.id] || {};
+    if(r.h && r.v) parts.push(r.h===r.v ? `${c.label} ${r.h} bilateralt` : `${c.label} ${r.h} høyre og ${r.v} venstre`);
+    else if(r.h) parts.push(`${c.label} ${r.h} høyre`);
+    else if(r.v) parts.push(`${c.label} ${r.v} venstre`);
+    else if(chosen.includes(c.id)) parts.push(sideTxt ? `${c.label} ${sideTxt}` : c.label);
+  });
+  return parts.join(', ');
+}
+
 function getOptionText(item, opt){
   if(opt.subFields && opt.subFields.length){
     const vals = (subState[item.id] && subState[item.id][opt.id]) || {};
     const L = {};
-    opt.subFields.forEach(sf => { L[sf.key] = subFieldValueLabel(sf, vals[sf.key]); });
+    opt.subFields.forEach(sf => { L[sf.key] = sf.type==='reflexgrid' ? reflexGridLabel(opt, sf, vals) : subFieldValueLabel(sf, vals[sf.key]); });
     return opt.template(L);
   }
   return opt.text;
@@ -1726,6 +1779,20 @@ function subFieldHTML(item, opt, sf){
       return `<div class="nihss-row"><div class="nihss-row-label">${it.label}</div><div class="nihss-btn-group">${btns}</div></div>`;
     }).join('');
     return `<div class="subfield"><div class="nihss-total-bar">NIHSS-sum: <b>${anyScored?total:'–'}</b> poeng${anyScored?'':' · velg minst ett punkt under'}</div><div class="nihss-grid">${rows}</div></div>`;
+  }
+  if(sf.type === 'reflexgrid'){
+    const { rows, cols } = reflexRowsFor(opt, sf, valsForOpt);
+    const grid = valsForOpt[sf.key] || {};
+    const colName = { h:'Høyre', v:'Venstre' };
+    const rowsHtml = rows.map(r => {
+      const cells = cols.map(c => {
+        const cur = (grid[r.id] || {})[c];
+        const btns = REFLEX_GRADES.map(gr => `<button type="button" class="chip-btn refgrade-btn ${cur===gr.g?'selected':''}" title="${gr.t}" data-item="${item.id}" data-option="${opt.id}" data-field="${sf.key}" data-reflex="${r.id}" data-rside="${c}" data-grade="${gr.g}">${gr.g}</button>`).join('');
+        return `<span class="subfield-label-inline" style="min-width:52px;">${colName[c]}</span><div class="chip-group">${btns}</div>`;
+      }).join('');
+      return `<div class="subfield-row" style="margin-bottom:4px;"><span style="font-size:.78rem; min-width:112px;">${r.label}</span>${cells}</div>`;
+    }).join('');
+    return `<div class="subfield"><div class="subfield-label">${sf.label}</div>${rowsHtml}<div class="subfield-label-inline" style="margin-top:2px;">0 = ingen · 1+ = svak · 2+ = normal · 3+ = livlig · 4+ = med klonus</div></div>`;
   }
   if(sf.type === 'number'){
     const v = (currentVal===null||currentVal===undefined) ? '' : currentVal;
@@ -1911,7 +1978,7 @@ function buildExamPanel(tabId){
     </div>
 
     <main class="layout">
-      <section class="cardList">${cardsHtml}</section>
+      <section class="cardList">${tabId==='klinisk' ? vitalsCardHTML() : ''}${cardsHtml}</section>
       <aside class="note-panel">
         <div class="note-head">
           <div class="note-title">Notat</div>
@@ -1952,6 +2019,10 @@ function noteLinesForTab(tabId){
   let abnormalCount = 0;
   let includedCount = 0;
   let totalCount = 0;
+  if(tabId==='klinisk' && typeof vitalsNoteText==='function'){
+    const vt = vitalsNoteText();
+    if(vt) lines.push({ num:'', name:'Vitale tegn', parts:[{ text:vt, cls:'normal' }] });
+  }
   visibleCardsForTab(tabId).forEach(card => {
     const parts = []; // [{text, cls}]
     cardItems(card).forEach(item => {
@@ -2349,6 +2420,18 @@ function renderAbnormalSummary(tabId){
       return;
     }
 
+    const gradeBtn = e.target.closest('.refgrade-btn');
+    if(gradeBtn){
+      const { item:itemId, option:optId, field, reflex, rside, grade } = gradeBtn.dataset;
+      subState[itemId] = subState[itemId] || {};
+      subState[itemId][optId] = subState[itemId][optId] || {};
+      const grid = subState[itemId][optId][field] = subState[itemId][optId][field] || {};
+      grid[reflex] = grid[reflex] || {};
+      grid[reflex][rside] = grid[reflex][rside]===grade ? null : grade;
+      refreshItemRow(itemId);
+      renderNote(tabId);
+      return;
+    }
     const chipBtn = e.target.closest('.chip-btn');
     if(chipBtn){
       const itemId = chipBtn.dataset.item, optId = chipBtn.dataset.option, field = chipBtn.dataset.field, val = chipBtn.dataset.value, multi = chipBtn.dataset.multi==='1';
@@ -2363,6 +2446,10 @@ function renderAbnormalSummary(tabId){
       } else {
         const cur = subState[itemId][optId][field];
         subState[itemId][optId][field] = (cur===val) ? null : val;
+      }
+      if(itemId==='neuro_gcs' && optId==='ikke15'){
+        const g = subState[itemId][optId];
+        if(g.e && g.v && g.m && (+g.e + +g.v + +g.m)===15){ activeOptions[itemId] = ['15']; delete subState[itemId][optId]; }
       }
       refreshItemRow(itemId);
       renderNote(tabId);
@@ -2422,6 +2509,7 @@ function renderAbnormalSummary(tabId){
         refreshItemRow(it.id);
       }));
       if(explicitlyClearedByTab[tab]) explicitlyClearedByTab[tab].clear();
+      if(tab==='klinisk') clearVitals();
       if(autoActivatedByTab[tab]) autoActivatedByTab[tab].clear();
       renderNote(tab);
       return;
@@ -2466,6 +2554,30 @@ function renderAbnormalSummary(tabId){
   });
 });
 
+/* A typed value selects the matching button (applied when the field is left, so typing isn't interrupted) */
+const VALUE_DRIVEN = {
+  k_crt_perifer: v => v>=2 ? 'forlenget' : 'normal',
+  k_crt_sentral: v => v>=2 ? 'forlenget' : 'normal'
+};
+['panel-hjernenerver','panel-klinisk'].forEach(panelId => {
+  document.getElementById(panelId).addEventListener('change', e => {
+    const numInput = e.target.closest('.num-input');
+    if(!numInput) return;
+    const itemId = numInput.dataset.item, optId = numInput.dataset.option, field = numInput.dataset.field;
+    const rule = VALUE_DRIVEN[itemId]; if(!rule) return;
+    const v = parseNum(numInput.value); if(isNaN(v)) return;
+    const target = rule(v);
+    if(target === optId) return;
+    const tabId = panelId.replace('panel-','');
+    subState[itemId] = subState[itemId] || {};
+    subState[itemId][target] = Object.assign({}, subState[itemId][optId]||{}, {[field]: numInput.value});
+    delete subState[itemId][optId];
+    activeOptions[itemId] = [target];
+    if(autoActivatedByTab[tabId]) autoActivatedByTab[tabId].delete(itemId);
+    refreshItemRow(itemId); renderNote(tabId);
+  });
+});
+
 function normalize(s){ return s.toLowerCase().replace(/\s+/g,' ').trim(); }
 
 function runParse(tabId){
@@ -2495,9 +2607,11 @@ function runParse(tabId){
       if(row){ row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); }
     }
   });
+  let vitalHits = 0;
+  if(tabId==='klinisk'){ vitalHits = parseVitalsText(raw); if(vitalHits) vitalsChanged(); }
   renderNote(tabId);
-  if(matchedItems===0){ statusEl.textContent='Fant ingen kjente setninger i teksten.'; statusEl.classList.remove('success'); }
-  else { statusEl.textContent = `Fant samsvar for ${matchedItems} av ${items.length} funn.`; statusEl.classList.add('success'); }
+  if(matchedItems===0 && !vitalHits){ statusEl.textContent='Fant ingen kjente setninger i teksten.'; statusEl.classList.remove('success'); }
+  else { statusEl.textContent = `Fant samsvar for ${matchedItems} av ${items.length} funn`+(vitalHits?` og ${vitalHits} vitale tegn`:'')+'.'; statusEl.classList.add('success'); }
 }
 
 /* ============================== TAB NAV ============================== */
@@ -3183,6 +3297,7 @@ document.addEventListener('click', e => {
   if(italicToggle){
     noteAbnormalItalic = italicToggle.checked;
     document.querySelectorAll('.abnormalItalicToggle').forEach(el => el.checked = noteAbnormalItalic);
+    saveFormatSettings();
     refreshAllNotes();
     return;
   }
@@ -3190,6 +3305,7 @@ document.addEventListener('click', e => {
   if(boldToggle){
     noteAbnormalBold = boldToggle.checked;
     document.querySelectorAll('.abnormalBoldToggle').forEach(el => el.checked = noteAbnormalBold);
+    saveFormatSettings();
     refreshAllNotes();
     return;
   }
@@ -3197,6 +3313,7 @@ document.addEventListener('click', e => {
   if(underlineToggle){
     noteAbnormalUnderline = underlineToggle.checked;
     document.querySelectorAll('.abnormalUnderlineToggle').forEach(el => el.checked = noteAbnormalUnderline);
+    saveFormatSettings();
     refreshAllNotes();
     return;
   }
@@ -3256,6 +3373,7 @@ function refreshAllNotes(){
   if(typeof renderNihssOutput==='function') renderNihssOutput();
   if(typeof renderCiwaOutput==='function') renderCiwaOutput();
   if(typeof renderSepsisOutput==='function') renderSepsisOutput();
+  if(typeof renderNews2==='function') renderNews2();
   updateCopyStylePreview();
 }
 
@@ -3316,6 +3434,7 @@ function applyRegFmt(){
   regionNameFormat.italic    = document.getElementById('regFmtItalic').checked;
   regionNameFormat.underline = document.getElementById('regFmtUnderline').checked;
   updateRegFmtPreview();
+  saveFormatSettings();
   if(typeof renderOrthoNote==='function') renderOrthoNote();
 }
 ['regFmtBold','regFmtItalic','regFmtUnderline'].forEach(id => {
@@ -3329,8 +3448,45 @@ function applyCopySettings(){
   settings.copyAbnStyle  = document.querySelector('input[name="copyAbnStyle"]:checked')?.value || 'html';
   settings.copyAbnPrefix = document.getElementById('copyAbnPrefixInput')?.value || '[AVVIK] ';
   updateCopyStylePreview();
+  syncFormatUI();
   persistSettings();
 }
+/* ── Global formatting settings (top panel) ── */
+function applyFormatSettings(){
+  noteAbnormalBold      = settings.abnBold !== false;
+  noteAbnormalItalic    = !!settings.abnItalic;
+  noteAbnormalUnderline = !!settings.abnUnderline;
+  categoryNameFormat = Object.assign({bold:true,italic:false,underline:false}, settings.catFmt||{});
+  regionNameFormat   = Object.assign({bold:true,italic:false,underline:false}, settings.regFmt||{});
+  syncFormatUI();
+}
+function syncFormatUI(){
+  document.querySelectorAll('.abnormalBoldToggle').forEach(el=>el.checked=noteAbnormalBold);
+  document.querySelectorAll('.abnormalItalicToggle').forEach(el=>el.checked=noteAbnormalItalic);
+  document.querySelectorAll('.abnormalUnderlineToggle').forEach(el=>el.checked=noteAbnormalUnderline);
+  document.querySelectorAll('.fmtCat').forEach(el=>el.checked=!!categoryNameFormat[el.dataset.fmt]);
+  document.querySelectorAll('.fmtReg').forEach(el=>el.checked=!!regionNameFormat[el.dataset.fmt]);
+  const sum = document.getElementById('fmtSummary');
+  if(sum){
+    const a = [noteAbnormalBold&&'fet', noteAbnormalItalic&&'kursiv', noteAbnormalUnderline&&'understrek'].filter(Boolean);
+    const style = {html:'formatering', caps:'store bokstaver', prefix:'prefiks', markdown:'markdown', none:'ingen markering'}[settings.copyAbnStyle||'html'];
+    sum.textContent = `Avvik: ${a.length?a.join(' + '):'ingen formatering'} · Kopierer ${settings.copyMethod==='plain'?'som ren tekst':((settings.copyAbnStyle||'html')==='html'?'med formatering':'med avvik markert som '+style)}`;
+  }
+}
+function saveFormatSettings(){
+  settings.abnBold = noteAbnormalBold; settings.abnItalic = noteAbnormalItalic; settings.abnUnderline = noteAbnormalUnderline;
+  settings.catFmt = Object.assign({}, categoryNameFormat); settings.regFmt = Object.assign({}, regionNameFormat);
+  syncFormatUI();
+  persistSettings();
+}
+document.addEventListener('change', e=>{
+  const c = e.target.closest('.fmtCat, .fmtReg');
+  if(!c) return;
+  const obj = c.classList.contains('fmtCat') ? categoryNameFormat : regionNameFormat;
+  obj[c.dataset.fmt] = c.checked;
+  saveFormatSettings(); refreshAllNotes();
+});
+
 function updateCopyStylePreview(){
   const el = document.getElementById('copyStylePreviewAbn');
   if(!el) return;
@@ -3385,6 +3541,7 @@ function applyCatFormat(){
   categoryNameFormat.italic = document.getElementById('catFmtItalic').checked;
   categoryNameFormat.underline = document.getElementById('catFmtUnderline').checked;
   updateCatFormatPreview();
+  saveFormatSettings();
   refreshAllNotes();
 }
 
@@ -3449,7 +3606,8 @@ async function loadPersisted(){
 }
 
 async function resetAllSettings(){
-  settings = { fontFamily:"'IBM Plex Mono', monospace", fontSize:14, copyMethod:'dom', copyAbnStyle:'html', copyAbnPrefix:'[AVVIK] ' };
+  settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  applyFormatSettings();
   customProfiles = []; profileItemOverrides = {}; customTestDefs = [];
   activeProfileId = 'alle';
   customSections = [];
@@ -3472,6 +3630,7 @@ async function resetAllSettings(){
 /* ============================== INIT ============================== */
 async function init(){
   await loadPersisted();
+  applyFormatSettings();
   applyFontSettings();
   syncCopySettingsUI();
   renderProfileList();
@@ -3485,6 +3644,7 @@ async function init(){
   buildNihssTab();
   buildCiwaTab();
   buildSepsisTab();
+  buildNews2Tab();
   buildEkgPanel();
   buildOrthoPanel();
   buildSokratesPanel();
@@ -3674,7 +3834,7 @@ const ekgState = {
   rprogresjon:null, rmax:null, smax:null, lvh:null,
   st_leads:[], tbolge_leads:[], q_leads:[],
   axis_I:null, axis_aVF:null, axis_aVL:null,
-  paperSpeed:50,
+  paperSpeed:50, qt:'', manualKeys:new Set(), autoKeys:new Set(),
   funn:new Set(), showAssessment:false
 };
 
@@ -3769,7 +3929,9 @@ function ekgNoteText(){
   if(rytmePart) parts.push(rytmePart);
 
   const akseMap = {normal:'Normal akse', venstre:'Venstreakse', hoyre:'Høyreakse', ekstrem:'Ekstrem akse'};
-  if(ekgState.akse) parts.push(akseMap[ekgState.akse] || ekgState.akse);
+  const axResTop = axisResult();
+  if(ekgState.akse && ekgState.autoKeys.has('akse') && axResTop) parts.push(axResTop.label+' ('+axResTop.deg+')');
+  else if(ekgState.akse) parts.push(akseMap[ekgState.akse] || ekgState.akse);
 
   const ivParts = [];
   if(ekgState.pq) ivParts.push('PR-intervall '+ekgState.pq+' ms');
@@ -3781,7 +3943,8 @@ function ekgNoteText(){
     let flag = '';
     if(lim && qtcVal > lim) flag = ' (forlenget per ESC 2022, grense ' + lim + ' ms)';
     else if(borderline && qtcVal > borderline) flag = ' (grenseverdi, grense ' + borderline + ' ms)';
-    ivParts.push('QTc '+ekgState.qtc+' ms'+flag);
+    const qtcCalc = ekgState.autoKeys.has('qtc') && ekgState.qt ? ' (beregnet etter Bazett fra QT '+ekgState.qt+' ms)' : '';
+    ivParts.push('QTc '+ekgState.qtc+' ms'+qtcCalc+flag);
   }
   if(ivParts.length) parts.push(ivParts.join(', '));
 
@@ -3905,6 +4068,41 @@ function ekgAbnHTML(){
 function calcBoxMs(speed, large){
   const ms = large ? (speed===25 ? 200 : 100) : (speed===25 ? 40 : 20);
   return ms;
+}
+
+/* Calculators feed the fields below them, but never overwrite a value the user typed. */
+function ekgSetAuto(key, val){
+  if(ekgState.manualKeys.has(key)) return;
+  if(val===null || val===undefined || val===''){ if(ekgState.autoKeys.has(key)){ ekgState[key]=''; ekgState.autoKeys.delete(key); } }
+  else { ekgState[key] = String(val); ekgState.autoKeys.add(key); }
+  const inp = document.getElementById('ekg-input-'+key);
+  if(inp && document.activeElement!==inp) inp.value = ekgState[key] || '';
+  const tag = document.getElementById('ekg-auto-'+key);
+  if(tag) tag.textContent = ekgState.autoKeys.has(key) ? 'beregnet' : '';
+  const f = EKG_FIELDS.find(x=>x.key===key); if(f) updateEkgBadge(f);
+  if(key==='hr') ekgRecalcQtc();
+  updateEkgSuggestions(); updateEkgNote();
+}
+function ekgRecalcQtc(){
+  const qt = parseNum(ekgState.qt), hr = parseNum(ekgState.hr);
+  if(!isNaN(qt) && qt>0 && !isNaN(hr) && hr>0){
+    const rr = 60/hr;
+    ekgSetAuto('qtc', Math.round(qt/Math.sqrt(rr)));
+  } else ekgSetAuto('qtc', null);
+}
+function axisToAkse(r){
+  if(!r) return null;
+  return {'Normal akse':'normal','Borderline/normal venstreakse':'normal','Venstreakseavvik (LAD)':'venstre',
+          'Høyreakseavvik (RAD)':'hoyre','Ekstrem/NW-akse':'ekstrem'}[r.label] || null;
+}
+function ekgSyncAkseFromCalc(){
+  if(ekgState.manualKeys.has('akse')) return;
+  const a = axisToAkse(axisResult());
+  ekgState.akse = a;
+  if(a) ekgState.autoKeys.add('akse'); else ekgState.autoKeys.delete('akse');
+  document.querySelectorAll('.ekg-chip-row[data-catkey="akse"] .ekg-chip').forEach(b=>b.classList.toggle('selected', b.dataset.val===ekgState.akse));
+  const tag = document.getElementById('ekg-auto-akse');
+  if(tag) tag.textContent = a ? 'fra aksekalkulator' : '';
 }
 
 function axisResult(){
@@ -4034,13 +4232,19 @@ function buildEkgPanel(){
     const redNote = isPQ && afibOrFlutter ? `<div style="font-size:.7rem; color:var(--clay); margin-top:4px;">P-bølger kan mangle ved atrieflimmer/flutter — PQ-tid kan ikke tolkes på vanlig måte.</div>` : '';
     return `
     <div class="ekg-field-card"${redStyle} data-field-key="${f.key}">
-      <div class="ekg-field-label">${f.label}</div>
+      <div class="ekg-field-label">${f.label} <span class="sep-auto-tag" id="ekg-auto-${f.key}">${ekgState.autoKeys.has(f.key)?'beregnet':''}</span></div>
       <div class="ekg-field-row">
         <input type="text" inputmode="decimal" class="ekg-num-input" step="1" placeholder="–" id="ekg-input-${f.key}" data-field="${f.key}" value="${ekgState[f.key]||''}" />
         <span class="ekg-unit">${f.unit}</span>
         <span class="flag-badge" id="ekg-badge-${f.key}" style="display:none;"></span>
       </div>
       ${f.key==='qtc' ? `
+        <div class="ekg-field-row" style="margin-top:8px;">
+          <span class="ekg-unit">QT målt</span>
+          <input type="text" inputmode="decimal" class="ekg-calc-input" id="ekg-qt-input" value="${ekgState.qt||''}" placeholder="valgfritt" style="width:84px;" />
+          <span class="ekg-unit">ms</span>
+        </div>
+        <div class="ekg-ref" style="margin-top:4px;">Fyll inn QT og hjertefrekvens for automatisk QTc (Bazett), eller skriv QTc direkte.</div>
         <div class="ekg-chip-row" id="ekg-kjonn-row">
           <button type="button" class="ekg-chip ${ekgState.kjonn==='mann'?'selected':''}" data-kjonn="mann">Mann</button>
           <button type="button" class="ekg-chip ${ekgState.kjonn==='kvinne'?'selected':''}" data-kjonn="kvinne">Kvinne</button>
@@ -4074,7 +4278,7 @@ function buildEkgPanel(){
       </div>` : '';
     return `
     <div class="ekg-field-card" style="grid-column: span 2;">
-      <div class="ekg-field-label">${c.label}</div>
+      <div class="ekg-field-label">${c.label}${c.key==='akse'?` <span class="sep-auto-tag" id="ekg-auto-akse">${ekgState.autoKeys.has('akse')?'fra aksekalkulator':''}</span>`:''}</div>
       <div class="ekg-chip-row" data-catkey="${c.key}">
         ${c.choices.map(ch => `<button type="button" class="ekg-chip ${ekgState[c.key]===ch.id?'selected':''}" data-cat="${c.key}" data-val="${ch.id}">${ch.label}</button>`).join('')}
       </div>
@@ -4225,12 +4429,18 @@ function attachEkgEvents(){
       const field = EKG_FIELDS.find(f=>f.key===input.dataset.field);
       if(field){
         ekgState[field.key] = input.value;
+        ekgState.autoKeys.delete(field.key);
+        if(input.value.trim()) ekgState.manualKeys.add(field.key); else ekgState.manualKeys.delete(field.key);
+        const t = document.getElementById('ekg-auto-'+field.key); if(t) t.textContent='';
+        if(field.key==='hr') ekgRecalcQtc();
+        if(field.key==='qtc' && !input.value.trim()) ekgRecalcQtc();
         updateEkgBadge(field);
         updateEkgSuggestions();
         updateEkgNote();
       }
       return;
     }
+    if(e.target.id==='ekg-qt-input'){ ekgState.qt = e.target.value.trim(); ekgRecalcQtc(); updateEkgNote(); return; }
     /* ── Box calculator inputs ── */
     const calcSmall = e.target.closest('#calc-small-input');
     const calcLarge = e.target.closest('#calc-large-input');
@@ -4254,6 +4464,7 @@ function attachEkgEvents(){
       const rr = parseNum(rrMs.value);
       const res = document.getElementById('calc-rr-result');
       if(res) res.textContent = (!isNaN(rr) && rr > 0) ? Math.round(60000 / rr) + ' /min' : '– /min';
+      ekgSetAuto('hr', (!isNaN(rr) && rr > 0) ? Math.round(60000 / rr) : null);
     }
     const rrSmallBoxes = e.target.closest('#calc-rr-small-boxes');
     if(rrSmallBoxes){
@@ -4262,6 +4473,7 @@ function attachEkgEvents(){
       const rrInMs = boxes * calcBoxMs(speed, false); // small boxes
       const res = document.getElementById('calc-rr-small-boxes-result');
       if(res) res.textContent = (!isNaN(boxes) && boxes > 0) ? Math.round(60000 / rrInMs) + ' /min' : '– /min';
+      ekgSetAuto('hr', (!isNaN(boxes) && boxes > 0) ? Math.round(60000 / rrInMs) : null);
     }
     const rrBoxes = e.target.closest('#calc-rr-boxes');
     if(rrBoxes){
@@ -4270,6 +4482,7 @@ function attachEkgEvents(){
       const rrInMs = boxes * calcBoxMs(speed, true); // large boxes default
       const res = document.getElementById('calc-rr-boxes-result');
       if(res) res.textContent = (!isNaN(boxes) && boxes > 0) ? Math.round(60000 / rrInMs) + ' /min' : '– /min';
+      ekgSetAuto('hr', (!isNaN(boxes) && boxes > 0) ? Math.round(60000 / rrInMs) : null);
     }
     const avgN = e.target.closest('#calc-avg-n');
     const avgRR = e.target.closest('#calc-avg-rr');
@@ -4283,6 +4496,7 @@ function attachEkgEvents(){
         if(!isNaN(N) && N > 1 && !isNaN(totalRR) && totalRR > 0){
           const hr = Math.round((N - 1) * 60000 / totalRR);
           res.textContent = hr + ' /min (gjennomsnitt over ' + Math.round(N-1) + ' RR-intervaller)';
+          ekgSetAuto('hr', hr);
         } else {
           res.textContent = '– /min';
         }
@@ -4394,6 +4608,8 @@ function attachEkgEvents(){
         const r = axisResult();
         resBox.innerHTML = r ? `<div class="axis-result-title">${r.label} (${r.deg})</div><div>${r.detail}</div>` : '<span style="color:var(--ink-muted);">Velg avledning I og aVF over.</span>';
       }
+      ekgSyncAkseFromCalc();
+      updateEkgSuggestions();
       updateEkgNote();
       return;
     }
@@ -4402,6 +4618,11 @@ function attachEkgEvents(){
     if(catBtn){
       const key = catBtn.dataset.cat, val = catBtn.dataset.val;
       ekgState[key] = (ekgState[key] === val) ? null : val;
+      if(key==='akse'){
+        ekgState.autoKeys.delete('akse');
+        if(ekgState.akse) ekgState.manualKeys.add('akse'); else { ekgState.manualKeys.delete('akse'); ekgSyncAkseFromCalc(); }
+        const t=document.getElementById('ekg-auto-akse'); if(t && ekgState.manualKeys.has('akse')) t.textContent='';
+      }
       document.querySelectorAll(`.ekg-chip-row[data-catkey="${key}"] .ekg-chip`).forEach(b => b.classList.toggle('selected', b.dataset.val===ekgState[key]));
       // Show/hide V-lead pickers for R-progression
       if(key==='rprogresjon'){
@@ -5015,7 +5236,8 @@ let orthoState = {
   side:   'bilateral',
   domain: 'Inspeksjon',
   findings: {},  // {regionId: {sideId: {domainName: Set<findingId>}}}
-  movements: {}  // {regionId: {sideId: {movName: statusId}}}
+  movements: {}, // {regionId: {sideId: {movName: statusId}}}
+  degrees: {}    // {regionId: {sideId: {movName: '90'}}}
 };
 
 /* ── helpers ── */
@@ -5043,6 +5265,10 @@ function setOrthoFinding(findingId, isNormal){
   }
 }
 
+function degLabel(regionId, sideId, mov){
+  const d = ((orthoState.degrees[regionId]||{})[sideId]||{})[mov];
+  return d ? `${mov} ${fmtNo(d)}°` : mov;
+}
 function setOrthoMovement(movName, statusId){
   const {region, side} = orthoState;
   if(!region) return;
@@ -5070,13 +5296,14 @@ function orthoNoteData(){
     const regF = orthoState.findings[reg.id];
     const regM = orthoState.movements[reg.id];
     const hasSomething = (obj)=> obj && Object.values(obj).some(v => v && (v.size>0 || Object.keys(v).length>0));
-    if(!hasSomething(regF) && !hasSomething(regM)) return;
+    if(!hasSomething(regF) && !hasSomething(regM) && !hasSomething(orthoState.degrees[reg.id])) return;
 
     /* Main note shows ALL findings (normal + abnormal) */
     const activeSides = ORTHO_SIDES.map(s=>s.id).filter(s=>{
       const fOk = regF && regF[s] && ORTHO_DOMAINS.some(d=>regF[s][d]&&regF[s][d].size>0);
       const mOk = regM && regM[s] && Object.keys(regM[s]).length>0;
-      return fOk || mOk;
+      const dOk = orthoState.degrees[reg.id] && orthoState.degrees[reg.id][s] && Object.keys(orthoState.degrees[reg.id][s]).length>0;
+      return fOk || mOk || dOk;
     });
     if(!activeSides.length) return;
 
@@ -5105,13 +5332,15 @@ function orthoNoteData(){
           const movGroups = {};
           Object.entries(movs).forEach(([mov,statOrSet])=>{
             const statSet = statOrSet instanceof Set ? statOrSet : new Set([statOrSet]);
-            if([...statSet].every(s=>s==='normal')){ normalMovs.push(mov); return; }
-            if(statSet.has('normal')) normalMovs.push(mov);
-            statSet.forEach(s=>{ if(s!=='normal')(movGroups[s]=movGroups[s]||[]).push(mov); });
+            if([...statSet].every(s=>s==='normal')){ normalMovs.push(degLabel(reg.id, side, mov)); return; }
+            if(statSet.has('normal')) normalMovs.push(degLabel(reg.id, side, mov));
+            statSet.forEach(s=>{ if(s!=='normal')(movGroups[s]=movGroups[s]||[]).push(degLabel(reg.id, side, mov)); });
           });
           /* Suppress normal_bev chip text if abnormal movements exist */
           const hasAbnMovs = Object.keys(movGroups).length > 0;
           const filteredParts = hasAbnMovs ? parts.filter(p=>p.cls!=='normal') : parts;
+          const degOnly = Object.keys(((orthoState.degrees[reg.id]||{})[side])||{}).filter(m=>!(m in movs));
+          if(degOnly.length) filteredParts.push({text:`Målt: ${degOnly.map(m=>degLabel(reg.id, side, m)).join(', ')}`, cls:'normal'});
           if(normalMovs.length) filteredParts.push({text:`Normal: ${normalMovs.join(', ')}`, cls:'normal'});
           Object.entries(movGroups).forEach(([stat,movList])=>{
             const stDef = MOV_STATUS.find(s=>s.id===stat);
@@ -5214,7 +5443,7 @@ function orthoAbnSummaryText(){
           const movGroups = {};
           Object.entries(movs).forEach(([mov,statOrSet])=>{
             const statSet = statOrSet instanceof Set ? statOrSet : new Set([statOrSet]);
-            statSet.forEach(s=>{ if(s!=='normal')(movGroups[s]=movGroups[s]||[]).push(mov); });
+            statSet.forEach(s=>{ if(s!=='normal')(movGroups[s]=movGroups[s]||[]).push(degLabel(reg.id, side, mov)); });
           });
           const movLines = Object.entries(movGroups).map(([stat,movList])=>{
             const stDef=MOV_STATUS.find(s=>s.id===stat);
@@ -5295,7 +5524,10 @@ function renderOrthoFindings(){
           ${movs.map(mov=>{
             const cur = curMovs[mov];
             return `<div class="ortho-mov-row">
-              <span class="ortho-mov-name">${mov}</span>
+              <span class="ortho-mov-name">${mov}
+                <span style="display:inline-flex; align-items:center; gap:3px; margin-left:4px;">
+                  <input type="text" inputmode="decimal" class="ortho-deg-input" data-deg-mov="${mov}" value="${((orthoState.degrees[orthoState.region]||{})[orthoState.side]||{})[mov]||''}" placeholder="–" style="width:44px; font-family:'IBM Plex Mono'; font-size:.76rem; padding:3px 5px; border:1px solid var(--border); border-radius:5px;" />°
+                </span></span>
               <div class="ortho-mov-btns">
                 ${MOV_STATUS.map(st=>`<button type="button" class="ortho-mov-btn ${st.id==='normal'?'ortho-mov-normal':'ortho-mov-abn'} ${(cur instanceof Set?cur.has(st.id):cur===st.id)?'selected':''}" data-mov="${mov}" data-movstat="${st.id}">${st.label}</button>`).join('')}
               </div>
@@ -5392,6 +5624,17 @@ function buildOrthoPanel(){
   if(panel.dataset.orthoEvt) return;
   panel.dataset.orthoEvt = '1';
 
+  panel.addEventListener('input', e=>{
+    const di = e.target.closest('.ortho-deg-input');
+    if(!di || !orthoState.region) return;
+    const { region, side } = orthoState;
+    const d = orthoState.degrees;
+    d[region] = d[region] || {}; d[region][side] = d[region][side] || {};
+    const v = di.value.trim();
+    if(v) d[region][side][di.dataset.degMov] = v; else delete d[region][side][di.dataset.degMov];
+    renderOrthoNote(); renderOrthoAbnSummary();
+  });
+
   panel.addEventListener('click', e=>{
     /* Ortho paste panel toggle */
     if(e.target.closest('#ortho-paste-toggle')){
@@ -5461,7 +5704,7 @@ function buildOrthoPanel(){
     }
 
     const resetBtn = e.target.closest('#ortho-reset-btn');
-    if(resetBtn){ orthoState={region:null,side:'bilateral',domain:'Inspeksjon',findings:{},movements:{}}; buildOrthoPanel(); return; }
+    if(resetBtn){ orthoState={region:null,side:'bilateral',domain:'Inspeksjon',findings:{},movements:{},degrees:{}}; buildOrthoPanel(); return; }
   });
 }
 </script>
@@ -6334,58 +6577,96 @@ const SEP_INPUTS = [
 ];
 const SEP_SHORT = { temp:'T', hr:'Puls', rf:'RF', sbt:'Systolisk BT', gcs:'GCS', lpk:'LPK', umodne:'Umodne', paco2:'PaCO₂' };
 
-function sepNum(k){ const v = parseNum(sepsisState.vals[k]); return isNaN(v) ? null : v; }
+function sepGet(k){ return SHARED_VITALS.includes(k) ? vitals[k] : sepsisState.vals[k]; }
+function sepNum(k){ const v = parseNum(sepGet(k)); return isNaN(v) ? null : v; }
 function sepValText(k){
-  const v = sepsisState.vals[k];
+  const v = sepGet(k);
   if(v==null || String(v).trim()==='') return null;
   const inp = SEP_INPUTS.find(i=>i.key===k);
   const unit = (k==='gcs') ? '' : ' '+inp.unit;
   return `${SEP_SHORT[k]} ${fmtNo(String(v).trim())}${unit}`;
 }
 
+/* Each criterion has one or more sub-conditions ("subs") joined by "eller".
+   Measured values tick the matching sub automatically; the user can also tick
+   subs by hand (no value needed). Ticked subs are joined by "og" in the note. */
 const SIRS_CRIT = [
-  { key:'s_temp', label:'1. Temperatur >38,0 °C eller <36,0 °C', q:'Kjernetemperatur.', vals:['temp'],
-    auto:()=>{ const t=sepNum('temp'); return t==null ? null : (t>38 || t<36); } },
-  { key:'s_hr', label:'2. Hjertefrekvens >90 /min', q:'Puls i hvile.', vals:['hr'],
-    auto:()=>{ const h=sepNum('hr'); return h==null ? null : h>90; } },
-  { key:'s_rf', label:'3. Respirasjonsfrekvens >20 /min eller PaCO₂ <4,3 kPa', q:'Tell respirasjonsfrekvensen i ett helt minutt. PaCO₂ fra blodgass.', vals:['rf','paco2'],
-    auto:()=>{ const r=sepNum('rf'), p=sepNum('paco2'); if(r==null && p==null) return null; return (r!=null && r>20) || (p!=null && p<4.3); } },
-  { key:'s_lpk', label:'4. Leukocytter >12 eller <4 × 10⁹/L, eller >10 % umodne former', q:'Fra blodprøve (LPK, eventuelt differensialtelling).', vals:['lpk','umodne'],
-    auto:()=>{ const l=sepNum('lpk'), u=sepNum('umodne'); if(l==null && u==null) return null; return (l!=null && (l>12 || l<4)) || (u!=null && u>10); } }
+  { key:'s_temp', num:'1', name:'Temperatur', q:'Kjernetemperatur.',
+    subs:[
+      { id:'hoy', label:'>38,0 °C', vals:['temp'], auto:()=>{ const t=sepNum('temp'); return t==null?null:t>38; } },
+      { id:'lav', label:'<36,0 °C', vals:['temp'], auto:()=>{ const t=sepNum('temp'); return t==null?null:t<36; } }
+    ]},
+  { key:'s_hr', num:'2', name:'Hjertefrekvens', q:'Puls i hvile.',
+    subs:[ { id:'hr', label:'>90 /min', vals:['hr'], auto:()=>{ const h=sepNum('hr'); return h==null?null:h>90; } } ]},
+  { key:'s_rf', num:'3', name:'', q:'Tell respirasjonsfrekvensen i ett helt minutt. PaCO₂ fra blodgass.',
+    subs:[
+      { id:'rf',    label:'Respirasjonsfrekvens >20 /min', vals:['rf'],    auto:()=>{ const r=sepNum('rf'); return r==null?null:r>20; } },
+      { id:'paco2', label:'PaCO₂ <4,3 kPa',                vals:['paco2'], auto:()=>{ const v=sepNum('paco2'); return v==null?null:v<4.3; } }
+    ]},
+  { key:'s_lpk', num:'4', name:'Leukocytter', q:'Fra blodprøve (LPK, eventuelt differensialtelling).',
+    subs:[
+      { id:'hoy',    label:'>12 × 10⁹/L',          vals:['lpk'],    auto:()=>{ const l=sepNum('lpk'); return l==null?null:l>12; } },
+      { id:'lav',    label:'<4 × 10⁹/L',           vals:['lpk'],    auto:()=>{ const l=sepNum('lpk'); return l==null?null:l<4; } },
+      { id:'umodne', label:'>10 % umodne former',  vals:['umodne'], auto:()=>{ const u=sepNum('umodne'); return u==null?null:u>10; } }
+    ]}
 ];
 const QSOFA_CRIT = [
-  { key:'q_rf', label:'1. Respirasjonsfrekvens ≥22 /min', q:'Tell respirasjonsfrekvensen i ett helt minutt.', vals:['rf'],
-    auto:()=>{ const r=sepNum('rf'); return r==null ? null : r>=22; } },
-  { key:'q_mental', label:'2. Endret mental status (GCS <15)', q:'Nyoppstått forvirring eller nedsatt bevissthet.', vals:['gcs'],
-    auto:()=>{ const g=sepNum('gcs'); return g==null ? null : g<15; } },
-  { key:'q_bt', label:'3. Systolisk blodtrykk ≤100 mmHg', q:'Målt blodtrykk.', vals:['sbt'],
-    auto:()=>{ const b=sepNum('sbt'); return b==null ? null : b<=100; } }
+  { key:'q_rf', num:'1', name:'Respirasjonsfrekvens', q:'Tell respirasjonsfrekvensen i ett helt minutt.',
+    subs:[ { id:'rf', label:'≥22 /min', vals:['rf'], auto:()=>{ const r=sepNum('rf'); return r==null?null:r>=22; } } ]},
+  { key:'q_mental', num:'2', name:'Endret mental status:', q:'Nyoppstått forvirring eller nedsatt bevissthet.',
+    subs:[
+      { id:'gcs',      label:'GCS <15',               vals:['gcs'], auto:()=>{ const g=sepNum('gcs'); return g==null?null:g<15; } },
+      { id:'forvirret', label:'nyoppstått forvirring', vals:[],      auto:()=>null }
+    ]},
+  { key:'q_bt', num:'3', name:'Systolisk blodtrykk', q:'Målt blodtrykk.',
+    subs:[ { id:'bt', label:'≤100 mmHg', vals:['sbt'], auto:()=>{ const b=sepNum('sbt'); return b==null?null:b<=100; } } ]}
 ];
 
-let sepsisState = { vals:{}, manual:{}, tid:'', include:{sirs:true, qsofa:true} };
-function sepsisResetState(){ sepsisState = { vals:{}, manual:{}, tid:'', include:{sirs:true, qsofa:true} }; }
+let sepsisState;
+function sepsisResetState(){ sepsisState = { vals:{}, manual:{}, manualSubs:{}, tid:'', include:{sirs:true, qsofa:true} }; }
+sepsisResetState();
 
-/* → {val:'ja'|'nei'|null, src:'manuell'|'målt'|null} */
+function joinWord(arr, word){
+  if(arr.length<=1) return arr.join('');
+  return arr.slice(0,-1).join(', ')+' '+word+' '+arr[arr.length-1];
+}
+function sepCritLabel(c, subIds){
+  const subs = (subIds && subIds.length) ? c.subs.filter(s=>subIds.includes(s.id)) : c.subs;
+  const word = (subIds && subIds.length) ? 'og' : 'eller';
+  return `${c.num}. ${c.name ? c.name+' ' : ''}${joinWord(subs.map(s=>s.label), word)}`;
+}
+/* → {val:'ja'|'nei'|null, subs:[ids that apply], src:'manuell'|'målt'|null} */
 function sepCrit(c){
-  if(sepsisState.manual[c.key]) return { val:sepsisState.manual[c.key], src:'manuell' };
-  const a = c.auto();
-  if(a===null) return { val:null, src:null };
-  return { val: a ? 'ja' : 'nei', src:'målt' };
+  const man = sepsisState.manual[c.key];
+  const mSubs = sepsisState.manualSubs[c.key] || [];
+  const autoRes = c.subs.map(s=>({id:s.id, r:s.auto()}));
+  const autoMet = autoRes.filter(a=>a.r===true).map(a=>a.id);
+  const anyEval = autoRes.some(a=>a.r!==null);
+  if(man==='nei') return { val:'nei', subs:[], src:'manuell' };
+  if(mSubs.length) return { val:'ja', subs:mSubs.slice(), src:'manuell' };
+  if(man==='ja')   return { val:'ja', subs:autoMet, src:'manuell' };
+  if(autoMet.length) return { val:'ja', subs:autoMet, src:'målt' };
+  if(anyEval) return { val:'nei', subs:[], src:'målt' };
+  return { val:null, subs:[], src:null };
 }
 function sepCount(list){
   let met = 0, assessed = 0;
   list.forEach(c=>{ const s = sepCrit(c); if(s.val){ assessed++; if(s.val==='ja') met++; } });
   return { met, assessed, total:list.length };
 }
-function sepCritValues(c){
-  return c.vals.map(sepValText).filter(Boolean).join(', ');
+function sepCritValues(c, subIds){
+  const subs = (subIds && subIds.length) ? c.subs.filter(s=>subIds.includes(s.id)) : c.subs;
+  const keys = [...new Set(subs.flatMap(s=>s.vals))];
+  return keys.map(sepValText).filter(Boolean).join(', ');
 }
 function sepCritLine(c){
   const s = sepCrit(c);
-  if(!s.val) return { text:`${c.label}: ikke vurdert`, cls:'none' };
-  const vt = sepCritValues(c);
+  if(!s.val) return { text:`${sepCritLabel(c)}: ikke vurdert`, cls:'none' };
+  /* Ja with specific subs → only those (joined "og"); otherwise full "eller" label */
+  const label = (s.val==='ja' && c.subs.length>1 && s.subs.length) ? sepCritLabel(c, s.subs) : sepCritLabel(c);
+  const vt = sepCritValues(c, s.val==='ja' ? s.subs : null);
   const word = s.val==='ja' ? 'Ja' : 'Nei';
-  return { text:`${c.label}: ${word}${vt ? ' ('+vt+')' : ''}`, cls: s.val==='ja' ? 'abnormal' : 'normal' };
+  return { text:`${label}: ${word}${vt ? ' ('+vt+')' : ''}`, cls: s.val==='ja' ? 'abnormal' : 'normal' };
 }
 function sepMeasureLine(){
   const p = SEP_INPUTS.map(i=>sepValText(i.key)).filter(Boolean);
@@ -6450,13 +6731,16 @@ function sepsisAbnHTML(forCopy){
 function sepCritRowsHTML(list){
   return list.map(c=>{
     const s = sepCrit(c);
-    const tag = s.src==='manuell' ? ''
-              : s.src==='målt' ? '<span class="sep-auto-tag">fra målinger</span>'
-              : '<span class="sep-auto-tag">ikke vurdert</span>';
+    const tag = s.src==='målt' ? '<span class="sep-auto-tag">fra målinger</span>'
+              : s.src===null ? '<span class="sep-auto-tag">ikke vurdert</span>' : '';
     const vt = sepCritValues(c);
+    const subChips = c.subs.length>1 ? `<div class="option-group" style="margin-bottom:6px;">${
+      c.subs.map(sb=>`<button type="button" class="chip-btn ${s.subs.includes(sb.id)?'selected':''}" data-sep-sub="${c.key}" data-sub-id="${sb.id}">${sb.label}</button>`).join('')
+    }<span class="subfield-label-inline" style="align-self:center;">velg nærmere (valgfritt)</span></div>` : '';
     return `<div class="sep-row">
-      <div class="sep-row-head"><div class="nihss-row-label" style="margin:0;">${c.label}</div>${tag}</div>
+      <div class="sep-row-head"><div class="nihss-row-label" style="margin:0;">${sepCritLabel(c)}</div>${tag}</div>
       <div class="sep-q">${c.q}${vt ? ' · Registrert: '+escHtml(vt) : ''}</div>
+      ${subChips}
       <div class="option-group">
         <button type="button" class="option-btn abnormal ${s.val==='ja'?'selected':''}" data-sep-crit="${c.key}" data-sep-val="ja">Ja, oppfylt</button>
         <button type="button" class="option-btn normal ${s.val==='nei'?'selected':''}" data-sep-crit="${c.key}" data-sep-val="nei">Nei</button>
@@ -6490,7 +6774,9 @@ function buildSepsisTab(){
     <div class="ekg-field-card">
       <div class="ekg-field-label">${i.label}</div>
       <div class="ekg-field-row">
-        <input type="text" inputmode="decimal" class="ekg-num-input sep-input" data-sep-key="${i.key}" value="${escHtml(sepsisState.vals[i.key]||'')}" placeholder="${i.ph}" />
+        ${SHARED_VITALS.includes(i.key)
+          ? `<input type="text" inputmode="decimal" class="ekg-num-input" data-vital="${i.key}" value="${escHtml(vitals[i.key]||'')}" placeholder="${i.ph}" />`
+          : `<input type="text" inputmode="decimal" class="ekg-num-input sep-input" data-sep-key="${i.key}" value="${escHtml(sepsisState.vals[i.key]||'')}" placeholder="${i.ph}" />`}
         <span class="ekg-unit">${i.unit}</span>
       </div>
     </div>`).join('');
@@ -6499,7 +6785,7 @@ function buildSepsisTab(){
     <main class="layout">
       <section class="cardList">
         <div class="exam-card">
-          <div class="card-head"><span class="card-name">Målinger</span></div>
+          <div class="card-head"><span class="card-name">Målinger</span><span class="sep-auto-tag">temperatur, puls, RF og BT er felles med Klinisk undersøkelse og NEWS2</span></div>
           <div class="ekg-hedge-note" style="margin:0 0 12px;">Fyll inn det som er målt. Kriteriene under markeres automatisk, og kan overstyres manuelt med Ja/Nei. Felter du lar stå tomme, gir «ikke vurdert».</div>
           <div class="ekg-input-grid">${inputsHtml}</div>
           <div style="margin-top:12px;">
@@ -6575,27 +6861,38 @@ function buildSepsisTab(){
 function sepsisParse(raw){
   const grab = (re)=>{ const m = raw.match(re); return m ? m[1].replace(',','.') : null; };
   const found = {
-    temp:   grab(/\b(?:temp(?:eratur)?|T)\.?\s*:?\s*(\d{2}(?:[.,]\d)?)\s*(?:°|grader|C\b)?/i),
-    hr:     grab(/\b(?:puls|hjertefrekvens|HF|HR)\s*:?\s*(\d{2,3})\b/i),
-    rf:     grab(/\b(?:RF|resp(?:irasjonsfrekvens)?|AF)\s*:?\s*(\d{1,2})\b/i),
-    sbt:    grab(/\b(?:BT|blodtrykk|systolisk(?:\s+BT)?)\s*:?\s*(\d{2,3})\b/i),
     gcs:    grab(/\bGCS\s*:?\s*(\d{1,2})\b/i),
     lpk:    grab(/\b(?:LPK|leukocytter|leuk)\s*:?\s*(\d{1,2}(?:[.,]\d+)?)/i),
     umodne: grab(/\b(?:umodne|stavkjernede)[^\d\n]{0,20}(\d{1,2}(?:[.,]\d)?)/i),
     paco2:  grab(/\bpa?co[2₂]\s*:?\s*(\d{1,2}(?:[.,]\d+)?)/i)
   };
-  let n = 0;
+  let n = parseVitalsText(raw);
   Object.entries(found).forEach(([k,v])=>{ if(v!=null){ sepsisState.vals[k] = v; n++; } });
   return n;
 }
 
 function attachSepsisEvents(panel){
   panel.addEventListener('click', e=>{
+    const sub = e.target.closest('[data-sep-sub]');
+    if(sub){
+      const k = sub.dataset.sepSub, id = sub.dataset.subId;
+      const crit = [...SIRS_CRIT, ...QSOFA_CRIT].find(c=>c.key===k);
+      /* start from what is currently shown (incl. auto-ticked) so the click feels direct */
+      let cur = (sepsisState.manualSubs[k] && sepsisState.manualSubs[k].length) ? sepsisState.manualSubs[k].slice() : sepCrit(crit).subs.slice();
+      if(cur.includes(id)) cur = cur.filter(x=>x!==id); else cur.push(id);
+      cur = crit.subs.map(s=>s.id).filter(x=>cur.includes(x));
+      if(cur.length){ sepsisState.manualSubs[k] = cur; delete sepsisState.manual[k]; }
+      else { delete sepsisState.manualSubs[k]; sepsisState.manual[k] = 'nei'; }
+      renderSepsisCriteria(); renderSepsisOutput();
+      return;
+    }
     const cb = e.target.closest('[data-sep-crit]');
     if(cb){
       const k = cb.dataset.sepCrit, v = cb.dataset.sepVal;
-      if(sepsisState.manual[k]===v) delete sepsisState.manual[k];
-      else sepsisState.manual[k] = v;
+      const crit = [...SIRS_CRIT, ...QSOFA_CRIT].find(c=>c.key===k);
+      const cur = sepCrit(crit);
+      if(cur.src==='manuell' && cur.val===v){ delete sepsisState.manual[k]; delete sepsisState.manualSubs[k]; }
+      else { sepsisState.manual[k] = v; if(v==='nei') delete sepsisState.manualSubs[k]; }
       renderSepsisCriteria(); renderSepsisOutput();
       return;
     }
@@ -6612,6 +6909,7 @@ function attachSepsisEvents(panel){
       const raw = document.getElementById('sep-paste-input').value;
       if(!raw.trim()){ const s=document.getElementById('sep-parse-status'); s.textContent='Lim inn tekst først.'; return; }
       const n = sepsisParse(raw);
+      vitalsChanged();
       buildSepsisTab();
       document.getElementById('sep-paste-panel').classList.add('open');
       document.getElementById('sep-paste-input').value = raw;
@@ -6623,7 +6921,7 @@ function attachSepsisEvents(panel){
     if(e.target.closest('#sep-copy-btn')){ copyPlain(sepsisOutputText(), document.getElementById('sep-copy-status')); return; }
     if(e.target.closest('#sep-copy-rich-btn')){ copyWithRichText(sepsisOutputHTML(true), sepsisOutputText(), document.getElementById('sep-copy-status')); return; }
     if(e.target.closest('#sep-copy-abn-btn')){ copyWithRichText(sepsisAbnHTML(true), sepsisAbnText(), document.getElementById('sep-copy-abn-status')); return; }
-    if(e.target.closest('#sep-reset-btn')){ sepsisResetState(); buildSepsisTab(); return; }
+    if(e.target.closest('#sep-reset-btn')){ sepsisResetState(); clearVitals(); buildSepsisTab(); return; }
   });
 
   panel.addEventListener('input', e=>{
@@ -6635,6 +6933,379 @@ function attachSepsisEvents(panel){
     }
     if(e.target.id==='sep-tid'){ sepsisState.tid = e.target.value.trim(); renderSepsisOutput(); }
   });
+}
+</script>
+
+<script>
+/* ============================== VITALE TEGN (felles) ==============================
+   One shared store for vital signs. Klinisk undersøkelse, SIRS / qSOFA and NEWS2
+   all read and write the same values, so each value is entered once.
+   Inputs carry data-vital="key"; choice buttons carry data-vital-set="key" data-val="…". */
+let vitals = { sbt:'', dbt:'', hr:'', rf:'', spo2:'', o2:'', o2l:'', temp:'', acvpu:'' };
+const SHARED_VITALS = ['temp','hr','rf','sbt'];  /* keys SIRS / qSOFA shares */
+
+function vitalNum(k){ const v = parseNum(vitals[k]); return isNaN(v) ? null : v; }
+function clearVitals(){ Object.keys(vitals).forEach(k=>vitals[k]=''); vitalsChanged(); }
+
+function vitalsChanged(){
+  document.querySelectorAll('[data-vital]').forEach(inp=>{ if(inp!==document.activeElement) inp.value = vitals[inp.dataset.vital] || ''; });
+  document.querySelectorAll('[data-vital-set]').forEach(b=> b.classList.toggle('selected', vitals[b.dataset.vitalSet]===b.dataset.val));
+  if(document.getElementById('noteBody-klinisk')) renderNote('klinisk');
+  if(typeof renderSepsisCriteria==='function' && document.getElementById('sep-sirs-container')){ renderSepsisCriteria(); renderSepsisOutput(); }
+  if(typeof renderNews2==='function') renderNews2();
+}
+
+document.addEventListener('input', e=>{
+  const inp = e.target.closest('[data-vital]');
+  if(!inp) return;
+  vitals[inp.dataset.vital] = inp.value.trim();
+  if(inp.dataset.vital==='o2l' && inp.value.trim()) vitals.o2 = 'oksygen';
+  vitalsChanged();
+});
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-vital-set]');
+  if(!b) return;
+  const k = b.dataset.vitalSet, v = b.dataset.val;
+  vitals[k] = (vitals[k]===v) ? '' : v;
+  if(k==='o2' && vitals.o2!=='oksygen') vitals.o2l = '';
+  vitalsChanged();
+});
+
+function vitalsNoteText(){
+  const p = [];
+  if(vitals.sbt && vitals.dbt) p.push(`BT ${vitals.sbt}/${vitals.dbt} mmHg`);
+  else if(vitals.sbt) p.push(`systolisk BT ${vitals.sbt} mmHg`);
+  if(vitals.hr) p.push(`puls ${fmtNo(vitals.hr)} /min`);
+  if(vitals.rf) p.push(`RF ${fmtNo(vitals.rf)} /min`);
+  if(vitals.spo2){
+    let s = `SpO₂ ${fmtNo(vitals.spo2)} %`;
+    if(vitals.o2==='luft') s += ' på romluft';
+    else if(vitals.o2==='oksygen') s += vitals.o2l ? ` på ${fmtNo(vitals.o2l)} l/min O₂` : ' på oksygen';
+    p.push(s);
+  } else if(vitals.o2==='oksygen') p.push(vitals.o2l ? `får ${fmtNo(vitals.o2l)} l/min O₂` : 'får oksygen');
+  if(vitals.temp) p.push(`temp. ${fmtNo(vitals.temp)} °C`);
+  if(!p.length) return '';
+  const s = p.join(', ');
+  return s.charAt(0).toUpperCase()+s.slice(1)+'.';
+}
+
+function vitalInputHTML(key, label, unit, ph, extraStyle){
+  return `<div class="ekg-field-card"${extraStyle||''}>
+    <div class="ekg-field-label">${label}</div>
+    <div class="ekg-field-row">
+      <input type="text" inputmode="decimal" class="ekg-num-input" data-vital="${key}" value="${escHtml(vitals[key]||'')}" placeholder="${ph||'–'}" />
+      <span class="ekg-unit">${unit}</span>
+    </div></div>`;
+}
+function o2ChoiceHTML(){
+  return `<div class="ekg-field-card" style="grid-column: span 2;">
+    <div class="ekg-field-label">Romluft eller oksygen</div>
+    <div class="ekg-field-row" style="flex-wrap:wrap;">
+      <button type="button" class="ekg-chip ${vitals.o2==='luft'?'selected':''}" data-vital-set="o2" data-val="luft">Romluft</button>
+      <button type="button" class="ekg-chip ${vitals.o2==='oksygen'?'selected':''}" data-vital-set="o2" data-val="oksygen">Oksygen</button>
+      <input type="text" inputmode="decimal" class="ekg-num-input" data-vital="o2l" value="${escHtml(vitals.o2l||'')}" placeholder="l/min" style="width:70px;" />
+      <span class="ekg-unit">l/min (valgfritt)</span>
+    </div></div>`;
+}
+function vitalsCardHTML(){
+  return `<div class="exam-card">
+    <div class="card-head"><span class="card-name">Vitale tegn</span><span class="sep-auto-tag">felles med SIRS / qSOFA og NEWS2</span></div>
+    <div class="ekg-input-grid">
+      <div class="ekg-field-card">
+        <div class="ekg-field-label">Blodtrykk</div>
+        <div class="ekg-field-row">
+          <input type="text" inputmode="decimal" class="ekg-num-input" data-vital="sbt" value="${escHtml(vitals.sbt)}" placeholder="sys" style="width:62px;" />
+          <span class="ekg-unit">/</span>
+          <input type="text" inputmode="decimal" class="ekg-num-input" data-vital="dbt" value="${escHtml(vitals.dbt)}" placeholder="dia" style="width:62px;" />
+          <span class="ekg-unit">mmHg</span>
+        </div></div>
+      ${vitalInputHTML('hr','Puls','/min')}
+      ${vitalInputHTML('rf','Respirasjonsfrekvens','/min')}
+      ${vitalInputHTML('spo2','SpO₂','%')}
+      ${vitalInputHTML('temp','Temperatur','°C')}
+      ${o2ChoiceHTML()}
+    </div>
+  </div>`;
+}
+
+/* Reads vitals out of pasted text (used by Klinisk, SIRS / qSOFA and NEWS2 paste-in). */
+function parseVitalsText(raw){
+  const grab = (re)=>{ const m = raw.match(re); return m ? m : null; };
+  let n = 0;
+  const set = (k,v)=>{ if(v!=null){ vitals[k] = String(v).replace(',','.'); n++; } };
+  let m;
+  if((m = grab(/\b(?:temp(?:eratur)?\.?|T)\s*:?\s*(\d{2}(?:[.,]\d)?)\s*(?:°|grader|C\b)?/i))) set('temp', m[1]);
+  if((m = grab(/\b(?:puls|hjertefrekvens|HF|HR)\s*:?\s*(\d{2,3})\b/i))) set('hr', m[1]);
+  if((m = grab(/\b(?:RF|resp(?:irasjonsfrekvens)?|AF)\s*:?\s*(\d{1,2})\b/i))) set('rf', m[1]);
+  if((m = grab(/\b(?:BT|blodtrykk)\s*:?\s*(\d{2,3})\s*\/\s*(\d{2,3})/i))){ set('sbt', m[1]); set('dbt', m[2]); }
+  else if((m = grab(/\b(?:BT|blodtrykk|systolisk(?:\s+BT)?)\s*:?\s*(\d{2,3})\b/i))) set('sbt', m[1]);
+  if((m = grab(/\b(?:SpO2|SpO₂|sat(?:urasjon)?)\s*:?\s*(\d{2,3})\s*%?/i))) set('spo2', m[1]);
+  if(/romluft|på luft/i.test(raw)){ vitals.o2='luft'; }
+  if((m = grab(/(\d{1,2}(?:[.,]\d)?)\s*l\s*\/?\s*min/i))){ vitals.o2='oksygen'; set('o2l', m[1]); }
+  return n;
+}
+</script>
+
+<script>
+/* ============================== NEWS2 TAB ==============================
+   National Early Warning Score 2 (Royal College of Physicians, 2017).
+   Values come from the shared vital signs; each parameter's band is selected
+   automatically from the value, or can be chosen by hand without a value.
+   The tool only adds up points and gives no clinical assessment. */
+
+const NEWS_PARAMS = [
+  { key:'rf', label:'Respirasjonsfrekvens', unit:'/min', bands:[
+    {id:'a', label:'≤8',    pts:3, max:8},
+    {id:'b', label:'9–11',  pts:1, max:11},
+    {id:'c', label:'12–20', pts:0, max:20},
+    {id:'d', label:'21–24', pts:2, max:24},
+    {id:'e', label:'≥25',   pts:3, max:Infinity}]},
+  { key:'spo2_1', vital:'spo2', label:'SpO₂ skala 1', unit:'%', scale:1, bands:[
+    {id:'a', label:'≤91',   pts:3, max:91},
+    {id:'b', label:'92–93', pts:2, max:93},
+    {id:'c', label:'94–95', pts:1, max:95},
+    {id:'d', label:'≥96',   pts:0, max:Infinity}]},
+  { key:'spo2_2', vital:'spo2', label:'SpO₂ skala 2', unit:'%', scale:2, bands:[
+    {id:'a', label:'≤83',              pts:3},
+    {id:'b', label:'84–85',            pts:2},
+    {id:'c', label:'86–87',            pts:1},
+    {id:'d', label:'88–92 / ≥93 på romluft', pts:0},
+    {id:'e', label:'93–94 på oksygen', pts:1},
+    {id:'f', label:'95–96 på oksygen', pts:2},
+    {id:'g', label:'≥97 på oksygen',   pts:3}],
+    pick:(v)=>{
+      if(v<=83) return 'a'; if(v<=85) return 'b'; if(v<=87) return 'c'; if(v<=92) return 'd';
+      if(vitals.o2==='luft') return 'd';
+      if(vitals.o2!=='oksygen') return null;   /* ≥93: depends on air vs oxygen */
+      if(v<=94) return 'e'; if(v<=96) return 'f'; return 'g';
+    }},
+  { key:'o2', label:'Romluft eller oksygen', categorical:true, bands:[
+    {id:'luft',    label:'Romluft', pts:0},
+    {id:'oksygen', label:'Oksygen', pts:2}]},
+  { key:'sbt', label:'Systolisk blodtrykk', unit:'mmHg', bands:[
+    {id:'a', label:'≤90',     pts:3, max:90},
+    {id:'b', label:'91–100',  pts:2, max:100},
+    {id:'c', label:'101–110', pts:1, max:110},
+    {id:'d', label:'111–219', pts:0, max:219},
+    {id:'e', label:'≥220',    pts:3, max:Infinity}]},
+  { key:'hr', label:'Puls', unit:'/min', bands:[
+    {id:'a', label:'≤40',     pts:3, max:40},
+    {id:'b', label:'41–50',   pts:1, max:50},
+    {id:'c', label:'51–90',   pts:0, max:90},
+    {id:'d', label:'91–110',  pts:1, max:110},
+    {id:'e', label:'111–130', pts:2, max:130},
+    {id:'f', label:'≥131',    pts:3, max:Infinity}]},
+  { key:'acvpu', label:'Bevissthet (ACVPU)', categorical:true, bands:[
+    {id:'A', label:'A – våken',                 pts:0},
+    {id:'C', label:'C – nyoppstått forvirring', pts:3},
+    {id:'V', label:'V – reagerer på tiltale',   pts:3},
+    {id:'P', label:'P – reagerer på smerte',    pts:3},
+    {id:'U', label:'U – ingen respons',         pts:3}]},
+  { key:'temp', label:'Temperatur', unit:'°C', bands:[
+    {id:'a', label:'≤35,0',     pts:3, max:35.0},
+    {id:'b', label:'35,1–36,0', pts:1, max:36.0},
+    {id:'c', label:'36,1–38,0', pts:0, max:38.0},
+    {id:'d', label:'38,1–39,0', pts:1, max:39.0},
+    {id:'e', label:'≥39,1',     pts:2, max:Infinity}]}
+];
+
+let news2State = { scale:1, manual:{} };
+
+function news2Params(){ return NEWS_PARAMS.filter(p => !p.scale || p.scale===news2State.scale); }
+function news2Vital(p){ return p.vital || p.key; }
+
+/* → {band, src:'målt'|'manuell'|'valgt'|null} */
+function news2Band(p){
+  if(p.categorical){
+    const v = vitals[p.key];
+    const b = p.bands.find(x=>x.id===v);
+    return { band:b||null, src: b ? 'valgt' : null };
+  }
+  const man = news2State.manual[p.key];
+  if(man) return { band:p.bands.find(b=>b.id===man), src:'manuell' };
+  const v = vitalNum(news2Vital(p));
+  if(v==null) return { band:null, src:null };
+  const id = p.pick ? p.pick(v) : (p.bands.find(b=>v<=b.max)||{}).id;
+  const b = p.bands.find(x=>x.id===id);
+  return { band:b||null, src: b ? 'målt' : null };
+}
+function news2Totals(){
+  let total = 0, scored = 0;
+  const ps = news2Params();
+  ps.forEach(p=>{ const r = news2Band(p); if(r.band){ scored++; total += r.band.pts; } });
+  return { total, scored, n: ps.length };
+}
+function news2ValueText(p, r){
+  if(p.categorical) return r.band.label;
+  const v = vitals[news2Vital(p)];
+  if(r.src==='målt' && v) return `${fmtNo(v)} ${p.unit}`;
+  return `${r.band.label}${p.unit && !/romluft|oksygen/.test(r.band.label) ? ' '+p.unit : ''}`;
+}
+function news2Lines(){
+  return news2Params().map(p=>{
+    const r = news2Band(p);
+    if(!r.band) return { text:`${p.label}: ikke skåret`, cls:'none' };
+    const pts = r.band.pts;
+    return { text:`${p.label}: ${news2ValueText(p, r)} – ${pts} ${pts===1?'poeng':'poeng'}`, cls: pts>0 ? 'abnormal' : 'normal' };
+  });
+}
+function news2OutputText(){
+  const { total, scored, n } = news2Totals();
+  const out = ['NEWS2:'];
+  news2Lines().forEach(l=>out.push(l.text));
+  out.push('');
+  out.push(scored ? `NEWS2 totalskår: ${total} poeng`+(scored<n?` (${scored} av ${n} parametre skåret)`:'') : 'Totalskår: ikke beregnet, ingen parametre skåret ennå.');
+  return out.join('\n');
+}
+function news2OutputHTML(forCopy){
+  const { total, scored, n } = news2Totals();
+  const fn = forCopy ? copyPart : styledPart;
+  const out = ['<strong>NEWS2:</strong>'];
+  news2Lines().forEach(l=>{
+    if(l.cls==='none') out.push(escHtml(l.text).replace(/ikke skåret$/, '<em style="color:#888">ikke skåret</em>'));
+    else if(l.cls==='abnormal') out.push(fn(escHtml(l.text),'abnormal'));
+    else out.push(escHtml(l.text));
+  });
+  out.push('');
+  out.push(scored ? `NEWS2 totalskår: <b>${total}</b> poeng`+(scored<n?` (${scored} av ${n} parametre skåret)`:'') : 'Totalskår: ikke beregnet.');
+  return out.join('<br>');
+}
+function news2AbnText(){
+  const t = news2Lines().filter(l=>l.cls==='abnormal').map(l=>l.text).join('\n');
+  return t || '(ingen parametre med poeng registrert)';
+}
+function news2AbnHTML(forCopy){
+  const t = news2AbnText();
+  if(t.startsWith('(')) return `<em style="color:#888">${t}</em>`;
+  const fn = forCopy ? copyPart : styledPart;
+  return t.split('\n').map(l=>fn(escHtml(l),'abnormal')).join('<br>');
+}
+
+function renderNews2(){
+  const box = document.getElementById('news2-rows');
+  if(!box) return;
+  const { total, scored, n } = news2Totals();
+  const rows = news2Params().map(p=>{
+    const r = news2Band(p);
+    const tag = r.src==='målt' ? '<span class="sep-auto-tag">fra målinger</span>' : (r.src===null ? '<span class="sep-auto-tag">ikke skåret</span>' : '');
+    const btns = p.bands.map(b=>{
+      const sel = r.band && r.band.id===b.id;
+      const attrs = p.categorical ? `data-vital-set="${p.key}" data-val="${b.id}"` : `data-news-key="${p.key}" data-news-band="${b.id}"`;
+      return `<button type="button" class="chip-btn ${sel?'selected':''}" ${attrs}>${b.label} <span style="opacity:.7;">(${b.pts})</span></button>`;
+    }).join('');
+    return `<div class="sep-row">
+      <div class="sep-row-head"><div class="nihss-row-label" style="margin:0;">${p.label}${p.unit?' ('+p.unit+')':''}</div>${tag}</div>
+      <div class="chip-group" style="margin-top:6px;">${btns}</div>
+    </div>`;
+  }).join('');
+  box.innerHTML = `<div class="nihss-total-bar">NEWS2-sum: <b>${scored?total:'–'}</b> poeng${scored?` · ${scored}/${n} parametre skåret`:' · fyll inn målinger eller velg under'}</div>${rows}`;
+  const b = document.getElementById('news2-output-body'); if(b) b.innerHTML = news2OutputHTML();
+  const a = document.getElementById('news2-abn-body');    if(a) a.innerHTML = news2AbnHTML();
+}
+function renderNews2Output(){ renderNews2(); }
+
+function buildNews2Tab(){
+  const panel = document.getElementById('panel-news2');
+  panel.innerHTML = `
+    <main class="layout">
+      <section class="cardList">
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Målinger</span><span class="sep-auto-tag">felles med Klinisk undersøkelse og SIRS / qSOFA</span></div>
+          <div class="ekg-hedge-note" style="margin:0 0 12px;">Fyll inn målingene, så velges riktig poengintervall automatisk. Du kan også velge intervall direkte under uten å skrive inn tall.</div>
+          <div class="ekg-input-grid">
+            ${vitalInputHTML('rf','Respirasjonsfrekvens','/min')}
+            ${vitalInputHTML('spo2','SpO₂','%')}
+            ${vitalInputHTML('sbt','Systolisk blodtrykk','mmHg')}
+            ${vitalInputHTML('hr','Puls','/min')}
+            ${vitalInputHTML('temp','Temperatur','°C')}
+            ${o2ChoiceHTML()}
+          </div>
+          <div style="margin-top:12px;">
+            <div class="ekg-field-label" style="margin-bottom:6px;">SpO₂-skala</div>
+            <div class="ekg-chip-row">
+              <button type="button" class="ekg-chip ${news2State.scale===1?'selected':''}" data-news-scale="1">Skala 1 (standard)</button>
+              <button type="button" class="ekg-chip ${news2State.scale===2?'selected':''}" data-news-scale="2">Skala 2 (hyperkapnisk respirasjonssvikt, målsatt SpO₂ 88–92 %)</button>
+            </div>
+            <div class="ekg-ref">Skala 2 brukes bare når lege har bestemt målsatt SpO₂ 88–92 %.</div>
+          </div>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">NEWS2: National Early Warning Score 2</span></div>
+          <div id="news2-rows"></div>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Om NEWS2 og kilder</span></div>
+          <ul class="ekg-sources">
+            <li><b>Original:</b> Royal College of Physicians. <em>National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS.</em> London: RCP, 2017. Sju parametre, totalskår 0–20.</li>
+            <li><b>Norsk kontekst:</b> NEWS2 brukes i norske sykehus som del av pasientsikkerhetsprogrammets innsatsområde «Tidlig oppdagelse og rask respons ved forverret tilstand». Følg lokal prosedyre for observasjonsfrekvens og tiltak.</li>
+            <li><b>Tolkning (til orientering):</b> Etter RCP regnes totalskår 0–4 som lav, 5–6 som middels og 7 eller mer som høy klinisk risiko, og 3 poeng på ett enkelt parameter skal også utløse vurdering. Tiltak følger lokal prosedyre. Verktøyet beregner kun poeng og gir ingen klinisk vurdering.</li>
+            <li><b>Avgrensning:</b> NEWS2 er ikke validert for barn under 16 år eller gravide.</li>
+          </ul>
+        </div>
+      </section>
+
+      <aside class="note-panel">
+        ${formatToggleBarHTML('<button class="ghost-btn" id="news2-paste-toggle">Lim inn eksisterende notat ↧</button>')}
+        <div class="paste-panel" id="news2-paste-panel">
+          <p>Lim inn tekst med målinger (f.eks. «RF 24 · SpO₂ 93 % på 2 l/min · BT 105/70 · Puls 112 · T 38,4»). Appen fyller ut målefeltene.</p>
+          <textarea id="news2-paste-input" placeholder="Lim inn teksten her…"></textarea>
+          <div class="row">
+            <button class="solid-btn" id="news2-parse-btn">Tolk og oppdater</button>
+            <span class="parse-status" id="news2-parse-status"></span>
+          </div>
+        </div>
+
+        <div class="note-head"><div class="note-title">NEWS2-resultat</div></div>
+        <div class="note-body" id="news2-output-body" style="white-space:normal;"></div>
+        <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
+          <button class="solid-btn" id="news2-copy-rich-btn">Kopier resultat</button>
+          <button class="ghost-btn" id="news2-copy-btn" style="font-size:.78rem;">Kopier som ren tekst</button>
+          <span class="copy-status" id="news2-copy-status">Kopiert ✓</span>
+        </div>
+        <div class="note-divider"></div>
+        <div class="note-title" style="font-size:.82rem; margin-bottom:6px; color:var(--clay);">Parametre med poeng</div>
+        <div id="news2-abn-body" style="font-family:'IBM Plex Mono'; font-size:.82rem; color:var(--ink); min-height:28px;"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="ghost-btn" id="news2-copy-abn-btn" style="font-size:.78rem;">Kopier parametre med poeng</button>
+          <span class="copy-status" id="news2-copy-abn-status">Kopiert ✓</span>
+        </div>
+        <div class="note-divider" style="margin-top:12px;"></div>
+        <button class="ghost-btn" id="news2-reset-btn">Tilbakestill NEWS2</button>
+      </aside>
+    </main>`;
+  renderNews2();
+
+  if(!panel.dataset.newsEvt){
+    panel.dataset.newsEvt = '1';
+    panel.addEventListener('click', e=>{
+      const nb = e.target.closest('[data-news-band]');
+      if(nb){
+        const k = nb.dataset.newsKey, id = nb.dataset.newsBand;
+        const p = NEWS_PARAMS.find(x=>x.key===k);
+        const cur = news2Band(p);
+        if(cur.src==='manuell' && cur.band && cur.band.id===id) delete news2State.manual[k];
+        else news2State.manual[k] = id;
+        renderNews2(); return;
+      }
+      const sc = e.target.closest('[data-news-scale]');
+      if(sc){ news2State.scale = +sc.dataset.newsScale; buildNews2Tab(); return; }
+      if(e.target.closest('#news2-paste-toggle')){ document.getElementById('news2-paste-panel').classList.toggle('open'); return; }
+      if(e.target.closest('#news2-parse-btn')){
+        const raw = document.getElementById('news2-paste-input').value;
+        const st = document.getElementById('news2-parse-status');
+        if(!raw.trim()){ st.textContent='Lim inn tekst først.'; return; }
+        const n = parseVitalsText(raw);
+        vitalsChanged();
+        st.textContent = n ? n+' måling(er) gjenkjent.' : 'Ingen målinger gjenkjent.';
+        st.style.color = n ? 'var(--teal)' : 'var(--clay)';
+        return;
+      }
+      if(e.target.closest('#news2-copy-btn')){ copyPlain(news2OutputText(), document.getElementById('news2-copy-status')); return; }
+      if(e.target.closest('#news2-copy-rich-btn')){ copyWithRichText(news2OutputHTML(true), news2OutputText(), document.getElementById('news2-copy-status')); return; }
+      if(e.target.closest('#news2-copy-abn-btn')){ copyWithRichText(news2AbnHTML(true), news2AbnText(), document.getElementById('news2-copy-abn-status')); return; }
+      if(e.target.closest('#news2-reset-btn')){ news2State = { scale:1, manual:{} }; clearVitals(); buildNews2Tab(); return; }
+    });
+  }
 }
 </script>
 
