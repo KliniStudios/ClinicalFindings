@@ -338,6 +338,16 @@
   /* the per-tab formatting toggles are replaced by the panel above */
   .tab-panel .toggle-wrap:has(.abnormalBoldToggle){display:none;}
   .tab-panel .exam-toolbar:not(:has(.toolbar-actions)):not(:has(.includeAllToggle)){display:none;}
+  /* ===== Scoring: collapsible sections ===== */
+  .score-sec{background:#fff; border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; box-shadow:var(--shadow);}
+  .score-sec > summary{cursor:pointer; list-style:none; padding:13px 18px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;}
+  .score-sec > summary::-webkit-details-marker{display:none;}
+  .score-sec > summary::before{content:'▸'; color:var(--teal); transition:transform .15s ease;}
+  .score-sec[open] > summary::before{transform:rotate(90deg);}
+  .score-sec-title{font-family:'Source Serif 4'; font-weight:600; font-size:1.02rem;}
+  .score-sec-sum{font-family:'IBM Plex Mono'; font-size:.76rem; color:var(--clay);}
+  .score-sec-body{padding:6px 16px 16px; border-top:1px solid var(--border); background:var(--bg);}
+  .score-sec-body main.layout{margin-top:12px;}
   ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
 </style>
 </head>
@@ -367,8 +377,7 @@
     <button class="tab-btn active" data-tab="hjernenerver">Hjernenerver</button>
     <button class="tab-btn" data-tab="klinisk">Klinisk undersøkelse</button>
     <button class="tab-btn" data-tab="nihss">NIHSS</button>
-    <button class="tab-btn" data-tab="ciwa">CIWA-Ar</button>
-    <button class="tab-btn" data-tab="sepsis">SIRS / qSOFA</button>
+    <button class="tab-btn" data-tab="scoring">Scoring</button>
     <button class="tab-btn" data-tab="news2">NEWS2</button>
     <button class="tab-btn" data-tab="ekg">EKG</button>
     <button class="tab-btn" data-tab="ortho">Ortopedi</button>
@@ -428,11 +437,38 @@
   <!-- NIHSS -->
   <section class="tab-panel" id="panel-nihss"></section>
 
-  <!-- CIWA-Ar -->
-  <section class="tab-panel" id="panel-ciwa"></section>
-
-  <!-- SIRS / qSOFA -->
-  <section class="tab-panel" id="panel-sepsis"></section>
+  <!-- SCORING (collapsible score systems) -->
+  <section class="tab-panel" id="panel-scoring">
+    <div class="exam-card" id="score-common" style="margin-bottom:16px;"></div>
+    <details class="score-sec" data-score-sec="wellsdvt">
+      <summary><span class="score-sec-title" id="sumname-wellsdvt">Wells skår for dyp venetrombose (DVT)</span><span class="score-sec-sum" id="sum-wellsdvt"></span></summary>
+      <div class="score-sec-body" id="score-wellsdvt"></div>
+    </details>
+    <details class="score-sec" data-score-sec="wellsle">
+      <summary><span class="score-sec-title" id="sumname-wellsle">Wells skår for lungeemboli (LE)</span><span class="score-sec-sum" id="sum-wellsle"></span></summary>
+      <div class="score-sec-body" id="score-wellsle"></div>
+    </details>
+    <details class="score-sec" data-score-sec="chads">
+      <summary><span class="score-sec-title" id="sumname-chads">CHA₂DS₂-VASc (hjerneslagrisiko ved atrieflimmer)</span><span class="score-sec-sum" id="sum-chads"></span></summary>
+      <div class="score-sec-body" id="score-chads"></div>
+    </details>
+    <details class="score-sec" data-score-sec="crb65">
+      <summary><span class="score-sec-title" id="sumname-crb65">CRB-65 (alvorlighetsgrad ved pneumoni)</span><span class="score-sec-sum" id="sum-crb65"></span></summary>
+      <div class="score-sec-body" id="score-crb65"></div>
+    </details>
+    <details class="score-sec" data-score-sec="centor">
+      <summary><span class="score-sec-title" id="sumname-centor">Centor-kriterier (sår hals hos voksne)</span><span class="score-sec-sum" id="sum-centor"></span></summary>
+      <div class="score-sec-body" id="score-centor"></div>
+    </details>
+    <details class="score-sec" data-score-sec="ciwa">
+      <summary><span class="score-sec-title" id="sumname-ciwa">CIWA-Ar (alkoholabstinens)</span><span class="score-sec-sum" id="sum-ciwa"></span></summary>
+      <div class="score-sec-body" id="panel-ciwa"></div>
+    </details>
+    <details class="score-sec" data-score-sec="sepsis">
+      <summary><span class="score-sec-title" id="sumname-sepsis">SIRS / qSOFA</span><span class="score-sec-sum" id="sum-sepsis"></span></summary>
+      <div class="score-sec-body" id="panel-sepsis"></div>
+    </details>
+  </section>
 
   <!-- NEWS2 -->
   <section class="tab-panel" id="panel-news2"></section>
@@ -549,7 +585,7 @@
   </div>
 
   <footer class="disclaimer">
-    <b>v010 · 22.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
+    <b>v011 · 22.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
     Kun dokumentasjons- og formatteringsstøtte. Verktøyet omformer brukerens egne registrerte opplysninger til tekstutkast og foretar ikke kliniske vurderinger. Kontrollér, korrigér og godkjenn alltid teksten før journalføring. Ikke legg inn identifiserende pasientopplysninger.
   </footer>
 </div>
@@ -577,7 +613,7 @@
 <div class="modal-overlay" id="brukervilkarOverlay">
   <div class="modal-box" style="max-width:660px; max-height:82vh; overflow-y:auto;">
     <button type="button" class="modal-close-x" data-close-modal="brukervilkarOverlay">&times;</button>
-    <div class="modal-title">Brukervilkår · v010 · 22.10.2026</div>
+    <div class="modal-title">Brukervilkår · v011 · 22.10.2026</div>
     <div style="font-family:'IBM Plex Sans'; font-size:.83rem; line-height:1.8; color:var(--ink);">
       <p><strong>1. Formål og avgrensning</strong><br>
       Dette verktøyet er et teknisk dokumentasjons- og formatteringsverktøy. Formålet er å hjelpe brukeren med å omforme brukerens egne, manuelt registrerte kliniske opplysninger og funn til forslag til strukturert eller løpende tekst.<br>
@@ -2264,13 +2300,14 @@ function normalizeCopyHTML(html){
   h = subSupToHTML(h);
   const cf = settings.copyFont || {};
   const wrapStyle = cf.on ? ` style="font-family:'${cf.family||'Calibri'}'; font-size:${cf.size||11}pt"` : '';
-  return '<html><head><meta charset="utf-8"></head><body><!--StartFragment--><div'+wrapStyle+'>'+h+'</div><!--EndFragment--></body></html>';
+  /* fragment only, with charset, like a normal browser selection copy */
+  return '<meta charset="utf-8"><div'+wrapStyle+'>'+h+'</div>';
 }
 /* Minimal HTML → RTF (for RichEdit-based programs such as WordPad).
    Browsers may or may not expose this format to the OS; it is harmless if ignored. */
 function htmlToRtf(html){
   let h = String(html||'');
-  const m = h.match(/<!--StartFragment-->([\s\S]*?)<!--EndFragment-->/); if(m) h = m[1];
+
   const esc = t => t.replace(/\\/g,'\\\\').replace(/\{/g,'\\{').replace(/\}/g,'\\}')
     .replace(/[^\x00-\x7f]/g, c => '\\u'+(c.charCodeAt(0)>32767?c.charCodeAt(0)-65536:c.charCodeAt(0))+'?');
   const dec = t => t.replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
@@ -2325,7 +2362,6 @@ async function copyWithRichText(htmlContent, plainText, statusEl){
     try{
       e.clipboardData.setData('text/html', html);
       e.clipboardData.setData('text/plain', plainify(plainText));
-      try{ e.clipboardData.setData('text/rtf', htmlToRtf(html)); }catch(_){}
       e.preventDefault();
       ok = true;
     }catch(_){ ok = false; }
@@ -2346,7 +2382,7 @@ async function copyWithRichText(htmlContent, plainText, statusEl){
       if(navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem!=='undefined'){
         await navigator.clipboard.write([new ClipboardItem({
           'text/html': new Blob([html],{type:'text/html'}),
-          'text/plain': new Blob([plainText],{type:'text/plain'})
+          'text/plain': new Blob([plainify(plainText)],{type:'text/plain'})
         })]);
         ok = true;
       }
@@ -2601,7 +2637,7 @@ function renderAbnormalSummary(tabId){
       const tab = copyAbnBtn.dataset.tab;
       const text = abnormalSummaryText(tab);
       const status = document.getElementById('copyAbnStatus-'+tab);
-      copyWithRichText(`<html><body><p>${text}</p></body></html>`, text, status);
+      copyWithRichText(copyPart(escHtml(text),'abnormal'), text, status);
       return;
     }
 
@@ -3447,6 +3483,7 @@ function refreshAllNotes(){
   if(typeof renderCiwaOutput==='function') renderCiwaOutput();
   if(typeof renderSepsisOutput==='function') renderSepsisOutput();
   if(typeof renderNews2==='function') renderNews2();
+  if(typeof renderAllScores==='function') renderAllScores();
   updateCopyStylePreview();
 }
 
@@ -3735,6 +3772,7 @@ async function init(){
   buildNihssTab();
   buildCiwaTab();
   buildSepsisTab();
+  buildScoringTab();
   buildNews2Tab();
   buildEkgPanel();
   buildOrthoPanel();
@@ -4445,8 +4483,8 @@ function buildEkgPanel(){
         <div class="note-head"><div class="note-title">Notat</div></div>
         <div class="note-body" id="ekg-note-body"></div>
         <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
-          <button class="solid-btn" id="ekg-copy-btn">Kopier notat</button>
-          <button class="ghost-btn" id="ekg-copy-rich-btn" style="font-size:.78rem;">Kopier med formatering</button>
+          <button class="solid-btn" id="ekg-copy-rich-btn">Kopier notat</button>
+          <button class="ghost-btn" id="ekg-copy-btn" style="font-size:.78rem;">Kopier som ren tekst</button>
           <span class="copy-status" id="ekg-copy-status">Kopiert \u2713</span>
         </div>
         <div class="note-divider"></div>
@@ -5789,8 +5827,7 @@ function buildOrthoPanel(){
     const copyAbnBtn = e.target.closest('#ortho-copy-abn-btn');
     if(copyAbnBtn){
       const text=orthoAbnSummaryText(); const status=document.getElementById('ortho-abn-copy-status');
-      (async()=>{ try{await navigator.clipboard.writeText(text);}catch(err){const ta=document.createElement('textarea');ta.value=plainify(text);document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
-        status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600); })();
+      copyWithRichText(copyPart(escHtml(text),'abnormal'), text, status);
       return;
     }
 
@@ -6145,8 +6182,8 @@ function buildSokratesPanel(){
       <div class="note-head"><div class="note-title">Notat</div></div>
       <div class="note-body" id="sok-note-body" style="white-space:pre-wrap"></div>
       <div class="note-foot" style="gap:8px;flex-wrap:wrap">
-        <button class="solid-btn" id="sok-copy-btn">Kopier notat</button>
-        <button class="ghost-btn" id="sok-copy-rich-btn" style="font-size:.78rem">Kopier med formatering</button>
+        <button class="solid-btn" id="sok-copy-rich-btn">Kopier notat</button>
+        <button class="ghost-btn" id="sok-copy-btn" style="font-size:.78rem">Kopier som ren tekst</button>
         <span class="copy-status" id="sok-copy-status">Kopiert ✓</span>
       </div>
       <div class="note-divider"></div>
@@ -6532,6 +6569,7 @@ function renderCiwaOutput(){
   if(b) b.innerHTML = ciwaOutputHTML();
   const a = document.getElementById('ciwa-abn-body');
   if(a) a.innerHTML = ciwaAbnHTML();
+  if(typeof updateScoreSummaries==='function') updateScoreSummaries();
 }
 
 function buildCiwaTab(){
@@ -6857,6 +6895,7 @@ function renderSepsisOutput(){
   if(b) b.innerHTML = sepsisOutputHTML();
   const a = document.getElementById('sep-abn-body');
   if(a) a.innerHTML = sepsisAbnHTML();
+  if(typeof updateScoreSummaries==='function') updateScoreSummaries();
 }
 
 function buildSepsisTab(){
@@ -7044,6 +7083,7 @@ function vitalsChanged(){
   if(document.getElementById('noteBody-klinisk')) renderNote('klinisk');
   if(typeof renderSepsisCriteria==='function' && document.getElementById('sep-sirs-container')){ renderSepsisCriteria(); renderSepsisOutput(); }
   if(typeof renderNews2==='function') renderNews2();
+  if(typeof renderAllScores==='function' && document.getElementById('score-items-wellsle')) renderAllScores();
 }
 
 document.addEventListener('input', e=>{
@@ -7401,6 +7441,397 @@ function buildNews2Tab(){
 </script>
 
 <script>
+/* ============================== SCORING TAB ==============================
+   Collapsible scoring systems. Criteria and wording follow Norwegian sources
+   (Metodebok, Norsk legemiddelhåndbok, Helsedirektoratet), with the original publications cited.
+   Values from shared vital signs / age / sex tick criteria automatically;
+   every criterion can also be set by hand. The tool adds up points only. */
+
+let scoreCommon = { age:'', sex:'' };
+function commonAge(){ const v = parseNum(scoreCommon.age); return isNaN(v) ? null : v; }
+
+const SCORE_DEFS = [
+  { id:'wellsdvt', title:'Wells skår for dyp venetrombose (DVT)', resultLabel:'Wells DVT-skår',
+    intro:'Forenklet Wells skår. Ved symptomer i begge ben brukes benet med mest symptomer.',
+    items:[
+      {key:'kreft',     pts:1,  label:'Aktiv kreftsykdom (pågående behandling, behandling siste 6 måneder eller palliativ behandling)'},
+      {key:'parese',    pts:1,  label:'Paralyse, parese eller nylig immobilisering av benet med gips/ortose'},
+      {key:'sengeleie', pts:1,  label:'Nylig sengeleie > 3 dager, eller større kirurgi siste 12 uker som har krevd generell eller regional anestesi'},
+      {key:'omhet',     pts:1,  label:'Lokalisert smerte/ømhet langs venestammene'},
+      {key:'hevelse',   pts:1,  label:'Hevelse i hele benet'},
+      {key:'legg',      pts:1,  label:'Hevelse i hele leggen, mer enn 3 cm økt omkrets sammenliknet med asymptomatisk ben'},
+      {key:'pitting',   pts:1,  label:'Pittingødem lokalisert til symptomatisk ben'},
+      {key:'vener',     pts:1,  label:'Overfladiske venekollateraler (ikke varicer)'},
+      {key:'tidl',      pts:1,  label:'Tidligere dokumentert DVT'},
+      {key:'alt',       pts:-2, label:'Alternativ diagnose lik eller mer sannsynlig enn DVT (f.eks. Bakers cyste, infeksjon, traume, spontan blødning)'}
+    ],
+    interp:[
+      'Skår ≥ 2: høy sannsynlighet for DVT (50–60 %).',
+      'Skår ≤ 1: lav sannsynlighet for DVT (ca. 10 %).',
+      'Skår ≤ 1 og negativ D-dimer utelukker DVT med > 99 % sannsynlighet.'],
+    category:(t)=> t>=2 ? 'høy sannsynlighet for DVT (skår ≥ 2)' : 'lav sannsynlighet for DVT (skår ≤ 1)',
+    categorySource:'Metodebok',
+    sources:[
+      '<b>Metodebok i indremedisin (OUS):</b> «Dyp venetrombose (DVT)», forenklet Wells skår, versjon 1.1, sist oppdatert 14.09.2021, metodebok.no.',
+      '<b>Original:</b> Wells PS et al. «Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis.» <em>N Engl J Med</em> 2003;349:1227–35.']
+  },
+  { id:'wellsle', title:'Wells skår for lungeemboli (LE)', resultLabel:'Wells LE-skår',
+    items:[
+      {key:'dvt',   pts:3,   label:'Kliniske symptomer og tegn på DVT (minimum hevelse og smerter ved palpasjon av dype vener)'},
+      {key:'alt',   pts:3,   label:'En alternativ diagnose er mindre sannsynlig enn LE'},
+      {key:'hr',    pts:1.5, label:'Hjertefrekvens > 100 slag/minutt', vitals:['hr'],
+        auto:()=>{ const h = vitalNum('hr'); return h==null ? null : h>100; }},
+      {key:'immob', pts:1.5, label:'Immobilisering mer enn 3 dager eller kirurgi i løpet av de siste 4 ukene'},
+      {key:'tidl',  pts:1.5, label:'Tidligere DVT/LE'},
+      {key:'hemo',  pts:1,   label:'Hemoptyse'},
+      {key:'kreft', pts:1,   label:'Kreftsykdom (på behandling, behandling siste 6 måneder eller palliativ fase)'}
+    ],
+    interp:['> 4 poeng: LE sannsynlig.','≤ 4 poeng: LE ikke sannsynlig.'],
+    category:(t)=> t>4 ? 'LE sannsynlig (> 4 poeng)' : 'LE ikke sannsynlig (≤ 4 poeng)',
+    categorySource:'Norsk legemiddelhåndbok',
+    sources:[
+      '<b>Norsk legemiddelhåndbok:</b> «Wells forenklet skår for klinisk sannsynlighet for lungeemboli», legemiddelhandboka.no.',
+      '<b>Original:</b> Wells PS et al. «Derivation of a simple clinical model to categorize patients probability of pulmonary embolism.» <em>Thromb Haemost</em> 2000;83:416–20.']
+  },
+  { id:'chads', title:'CHA₂DS₂-VASc (hjerneslagrisiko ved atrieflimmer)', resultLabel:'CHA₂DS₂-VASc-skår',
+    options:[{key:'va', label:'Bruk CHA₂DS₂-VA (uten kjønn, ESC 2024)'}],
+    items:[
+      {key:'hs',   pts:1, label:'Hjertesvikt (C)'},
+      {key:'ht',   pts:1, label:'Hypertensjon (H)'},
+      {key:'alder', type:'choice', label:'Alder (A₂ / A)', choices:[
+        {id:'u65', label:'< 65 år',  pts:0},
+        {id:'a65', label:'65–74 år', pts:1},
+        {id:'a75', label:'≥ 75 år',  pts:2}],
+        auto:()=>{ const a = commonAge(); return a==null ? null : (a>=75 ? 'a75' : a>=65 ? 'a65' : 'u65'); }},
+      {key:'dm',   pts:1, label:'Diabetes (D)'},
+      {key:'slag', pts:2, label:'Tidligere hjerneslag, TIA eller tromboemboli (S₂)'},
+      {key:'kar',  pts:1, label:'Karsykdom: tidligere hjerteinfarkt, perifer arteriesykdom eller aortaplakk (V)'},
+      {key:'kjonn', type:'choice', label:'Kjønn (Sc)', hideWhen:'va', choices:[
+        {id:'m', label:'Mann',   pts:0},
+        {id:'k', label:'Kvinne', pts:1}],
+        auto:()=> scoreCommon.sex==='mann' ? 'm' : scoreCommon.sex==='kvinne' ? 'k' : null}
+    ],
+    titleFor:(st)=> st.opts.va ? 'CHA₂DS₂-VA (hjerneslagrisiko ved atrieflimmer)' : 'CHA₂DS₂-VASc (hjerneslagrisiko ved atrieflimmer)',
+    resultLabelFor:(st)=> st.opts.va ? 'CHA₂DS₂-VA-skår' : 'CHA₂DS₂-VASc-skår',
+    interp:[
+      '<b>CHA₂DS₂-VASc (Norsk legemiddelhåndbok):</b> ≥ 2 hos menn eller ≥ 3 hos kvinner: antikoagulasjon anbefalt. 1 hos menn eller 2 hos kvinner: antikoagulasjon valgfri, avhengig av blødningsfare og pasientens preferanse. 0 hos menn eller 1 hos kvinner: antikoagulasjon ikke anbefalt.',
+      '<b>CHA₂DS₂-VA (ESC 2024):</b> ≥ 2: antikoagulasjon anbefalt. 1: antikoagulasjon bør vurderes.'],
+    category:(t, st)=>{
+      if(st.opts.va) return t>=2 ? 'antikoagulasjon anbefalt (≥ 2)' : t===1 ? 'antikoagulasjon bør vurderes (1)' : 'skår 0';
+      const k = scoreVal(SCORE_DEFS[2], SCORE_DEFS[2].items.find(i=>i.key==='kjonn'), st).val;
+      if(!k) return null;
+      const adj = k==='k' ? t-1 : t;   /* thresholds are one point higher for women */
+      return adj>=2 ? 'antikoagulasjon anbefalt' : adj===1 ? 'antikoagulasjon valgfri, avhengig av blødningsfare og pasientens preferanse' : 'antikoagulasjon ikke anbefalt';
+    },
+    categorySourceFor:(st)=> st.opts.va ? 'ESC 2024' : 'Norsk legemiddelhåndbok',
+    sources:[
+      '<b>Norsk legemiddelhåndbok:</b> «Atrieflimmer», CHA₂DS₂-VASc-tabell og anbefalinger (kapittel revidert 09.02.2024), legemiddelhandboka.no. Legemiddelhåndboka oppgir alder som «65–75 år» og «> 75 år»; her brukes originalens 65–74 og ≥ 75 år.',
+      '<b>ESC 2024:</b> Van Gelder IC et al. «2024 ESC Guidelines for the management of atrial fibrillation.» <em>Eur Heart J</em> 2024;45:3314–414. Anbefaler CHA₂DS₂-VA, uten kjønn.',
+      '<b>Original:</b> Lip GYH et al. <em>Chest</em> 2010;137:263–72.']
+  },
+  { id:'crb65', title:'CRB-65 / CURB-65 (alvorlighetsgrad ved pneumoni)', resultLabel:'CRB-65-skår',
+    options:[{key:'urea', label:'Ta med urea (CURB-65)'}],
+    items:[
+      {key:'konf', pts:1, label:'Konfusjon: nyoppstått desorientering for person, tid eller sted'},
+      {key:'urea', pts:1, label:'Urea > 7 mmol/L', showWhen:'urea'},
+      {key:'rf',   pts:1, label:'Respirasjonsfrekvens ≥ 30/min', vitals:['rf'],
+        auto:()=>{ const r = vitalNum('rf'); return r==null ? null : r>=30; }},
+      {key:'bt',   pts:1, label:'Blodtrykk: systolisk < 90 mmHg eller diastolisk ≤ 60 mmHg', vitals:['sbt','dbt'],
+        auto:()=>{ const s = vitalNum('sbt'), d = vitalNum('dbt'); if(s==null && d==null) return null; return (s!=null && s<90) || (d!=null && d<=60); }},
+      {key:'alder', pts:1, label:'Alder 65 år eller eldre', common:'age',
+        auto:()=>{ const a = commonAge(); return a==null ? null : a>=65; }}
+    ],
+    titleFor:(st)=> st.opts.urea ? 'CURB-65 (alvorlighetsgrad ved pneumoni)' : 'CRB-65 (alvorlighetsgrad ved pneumoni)',
+    resultLabelFor:(st)=> st.opts.urea ? 'CURB-65-skår' : 'CRB-65-skår',
+    interp:[
+      'Helsedirektoratet bruker CRB-65 som eksempel på alvorlighetsgrad: CRB-65 0–2 ved mild til moderat pneumoni, CRB-65 3–4 ved alvorlig pneumoni (sengepost) eller svært alvorlig pneumoni (intensivbehov).'],
+    category:(t, st)=> st.opts.urea ? null : (t<=2 ? 'forenlig med mild til moderat pneumoni (CRB-65 0–2)' : 'forenlig med alvorlig eller svært alvorlig pneumoni (CRB-65 3–4)'),
+    categorySource:'Helsedirektoratet',
+    sources:[
+      '<b>Helsedirektoratet:</b> Nasjonal faglig retningslinje «Antibiotika i sykehus», 9.1 Pneumoni, samfunnservervet.',
+      '<b>Definisjon:</b> Lim WS et al. «Defining community acquired pneumonia severity on presentation to hospital.» <em>Thorax</em> 2003;58:377–82 (RF ≥ 30, systolisk < 90 eller diastolisk ≤ 60, alder ≥ 65, urea > 7 mmol/L).']
+  },
+  { id:'centor', title:'Centor-kriterier (sår hals hos voksne)', resultLabel:'Centor', unitWord:'kriterier', max:4,
+    items:[
+      {key:'feber',  pts:1, label:'Feber > 38,5 °C', vitals:['temp'],
+        auto:()=>{ const t = vitalNum('temp'); return t==null ? null : t>38.5; }},
+      {key:'belegg', pts:1, label:'Belegg på tonsillene'},
+      {key:'glandl', pts:1, label:'Forstørrede, ømme halsglandler'},
+      {key:'hoste',  pts:1, label:'Fravær av hoste'}
+    ],
+    interp:[
+      '0–1 kriterier: lav sannsynlighet for streptokokk-tonsillitt og liten nytte av hurtigtest. Verken test eller antibiotika tilbys.',
+      '2–3 kriterier: hurtigtesten gir stor nytte. Ved positiv strep-test vurderes antibiotika.',
+      '4 kriterier: sannsynligheten for streptokokk-tonsillitt er over 50 %, og testen gir liten nytte. Antibiotika kan vurderes uten videre testing.',
+      'Kriteriene er validert for voksne og er mindre pålitelige hos barn.'],
+    category:(t)=> t===4 ? 'over 50 % sannsynlighet for streptokokk-tonsillitt, antibiotika kan vurderes uten videre testing (4 kriterier)'
+                 : t>=2 ? 'hurtigtest gir stor nytte, antibiotika vurderes ved positiv test (2–3 kriterier)'
+                 : 'lav sannsynlighet, verken test eller antibiotika tilbys (0–1 kriterier)',
+    categorySource:'«Antibiotika i primærhelsetjenesten»',
+    sources:[
+      '<b>Helsedirektoratet:</b> Nasjonal faglig retningslinje «Antibiotika i primærhelsetjenesten», «Streptokokkhalsinfeksjon og skarlagensfeber» (sist endret 30.06.2026): hos voksne kan Centor-kriteriene brukes til å vurdere alvorlighetsgrad og nytte av hurtigtest.',
+      '<b>Kriterier og trinn:</b> «Antibiotika i primærhelsetjenesten», høringsutkast (Den norske legeforening), avsnitt sår hals: feber over 38,5 °C, belegg på tonsillene, forstørrede ømme halsglandler, fravær av hoste.',
+      '<b>Original:</b> Centor RM et al. «The diagnosis of strep throat in adults in the emergency room.» <em>Med Decis Making</em> 1981;1:239–46.']
+  }
+];
+
+const scoreState = {};
+function scoreReset(id){ scoreState[id] = { vals:{}, opts:{}, interpInNote:false }; }
+SCORE_DEFS.forEach(d=>scoreReset(d.id));
+
+function fmtPts(p){ const s = String(Math.abs(p)).replace('.',','); return (p<0 ? '−' : '+')+s; }
+function fmtTotal(t){ return (t<0 ? '−' : '')+String(Math.abs(t)).replace('.',','); }
+function itemVisible(it, st){
+  if(it.hideWhen && st.opts[it.hideWhen]) return false;
+  if(it.showWhen && !st.opts[it.showWhen]) return false;
+  return true;
+}
+/* → {val, pts, src:'manuell'|'målt'|null} */
+function scoreVal(def, it, st){
+  const man = st.vals[it.key];
+  let val = man, src = man!=null ? 'manuell' : null;
+  if(val==null && it.auto){
+    const a = it.auto();
+    if(a!=null){ val = it.type==='choice' ? a : (a ? 'ja' : 'nei'); src = 'målt'; }
+  }
+  if(val==null) return { val:null, pts:0, src:null };
+  if(it.type==='choice'){ const c = it.choices.find(x=>x.id===val); return { val, pts: c ? c.pts : 0, src, choice:c }; }
+  return { val, pts: val==='ja' ? it.pts : 0, src };
+}
+function scoreTotals(def){
+  const st = scoreState[def.id];
+  let total = 0, assessed = 0, n = 0;
+  def.items.forEach(it=>{
+    if(!itemVisible(it, st)) return;
+    n++;
+    const r = scoreVal(def, it, st);
+    if(r.val!=null){ assessed++; total += r.pts; }
+  });
+  return { total: Math.round(total*10)/10, assessed, n };
+}
+function scoreLines(def){
+  const st = scoreState[def.id];
+  return def.items.filter(it=>itemVisible(it, st)).map(it=>{
+    const r = scoreVal(def, it, st);
+    if(r.val==null) return { text:`${it.label}: ikke vurdert`, cls:'none' };
+    if(it.type==='choice'){
+      const c = r.choice;
+      return { text:`${it.label}: ${c.label}${c.pts ? ' ('+fmtPts(c.pts)+')' : ''}`, cls: c.pts ? 'abnormal' : 'normal' };
+    }
+    return r.val==='ja'
+      ? { text:`${it.label}: Ja (${fmtPts(it.pts)})`, cls:'abnormal' }
+      : { text:`${it.label}: Nei`, cls:'normal' };
+  });
+}
+function scoreTitle(def){ const st = scoreState[def.id]; return def.titleFor ? def.titleFor(st) : def.title; }
+function scoreResultLabel(def){ const st = scoreState[def.id]; return def.resultLabelFor ? def.resultLabelFor(st) : def.resultLabel; }
+function scoreTotalLine(def){
+  const { total, assessed, n } = scoreTotals(def);
+  if(!assessed) return `${scoreResultLabel(def)}: ikke beregnet, ingen kriterier vurdert ennå.`;
+  const unit = def.unitWord ? `${fmtTotal(total)} av ${def.max} ${def.unitWord}` : `${fmtTotal(total)} poeng`;
+  return `${scoreResultLabel(def)}: ${unit}` + (assessed<n ? ` (${assessed} av ${n} kriterier vurdert)` : '');
+}
+function scoreCategoryLine(def){
+  const st = scoreState[def.id];
+  if(!st.interpInNote || !def.category) return '';
+  const { total, assessed, n } = scoreTotals(def);
+  if(!assessed) return '';
+  if(assessed<n) return 'Tolkning: ikke angitt, fordi ikke alle kriterier er vurdert.';
+  const c = def.category(total, st);
+  if(!c) return '';
+  const src = def.categorySourceFor ? def.categorySourceFor(st) : def.categorySource;
+  return `Tolkning etter ${src}: ${c}.`;
+}
+function scoreOutputText(def){
+  const out = [scoreTitle(def)+':'];
+  scoreLines(def).forEach(l=>out.push(l.text));
+  out.push('');
+  out.push(scoreTotalLine(def));
+  const c = scoreCategoryLine(def); if(c) out.push(c);
+  return out.join('\n');
+}
+function scoreOutputHTML(def, forCopy){
+  const fn = forCopy ? copyPart : styledPart;
+  const out = [`<strong>${escHtml(scoreTitle(def))}:</strong>`];
+  scoreLines(def).forEach(l=>{
+    if(l.cls==='none') out.push(escHtml(l.text).replace(/ikke vurdert$/, '<em style="color:#888">ikke vurdert</em>'));
+    else if(l.cls==='abnormal') out.push(fn(escHtml(l.text),'abnormal'));
+    else out.push(escHtml(l.text));
+  });
+  out.push('');
+  out.push(`<b>${escHtml(scoreTotalLine(def))}</b>`);
+  const c = scoreCategoryLine(def); if(c) out.push(escHtml(c));
+  return out.join('<br>');
+}
+function scorePosText(def){
+  const t = scoreLines(def).filter(l=>l.cls==='abnormal').map(l=>l.text).join('\n');
+  return t || '(ingen positive kriterier registrert)';
+}
+function scorePosHTML(def, forCopy){
+  const t = scorePosText(def);
+  if(t.startsWith('(')) return `<em style="color:#888">${t}</em>`;
+  const fn = forCopy ? copyPart : styledPart;
+  return t.split('\n').map(l=>fn(escHtml(l),'abnormal')).join('<br>');
+}
+
+/* ── rendering ── */
+function scoreItemsHTML(def){
+  const st = scoreState[def.id];
+  return def.items.filter(it=>itemVisible(it, st)).map(it=>{
+    const r = scoreVal(def, it, st);
+    const tag = r.src==='målt' ? `<span class="sep-auto-tag">${it.common||it.type==='choice' ? 'fra alder/kjønn' : 'fra vitale tegn'}</span>` : (r.src===null ? '<span class="sep-auto-tag">ikke vurdert</span>' : '');
+    let btns;
+    if(it.type==='choice'){
+      btns = it.choices.map(c=>`<button type="button" class="chip-btn ${r.val===c.id?'selected':''}" data-score="${def.id}" data-skey="${it.key}" data-sval="${c.id}">${c.label} <span style="opacity:.7;">(${c.pts>0?'+':''}${c.pts})</span></button>`).join('');
+    } else {
+      btns = `<button type="button" class="option-btn abnormal ${r.val==='ja'?'selected':''}" data-score="${def.id}" data-skey="${it.key}" data-sval="ja">Ja (${fmtPts(it.pts)})</button>
+              <button type="button" class="option-btn normal ${r.val==='nei'?'selected':''}" data-score="${def.id}" data-skey="${it.key}" data-sval="nei">Nei</button>`;
+    }
+    return `<div class="sep-row">
+      <div class="sep-row-head"><div class="nihss-row-label" style="margin:0;">${it.label}</div>${tag}</div>
+      <div class="option-group" style="margin-top:6px;">${btns}</div>
+    </div>`;
+  }).join('');
+}
+function renderScore(def){
+  const body = document.getElementById('score-items-'+def.id);
+  if(!body) return;
+  const { total, assessed, n } = scoreTotals(def);
+  const unit = def.unitWord ? `av ${def.max} ${def.unitWord}` : 'poeng';
+  body.innerHTML = `<div class="nihss-total-bar">${escHtml(scoreResultLabel(def))}: <b>${assessed?fmtTotal(total):'–'}</b> ${unit}${assessed?` · ${assessed}/${n} kriterier vurdert`:' · velg Ja/Nei for hvert kriterium'}</div>${scoreItemsHTML(def)}`;
+  const o = document.getElementById('score-out-'+def.id); if(o) o.innerHTML = scoreOutputHTML(def);
+  const p = document.getElementById('score-pos-'+def.id); if(p) p.innerHTML = scorePosHTML(def);
+  const h = document.getElementById('score-title-'+def.id); if(h) h.textContent = scoreTitle(def);
+  updateScoreSummaries();
+}
+function renderAllScores(){ SCORE_DEFS.forEach(renderScore); }
+
+function updateScoreSummaries(){
+  SCORE_DEFS.forEach(def=>{
+    const el = document.getElementById('sum-'+def.id); if(!el) return;
+    const { total, assessed } = scoreTotals(def);
+    const nm = document.getElementById('sumname-'+def.id); if(nm) nm.textContent = scoreTitle(def);
+    el.textContent = assessed ? `${scoreResultLabel(def)}: ${fmtTotal(total)}${def.unitWord?' av '+def.max:' poeng'}` : '';
+  });
+  const c = document.getElementById('sum-ciwa');
+  if(c && typeof ciwaTotals==='function'){ const t = ciwaTotals(); c.textContent = t.scored ? `${t.total} av 67 poeng` : ''; }
+  const s = document.getElementById('sum-sepsis');
+  if(s && typeof sepCount==='function'){
+    const a = sepCount(SIRS_CRIT), q = sepCount(QSOFA_CRIT);
+    s.textContent = (a.assessed||q.assessed) ? `SIRS ${a.met}/4 · qSOFA ${q.met}/3` : '';
+  }
+}
+
+function buildScoreSection(def){
+  const st = scoreState[def.id];
+  const host = document.getElementById('score-'+def.id);
+  const opts = (def.options||[]).map(o=>`<label class="fmt-opt" style="margin:0 0 10px;"><input type="checkbox" data-score-opt="${def.id}" data-opt="${o.key}" ${st.opts[o.key]?'checked':''} /> ${o.label}</label>`).join('');
+  host.innerHTML = `
+    <main class="layout">
+      <section class="cardList">
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name" id="score-title-${def.id}">${escHtml(scoreTitle(def))}</span></div>
+          ${def.intro ? `<div class="ekg-hedge-note" style="margin:0 0 10px;">${def.intro}</div>` : ''}
+          ${opts}
+          <div id="score-items-${def.id}"></div>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Tolkning etter kilden og kilder</span></div>
+          <ul class="ekg-sources">
+            ${def.interp.map(t=>`<li>${t}</li>`).join('')}
+            <li><b>Avgrensning:</b> Verktøyet legger kun sammen poeng ut fra det som er registrert. Tolkningen over gjengir kilden til orientering og erstatter ikke klinisk vurdering.</li>
+            ${def.sources.map(t=>`<li>${t}</li>`).join('')}
+          </ul>
+        </div>
+      </section>
+      <aside class="note-panel">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <label class="switch"><input type="checkbox" data-score-interp="${def.id}" ${st.interpInNote?'checked':''}/><span class="slider"></span></label>
+          <span class="toggle-label">Ta med tolkning fra kilden i notatet</span>
+        </div>
+        <div class="note-head"><div class="note-title">Resultat</div></div>
+        <div class="note-body" id="score-out-${def.id}" style="white-space:normal;"></div>
+        <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
+          <button class="solid-btn" data-score-copy="${def.id}">Kopier resultat</button>
+          <button class="ghost-btn" data-score-copyplain="${def.id}" style="font-size:.78rem;">Kopier som ren tekst</button>
+          <span class="copy-status" id="score-copy-status-${def.id}">Kopiert ✓</span>
+        </div>
+        <div class="note-divider"></div>
+        <div class="note-title" style="font-size:.82rem; margin-bottom:6px; color:var(--clay);">Positive kriterier</div>
+        <div id="score-pos-${def.id}" style="font-family:'IBM Plex Mono'; font-size:.82rem; color:var(--ink); min-height:28px;"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="ghost-btn" data-score-copypos="${def.id}" style="font-size:.78rem;">Kopier positive kriterier</button>
+          <span class="copy-status" id="score-pos-status-${def.id}">Kopiert ✓</span>
+        </div>
+        <div class="note-divider" style="margin-top:12px;"></div>
+        <button class="ghost-btn" data-score-reset="${def.id}">Tilbakestill</button>
+      </aside>
+    </main>`;
+  renderScore(def);
+}
+
+function buildScoringTab(){
+  const common = document.getElementById('score-common');
+  common.innerHTML = `
+    <div class="card-head"><span class="card-name">Felles opplysninger</span><span class="sep-auto-tag">vitale tegn hentes fra Klinisk undersøkelse / NEWS2</span></div>
+    <div class="ekg-input-grid">
+      <div class="ekg-field-card">
+        <div class="ekg-field-label">Alder</div>
+        <div class="ekg-field-row"><input type="text" inputmode="decimal" class="ekg-num-input" id="score-age" value="${escHtml(scoreCommon.age)}" placeholder="–" /><span class="ekg-unit">år</span></div>
+      </div>
+      <div class="ekg-field-card">
+        <div class="ekg-field-label">Kjønn</div>
+        <div class="ekg-field-row">
+          <button type="button" class="ekg-chip ${scoreCommon.sex==='mann'?'selected':''}" data-score-sex="mann">Mann</button>
+          <button type="button" class="ekg-chip ${scoreCommon.sex==='kvinne'?'selected':''}" data-score-sex="kvinne">Kvinne</button>
+        </div>
+      </div>
+    </div>
+    <div class="ekg-hedge-note" style="margin-top:8px;">Alder, kjønn og vitale tegn krysser av riktige kriterier automatisk. Alle kriterier kan også settes manuelt.</div>`;
+  SCORE_DEFS.forEach(buildScoreSection);
+  updateScoreSummaries();
+
+  const panel = document.getElementById('panel-scoring');
+  if(panel.dataset.scoreEvt) return;
+  panel.dataset.scoreEvt = '1';
+  panel.addEventListener('click', e=>{
+    const b = e.target.closest('[data-skey]');
+    if(b){
+      const def = SCORE_DEFS.find(d=>d.id===b.dataset.score), st = scoreState[def.id];
+      const it = def.items.find(i=>i.key===b.dataset.skey);
+      const cur = scoreVal(def, it, st);
+      if(cur.src==='manuell' && cur.val===b.dataset.sval) delete st.vals[it.key];
+      else st.vals[it.key] = b.dataset.sval;
+      renderScore(def); return;
+    }
+    const sx = e.target.closest('[data-score-sex]');
+    if(sx){
+      scoreCommon.sex = scoreCommon.sex===sx.dataset.scoreSex ? '' : sx.dataset.scoreSex;
+      document.querySelectorAll('[data-score-sex]').forEach(x=>x.classList.toggle('selected', x.dataset.scoreSex===scoreCommon.sex));
+      renderAllScores(); return;
+    }
+    const cp = e.target.closest('[data-score-copy]');
+    if(cp){ const def = SCORE_DEFS.find(d=>d.id===cp.dataset.scoreCopy); copyWithRichText(scoreOutputHTML(def,true), scoreOutputText(def), document.getElementById('score-copy-status-'+def.id)); return; }
+    const cpp = e.target.closest('[data-score-copyplain]');
+    if(cpp){ const def = SCORE_DEFS.find(d=>d.id===cpp.dataset.scoreCopyplain); copyPlain(scoreOutputText(def), document.getElementById('score-copy-status-'+def.id)); return; }
+    const cpos = e.target.closest('[data-score-copypos]');
+    if(cpos){ const def = SCORE_DEFS.find(d=>d.id===cpos.dataset.scoreCopypos); copyWithRichText(scorePosHTML(def,true), scorePosText(def), document.getElementById('score-pos-status-'+def.id)); return; }
+    const rs = e.target.closest('[data-score-reset]');
+    if(rs){ const def = SCORE_DEFS.find(d=>d.id===rs.dataset.scoreReset); scoreReset(def.id); buildScoreSection(def); updateScoreSummaries(); return; }
+  });
+  panel.addEventListener('change', e=>{
+    const o = e.target.closest('[data-score-opt]');
+    if(o){ const def = SCORE_DEFS.find(d=>d.id===o.dataset.scoreOpt); scoreState[def.id].opts[o.dataset.opt] = o.checked; renderScore(def); return; }
+    const i = e.target.closest('[data-score-interp]');
+    if(i){ const def = SCORE_DEFS.find(d=>d.id===i.dataset.scoreInterp); scoreState[def.id].interpInNote = i.checked; renderScore(def); return; }
+  });
+  panel.addEventListener('input', e=>{
+    if(e.target.id==='score-age'){ scoreCommon.age = e.target.value.trim(); renderAllScores(); }
+  });
+}
+</script>
+
+<script>
 /* Keep both scrollable halves inside the visible window: their height follows how far down the layout starts */
 function fitLayoutColumns(){
   if(window.innerWidth <= 920) return;
@@ -7413,6 +7844,7 @@ window.addEventListener('scroll', fitLayoutColumns, {passive:true});
 window.addEventListener('resize', fitLayoutColumns);
 document.addEventListener('click', e=>{ if(e.target.closest('.tab-btn, .fmt-panel > summary')) requestAnimationFrame(fitLayoutColumns); });
 document.addEventListener('toggle', ()=>requestAnimationFrame(fitLayoutColumns), true);
+window.addEventListener('scroll', ()=>{}, {passive:true});
 </script>
 
 <script>
