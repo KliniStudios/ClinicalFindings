@@ -549,7 +549,7 @@
   </div>
 
   <footer class="disclaimer">
-    <b>v008 · 19.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
+    <b>v010 · 22.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
     Kun dokumentasjons- og formatteringsstøtte. Verktøyet omformer brukerens egne registrerte opplysninger til tekstutkast og foretar ikke kliniske vurderinger. Kontrollér, korrigér og godkjenn alltid teksten før journalføring. Ikke legg inn identifiserende pasientopplysninger.
   </footer>
 </div>
@@ -577,7 +577,7 @@
 <div class="modal-overlay" id="brukervilkarOverlay">
   <div class="modal-box" style="max-width:660px; max-height:82vh; overflow-y:auto;">
     <button type="button" class="modal-close-x" data-close-modal="brukervilkarOverlay">&times;</button>
-    <div class="modal-title">Brukervilkår · v008 · 19.10.2026</div>
+    <div class="modal-title">Brukervilkår · v010 · 22.10.2026</div>
     <div style="font-family:'IBM Plex Sans'; font-size:.83rem; line-height:1.8; color:var(--ink);">
       <p><strong>1. Formål og avgrensning</strong><br>
       Dette verktøyet er et teknisk dokumentasjons- og formatteringsverktøy. Formålet er å hjelpe brukeren med å omforme brukerens egne, manuelt registrerte kliniske opplysninger og funn til forslag til strukturert eller løpende tekst.<br>
@@ -2078,11 +2078,12 @@ function styledPart(text, cls){
 }
 
 function styledPartPlain(text, cls){
-  // Plain-text version for non-HTML clipboard: underscores for underline, no HTML
+  /* Plain text never gets formatting symbols (no _underscores_).
+     Only a text-based avvik style (store bokstaver / prefiks / markdown) marks it. */
   if(cls !== 'abnormal') return text;
-  let s = text;
-  if(noteAbnormalUnderline) s = `_${s}_`;
-  return s;
+  const st = settings.copyAbnStyle || 'html';
+  if(st==='caps' || st==='prefix' || st==='markdown') return copyStyledPart(text, cls);
+  return text;
 }
 
 function formatCategoryName(name){
@@ -2170,7 +2171,7 @@ function getCopyHTML(tabId){
   const catFn   = useInline ? formatCategoryNameInline : formatCategoryName;
   return lines.lines.map(line=>{
     const partsHtml = line.parts.map(p=>partFn(p.text, p.cls)).join(' ');
-    return '<div>'+catFn(line.name)+' '+partsHtml+'</div>';
+    return '<div>'+(line.num ? line.num+'. ' : '')+catFn(line.name)+' '+partsHtml+'</div>';
   }).join('\n');
 }
 function getOrthoCopyHTML(){
@@ -2225,6 +2226,27 @@ function buildCopyHTML(tabId){ return getCopyHTML(tabId); }
    LibreOffice, Outlook, Google Docs and most EPJ systems read text/html.
    Formatting is written both as tags (<b>/<i>/<u>) and inline CSS so every
    program that understands either keeps it. ── */
+/* ── Unicode sub/superscript characters (₂, ⁹ …) are often missing from the
+   receiving program's font: they get dropped or drawn in another size.
+   On copy they become real <sub>/<sup> formatting (HTML/RTF) or plain digits. ── */
+const SUB_MAP = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9','₊':'+','₋':'-'};
+const SUP_MAP = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-'};
+const SUB_RE = /[₀-₉₊₋]+/g, SUP_RE = /[⁰¹²³⁴-⁹⁺⁻]+/g;
+function subSupToHTML(h){
+  return h.replace(SUB_RE, m=>'<sub>'+[...m].map(c=>SUB_MAP[c]).join('')+'</sub>')
+          .replace(SUP_RE, m=>'<sup>'+[...m].map(c=>SUP_MAP[c]).join('')+'</sup>');
+}
+function plainify(t){
+  return String(t==null?'':t)
+    .replace(SUB_RE, m=>[...m].map(c=>SUB_MAP[c]).join(''))
+    .replace(SUP_RE, m=>'^'+[...m].map(c=>SUP_MAP[c]).join(''));
+}
+/* every plain-text clipboard write goes through plainify */
+if(navigator.clipboard && navigator.clipboard.writeText){
+  const _wt = navigator.clipboard.writeText.bind(navigator.clipboard);
+  try{ navigator.clipboard.writeText = t => _wt(plainify(t)); }catch(_){}
+}
+
 function normalizeCopyHTML(html){
   let h = String(html||'');
   const m = h.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
@@ -2239,6 +2261,7 @@ function normalizeCopyHTML(html){
     const keep = css.split(';').map(x=>x.trim()).filter(x=>/^(font-weight|font-style|text-decoration|white-space)\s*:/i.test(x));
     return keep.length ? ` style="${keep.join(';')}"` : '';
   });
+  h = subSupToHTML(h);
   const cf = settings.copyFont || {};
   const wrapStyle = cf.on ? ` style="font-family:'${cf.family||'Calibri'}'; font-size:${cf.size||11}pt"` : '';
   return '<html><head><meta charset="utf-8"></head><body><!--StartFragment--><div'+wrapStyle+'>'+h+'</div><!--EndFragment--></body></html>';
@@ -2259,6 +2282,9 @@ function htmlToRtf(html){
     if(/^<(b|strong)[\s>]/.test(t)) out += '{\\b ';
     else if(/^<(i|em)[\s>]/.test(t)) out += '{\\i ';
     else if(/^<u[\s>]/.test(t)) out += '{\\ul ';
+    else if(/^<sub[\s>]/.test(t)) out += '{\\sub ';
+    else if(/^<sup[\s>]/.test(t)) out += '{\\super ';
+    else if(/^<\/(sub|sup)>/.test(t)) out += '}';
     else if(/^<\/(b|strong|i|em|u)>/.test(t)) out += '}';
     else if(/^<br/.test(t) || /^<\/(div|p)>/.test(t)) out += '\\par\n';
   });
@@ -2280,7 +2306,7 @@ async function copyWithRichText(htmlContent, plainText, statusEl){
   const writePlain = async ()=>{
     try{ await navigator.clipboard.writeText(plainText); return true; }
     catch(e){
-      const ta=document.createElement('textarea'); ta.value=plainText; ta.style.cssText='position:fixed;left:-9999px;top:0;';
+      const ta=document.createElement('textarea'); ta.value=plainify(plainText); ta.style.cssText='position:fixed;left:-9999px;top:0;';
       document.body.appendChild(ta); ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(_){} document.body.removeChild(ta); return ok;
     }
   };
@@ -2298,7 +2324,7 @@ async function copyWithRichText(htmlContent, plainText, statusEl){
   const onCopy = (e)=>{
     try{
       e.clipboardData.setData('text/html', html);
-      e.clipboardData.setData('text/plain', plainText);
+      e.clipboardData.setData('text/plain', plainify(plainText));
       try{ e.clipboardData.setData('text/rtf', htmlToRtf(html)); }catch(_){}
       e.preventDefault();
       ok = true;
@@ -4752,7 +4778,7 @@ function attachEkgEvents(){
         try{ await navigator.clipboard.writeText(text); }
         catch(err){
           const ta = document.createElement('textarea');
-          ta.value = text; document.body.appendChild(ta); ta.select();
+          ta.value = plainify(text); document.body.appendChild(ta); ta.select();
           document.execCommand('copy'); document.body.removeChild(ta);
         }
         status.classList.add('show');
@@ -5145,7 +5171,7 @@ function attachNihssTabEvents(){
       const status = document.getElementById('nihss-copy-status');
       (async()=>{
         try{ await navigator.clipboard.writeText(text); }
-        catch(err){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+        catch(err){ const ta=document.createElement('textarea'); ta.value=plainify(text); document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
         status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600);
       })(); return;
     }
@@ -5763,7 +5789,7 @@ function buildOrthoPanel(){
     const copyAbnBtn = e.target.closest('#ortho-copy-abn-btn');
     if(copyAbnBtn){
       const text=orthoAbnSummaryText(); const status=document.getElementById('ortho-abn-copy-status');
-      (async()=>{ try{await navigator.clipboard.writeText(text);}catch(err){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
+      (async()=>{ try{await navigator.clipboard.writeText(text);}catch(err){const ta=document.createElement('textarea');ta.value=plainify(text);document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
         status.classList.add('show'); setTimeout(()=>status.classList.remove('show'),1600); })();
       return;
     }
@@ -6197,7 +6223,7 @@ function attachSokratesEvents(panel){
     if(e.target.closest('#sok-copy-btn')){
       const s=document.getElementById('sok-copy-status');
       navigator.clipboard.writeText(sokratesNoteText()).catch(()=>{
-        const ta=document.createElement('textarea');ta.value=sokratesNoteText();
+        const ta=document.createElement('textarea');ta.value=plainify(sokratesNoteText());
         document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
       }).finally(()=>{s.classList.add('show');setTimeout(()=>s.classList.remove('show'),1600);});
       return;
@@ -6406,7 +6432,7 @@ function fmtNo(v){ return String(v==null?'':v).replace('.',','); }
 function copyPlain(text, statusEl){
   (async()=>{
     try{ await navigator.clipboard.writeText(text); }
-    catch(err){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+    catch(err){ const ta=document.createElement('textarea'); ta.value=plainify(text); document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
     if(statusEl){ statusEl.classList.add('show'); setTimeout(()=>statusEl.classList.remove('show'),1600); }
   })();
 }
