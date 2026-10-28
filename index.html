@@ -585,7 +585,7 @@
   </div>
 
   <footer class="disclaimer">
-    <b>v011 · 22.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
+    <b>v013 · 28.10.2026</b> &nbsp;|&nbsp; <a href="#" id="openBrukervilkar" style="color:var(--teal); text-decoration:underline; font-style:normal;">Brukervilkår</a><br><br>
     Kun dokumentasjons- og formatteringsstøtte. Verktøyet omformer brukerens egne registrerte opplysninger til tekstutkast og foretar ikke kliniske vurderinger. Kontrollér, korrigér og godkjenn alltid teksten før journalføring. Ikke legg inn identifiserende pasientopplysninger.
   </footer>
 </div>
@@ -613,7 +613,7 @@
 <div class="modal-overlay" id="brukervilkarOverlay">
   <div class="modal-box" style="max-width:660px; max-height:82vh; overflow-y:auto;">
     <button type="button" class="modal-close-x" data-close-modal="brukervilkarOverlay">&times;</button>
-    <div class="modal-title">Brukervilkår · v011 · 22.10.2026</div>
+    <div class="modal-title">Brukervilkår · v013 · 28.10.2026</div>
     <div style="font-family:'IBM Plex Sans'; font-size:.83rem; line-height:1.8; color:var(--ink);">
       <p><strong>1. Formål og avgrensning</strong><br>
       Dette verktøyet er et teknisk dokumentasjons- og formatteringsverktøy. Formålet er å hjelpe brukeren med å omforme brukerens egne, manuelt registrerte kliniske opplysninger og funn til forslag til strukturert eller løpende tekst.<br>
@@ -780,76 +780,76 @@ const DIR_GRID_ORDER = ['NW','N','NE','W',null,'E','SW','S','SE'];
 /* Standard 15-item / 11-domain NIH Stroke Scale (NIHSS), 0-42 points.
    5 (arm) and 6 (leg) are each split left/right per the official scale. */
 const NIHSS_ITEMS = [
-  { key:'1a', label:'1a. Bevissthetsnivå (LOC)', choices:[
-    {score:'0', label:'Våken'},
-    {score:'1', label:'Ikke helt våken, vekkbar ved lett stimulering'},
-    {score:'2', label:'Ikke våken, krever gjentatt stimulering / sløv'},
-    {score:'3', label:'Koma / kun reflektoriske responser'}
+  { key:'1a', label:'1a. Bevissthetsnivå', choices:[
+    {score:'0', label:'Våken og adekvat'},
+    {score:'1', label:'Døsig, reagerer adekvat ved lett stimulering'},
+    {score:'2', label:'Døsig, reagerer først ved kraftigere/gjentatt stimulering'},
+    {score:'3', label:'Reagerer ikke, eller bare med ikke-målrettet bevegelse'}
   ]},
-  { key:'1b', label:'1b. LOC-spørsmål (måned, alder)', choices:[
-    {score:'0', label:'Begge riktige'},
-    {score:'1', label:'Ett riktig'},
-    {score:'2', label:'Ingen riktige'}
+  { key:'1b', label:'1b. Orientering (spør om måned + alder)', choices:[
+    {score:'0', label:'Riktig svar på begge spørsmål'},
+    {score:'1', label:'Riktig svar på ett spørsmål'},
+    {score:'2', label:'Ingen riktige svar'}
   ]},
-  { key:'1c', label:'1c. LOC-kommandoer (åpne/lukke øyne, knytte/åpne hånd)', choices:[
-    {score:'0', label:'Utfører begge'},
-    {score:'1', label:'Utfører én'},
-    {score:'2', label:'Utfører ingen'}
+  { key:'1c', label:'1c. Respons på kommando (lukke øyne + knyte hånd)', choices:[
+    {score:'0', label:'Utfører begge kommandoer korrekt'},
+    {score:'1', label:'Utfører en kommando korrekt'},
+    {score:'2', label:'Utfører ingen korrekt'}
   ]},
-  { key:'2', label:'2. Blikkdeviasjon', choices:[
+  { key:'2', label:'2. Blikkbevegelse (horisontal bevegelse til begge sider)', choices:[
+    {score:'0', label:'Normal øyebevegelse'},
+    {score:'1', label:'Delvis blikkparese (eller ved øyenmuskelparese)'},
+    {score:'2', label:'Fiksert blikkdreining til siden eller total blikkparese'}
+  ]},
+  { key:'3', label:'3. Synsfelt (bevege fingre/fingertelling i laterale synsfelt)', choices:[
     {score:'0', label:'Normalt'},
-    {score:'1', label:'Delvis blikkparese'},
-    {score:'2', label:'Total blikkdeviasjon/-parese'}
-  ]},
-  { key:'3', label:'3. Synsfelt', choices:[
-    {score:'0', label:'Ingen synsfeltbortfall'},
     {score:'1', label:'Delvis hemianopsi'},
-    {score:'2', label:'Komplett hemianopsi'},
-    {score:'3', label:'Bilateral hemianopsi (blind)'}
+    {score:'2', label:'Hemianopsi i ett øye'},
+    {score:'3', label:'Bilateral (homonym) hemianopsi / blind'}
   ]},
-  { key:'4', label:'4. Facialisparese', choices:[
-    {score:'0', label:'Normalt'},
-    {score:'1', label:'Lett parese (flatet nasolabialfure, asymmetri ved smil)'},
-    {score:'2', label:'Delvis parese (total/nesten total parese av nedre ansiktshalvdel)'},
-    {score:'3', label:'Total parese, en- eller bilateralt'}
+  { key:'4', label:'4. Ansikt (vise tenner, knipe igjen øynene, løfte øyenbryn)', choices:[
+    {score:'0', label:'Normale symmetriske bevegelser'},
+    {score:'1', label:'Utvisket nasolabialfure, asymmetri ved smil'},
+    {score:'2', label:'Betydelig lammelse i nedre ansiktshalvdel'},
+    {score:'3', label:'Total lammelse i halve ansiktet'}
   ]},
-  { key:'5a', label:'5a. Motorikk, arm, venstre', choices:[
-    {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
-    {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
-    {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
+  { key:'5a', label:'5a. Kraft i armen, venstre (holde armen utstrakt 45° i 10 sekunder)', choices:[
+    {score:'0', label:'Ingen drifting'}, {score:'1', label:'Drifter til lavere posisjon (treffer ikke underlag)'},
+    {score:'2', label:'Noe bevegelse mot tyngdekraften, drifter til sengen'}, {score:'3', label:'Kun små muskelbevegelser, faller til sengen'},
+    {score:'4', label:'Ingen bevegelse'}, {score:'IT', label:'Ikke testbar'}
   ]},
-  { key:'5b', label:'5b. Motorikk, arm, høyre', choices:[
-    {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
-    {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
-    {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
+  { key:'5b', label:'5b. Kraft i armen, høyre (holde armen utstrakt 45° i 10 sekunder)', choices:[
+    {score:'0', label:'Ingen drifting'}, {score:'1', label:'Drifter til lavere posisjon (treffer ikke underlag)'},
+    {score:'2', label:'Noe bevegelse mot tyngdekraften, drifter til sengen'}, {score:'3', label:'Kun små muskelbevegelser, faller til sengen'},
+    {score:'4', label:'Ingen bevegelse'}, {score:'IT', label:'Ikke testbar'}
   ]},
-  { key:'6a', label:'6a. Motorikk, ben, venstre', choices:[
-    {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
-    {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
-    {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
+  { key:'6a', label:'6a. Kraft i benet, venstre (holde benet utstrakt 30° i 5 sekunder)', choices:[
+    {score:'0', label:'Ingen drifting'}, {score:'1', label:'Drifter til lavere posisjon (treffer ikke underlag)'},
+    {score:'2', label:'Noe bevegelse mot tyngdekraften, drifter til sengen'}, {score:'3', label:'Ingen bevegelse mot tyngdekraften, faller til sengen'},
+    {score:'4', label:'Ingen bevegelse'}, {score:'IT', label:'Ikke testbar'}
   ]},
-  { key:'6b', label:'6b. Motorikk, ben, høyre', choices:[
-    {score:'0', label:'Ingen drift'}, {score:'1', label:'Drift'},
-    {score:'2', label:'Noe kraft mot tyngdekraft'}, {score:'3', label:'Ingen kraft mot tyngdekraft'},
-    {score:'4', label:'Ingen bevegelse'}, {score:'UN', label:'Ikke testbart (amputasjon/leddstivhet)'}
+  { key:'6b', label:'6b. Kraft i benet, høyre (holde benet utstrakt 30° i 5 sekunder)', choices:[
+    {score:'0', label:'Ingen drifting'}, {score:'1', label:'Drifter til lavere posisjon (treffer ikke underlag)'},
+    {score:'2', label:'Noe bevegelse mot tyngdekraften, drifter til sengen'}, {score:'3', label:'Ingen bevegelse mot tyngdekraften, faller til sengen'},
+    {score:'4', label:'Ingen bevegelse'}, {score:'IT', label:'Ikke testbar'}
   ]},
-  { key:'7', label:'7. Ataksi', choices:[
-    {score:'0', label:'Fraværende'}, {score:'1', label:'Til stede i én ekstremitet'},
-    {score:'2', label:'Til stede i to ekstremiteter'}, {score:'UN', label:'Ikke testbart'}
+  { key:'7', label:'7. Ataksi (finger-nese-finger test / kne-hæl test)', choices:[
+    {score:'0', label:'Ingen ataksi'}, {score:'1', label:'Tilstede i en ekstremitet'},
+    {score:'2', label:'Tilstede i to ekstremiteter'}, {score:'IT', label:'Ikke testbar'}
   ]},
-  { key:'8', label:'8. Sensibilitet', choices:[
-    {score:'0', label:'Normal'}, {score:'1', label:'Lett til moderat nedsatt'}, {score:'2', label:'Alvorlig til total nedsatt'}
+  { key:'8', label:'8. Sensibilitet (for stikk)', choices:[
+    {score:'0', label:'Normal'}, {score:'1', label:'Mild til moderat utfall (kjenne stikk som mindre skarpt)'}, {score:'2', label:'Alvorlig til total utfall (også ved koma, kvadriplegisk)'}
   ]},
-  { key:'9', label:'9. Språk (afasi)', choices:[
-    {score:'0', label:'Ingen afasi'}, {score:'1', label:'Lett til moderat afasi'},
-    {score:'2', label:'Alvorlig afasi'}, {score:'3', label:'Mutisme / global afasi'}
+  { key:'9', label:'9. Språk (tale, taleforståelse, leseforståelse, benevning)', choices:[
+    {score:'0', label:'Ingen afasi'}, {score:'1', label:'Mild til moderat afasi, samtale mulig'},
+    {score:'2', label:'Alvorlig afasi, samtale svært vanskelig eller umulig'}, {score:'3', label:'Ikke språk (også ved koma)'}
   ]},
-  { key:'10', label:'10. Dysartri', choices:[
-    {score:'0', label:'Normal artikulasjon'}, {score:'1', label:'Lett til moderat dysartri'},
-    {score:'2', label:'Alvorlig dysartri'}, {score:'UN', label:'Ikke testbart (intubert e.l.)'}
+  { key:'10', label:'10. Dysartri (spontan tale)', choices:[
+    {score:'0', label:'Ingen dysartri'}, {score:'1', label:'Mild–moderat dysartri (lett snøvling)'},
+    {score:'2', label:'Nær uforståelig tale eller stum/global afasi (også koma)'}, {score:'IT', label:'Ikke testbar'}
   ]},
-  { key:'11', label:'11. Neglekt/ekstinksjon', choices:[
-    {score:'0', label:'Ingen avvik'}, {score:'1', label:'Mild neglekt (én sansemodalitet)'}, {score:'2', label:'Uttalt hemineglekt (flere modaliteter)'}
+  { key:'11', label:'11. Neglekt (bilateral simultan stimulering av syn og hudfølelse)', choices:[
+    {score:'0', label:'Ingen neglekt (også ved hemianopsi med normal sensibilitet)'}, {score:'1', label:'Neglekt i en sansemodalitet'}, {score:'2', label:'Neglekt i begge sansemodaliteter'}
   ]}
 ];
 const NIHSS_DOMAIN_NAMES = {
@@ -1714,7 +1714,7 @@ function subFieldValueLabel(sf, val){
     const domains = [];
     scoredKeys.forEach(k => {
       const score = bd[k];
-      if(score !== 'UN'){
+      if(score !== 'IT' && score !== 'UN'){
         total += parseInt(score,10);
         if(parseInt(score,10) > 0 && NIHSS_DOMAIN_NAMES[k]) domains.push(NIHSS_DOMAIN_NAMES[k]);
       }
@@ -1829,7 +1829,7 @@ function subFieldHTML(item, opt, sf){
       const sel = bd[it.key];
       if(sel!=null && sel!==''){
         anyScored = true;
-        if(sel !== 'UN') total += parseInt(sel,10);
+        if(sel !== 'IT' && sel !== 'UN') total += parseInt(sel,10);
       }
       const btns = it.choices.map(c => {
         const isSel = sel === c.score;
@@ -4937,7 +4937,7 @@ function nihssOutputText(){
       const detailStr = nihssShowDetails ? nihssDetailText(it.key) : '';
       if(detailStr) scoreLabel += ' ' + detailStr;
       anyScored = true;
-      if(sel !== 'UN') total += parseInt(sel,10);
+      if(sel !== 'IT' && sel !== 'UN') total += parseInt(sel,10);
     }
     lines.push(`${it.label}: ${scoreLabel}`);
   });
@@ -4993,7 +4993,7 @@ function nihssAbnText(){
   NIHSS_ITEMS.forEach(it=>{
     const sel = bd[it.key];
     if(!sel || sel==='0' || sel==='' || sel===null || sel===undefined) return;
-    if(sel==='UN'){ parts.push(`${it.label}: ikke testbart`); return; }
+    if(sel==='IT' || sel==='UN'){ parts.push(`${it.label}: ikke testbar`); return; }
     const choice = it.choices.find(c=>c.score===sel);
     const detStr = nihssShowDetails ? nihssDetailText(it.key) : '';
     parts.push(`${it.label}: ${sel} – ${choice?choice.label:''}${detStr?' '+detStr:''}`);
@@ -5017,7 +5017,7 @@ function nihssOutputHTML(forCopy){
       let txt = `${sel}: ${choice?choice.label:''}${detStr?' '+detStr:''}`;
       if(isAbn) txt = forCopy ? copyPart(txt,'abnormal') : styledPart(txt,'abnormal');
       scoreLabel = txt; anyScored=true;
-      if(sel!=='UN') total+=parseInt(sel,10);
+      if(sel!=='IT' && sel!=='UN') total+=parseInt(sel,10);
     }
     lines.push(`${it.label}: ${scoreLabel}`);
   });
@@ -5054,17 +5054,14 @@ function buildNihssTab(){
       <section class="cardList">
         <div class="exam-card">
           <div class="card-head"><span class="card-name">NIHSS — National Institutes of Health Stroke Scale</span></div>
-          <div class="ekg-hedge-note" style="margin:0 0 14px;">Velg poengsum for hvert av de 15 punktene. Denne kalkulatoren deler data med NIHSS-punktet under Hjernenerver-fanen, så du trenger bare fylle den ut ett sted.</div>
+          <div class="ekg-hedge-note" style="margin:0 0 14px;">Velg poengsum for hvert punkt. Ordlyd etter norsk validert oversettelse (2018). Denne kalkulatoren deler data med NIHSS-punktet under Hjernenerver-fanen, så du trenger bare fylle den ut ett sted.</div>
           <div id="nihss-calc-container"></div>
         </div>
         <div class="exam-card">
-          <div class="card-head"><span class="card-name">Om NIHSS og opphavsrett</span></div>
+          <div class="card-head"><span class="card-name">Kilder</span></div>
           <ul class="ekg-sources">
-            <li><b>Original publisering:</b> Brott T, Adams HP Jr, Olinger CP et al. «Measurements of acute cerebral infarction: a clinical examination scale.» <em>Stroke</em> 1989;20(7):864–870. NIHSS-skalaen ble utviklet med offentlig finansiering (National Institutes of Health, USA) og er offentlig tilgjengelig uten lisensbegrensning.</li>
-            <li><b>Reliabilitetsstudie:</b> Lyden P, Brott T, Tilley B et al. «Improved reliability of the NIH Stroke Scale using video training.» <em>Stroke</em> 1994;25(11):2220–2226.</li>
-            <li><b>Opphavsrettslig status:</b> NIHSS er et resultat av statlig finansiert forskning (US federal government). Verk produsert av amerikanske føderale myndigheter er i det fri (public domain) i USA (17 U.S.C. § 105). Skalaen er gjort fritt tilgjengelig av National Institute of Neurological Disorders and Stroke (NINDS) og kan implementeres og brukes uten lisensbetaling. Det finnes kommersielle sertifiseringsløsninger for NIHSS-opplæring — disse er separate produkter og ikke knyttet til selve skalaen.</li>
-            <li><b>Implementeringen her</b> gjengir poengkriteriene som selvstendige faglige sammendrag basert på den publiserte skalaen, ikke som verbatim reproduksjon av noe enkeltdokument. Klinisk bruk av NIHSS-skalaen krever opplæring; denne kalkulatoren er ikke en erstatning for sertifisert NIHSS-opplæring.</li>
-            <li><b>Norsk kontekst:</b> NIHSS er anbefalt av Helsedirektoratet i nasjonale faglige retningslinjer for behandling og rehabilitering ved hjerneslag (IS-2688).</li>
+            <li><a href="https://media.legehandboka.no/siteassets/nevrologi-nel/nihss-norsk-validert-pdf" target="_blank" rel="noopener noreferrer">NEL: NIHSS, norsk validert oversettelse 2018 (Vestre Viken HF og Universitetet i Sørøst-Norge)</a></li>
+            <li><a href="https://sykepleien.no/en/node/82736" target="_blank" rel="noopener noreferrer">Sykepleien: Kulturelt tilpasset, validert norsk oversettelse av NIHSS</a></li>
           </ul>
         </div>
       </section>
@@ -5155,10 +5152,10 @@ function attachNihssTabEvents(){
       if(!raw){ statusEl.textContent='Lim inn tekst først.'; return; }
       let matched = 0;
       raw.split(/\n/).forEach(line=>{
-        const m = line.match(/^\s*(1a|1b|1c|5a|5b|6a|6b|10|11|[2-9])\.?\s[^:]*:\s*(UN|\d)/i);
+        const m = line.match(/^\s*(1a|1b|1c|5a|5b|6a|6b|10|11|[2-9])\.?\s[^:]*:\s*(IT|UN|\d)/i);
         if(!m) return;
         const key = m[1].toLowerCase();
-        const sc = m[2].toUpperCase();
+        const sc = m[2].toUpperCase()==='UN' ? 'IT' : m[2].toUpperCase();
         const it = NIHSS_ITEMS.find(x=>x.key===key);
         if(it && it.choices.some(c=>c.score===sc)){
           const bd = nihssBreakdown();
@@ -6342,122 +6339,122 @@ function attachSokratesEvents(panel){
    Verktøyet beregner kun sum og gir ingen kliniske anbefalinger. */
 
 const CIWA_ITEMS = [
-  { key:'kvalme', kw:'kvalme', label:'1. Kvalme og oppkast',
-    q:'«Har du kvalme? Har du kastet opp?» Observasjon.',
+  { key:'kvalme', kw:'kvalme', label:'1. Kvalme/oppkast',
+    q:'«Føler du deg kvalm? Har du kastet opp?» Observasjon.',
     choices:[
-      {score:'0', label:'Ingen kvalme og ingen oppkast'},
-      {score:'1', label:'Mild kvalme uten oppkast'},
+      {score:'0', label:'Ikke kvalme og ikke oppkast'},
+      {score:'1', label:'Lett kvalme uten oppkast'},
       {score:'2', label:'(mellomtrinn)'},
       {score:'3', label:'(mellomtrinn)'},
       {score:'4', label:'Periodisk kvalme med brekninger'},
       {score:'5', label:'(mellomtrinn)'},
       {score:'6', label:'(mellomtrinn)'},
-      {score:'7', label:'Konstant kvalme, hyppige brekninger og oppkast'}
+      {score:'7', label:'Vedvarende kvalme, hyppige brekninger og oppkast'}
     ]},
   { key:'tremor', kw:'tremor', label:'2. Tremor',
-    q:'Armene strakt frem og fingrene spredt. Observasjon.',
+    q:'Armene utstrakt med spredte fingre. Observasjon.',
     choices:[
       {score:'0', label:'Ingen tremor'},
       {score:'1', label:'Ikke synlig, men kan kjennes fingertupp mot fingertupp'},
       {score:'2', label:'(mellomtrinn)'},
       {score:'3', label:'(mellomtrinn)'},
-      {score:'4', label:'Moderat tremor med armene strakt frem'},
+      {score:'4', label:'Moderat, med pasientens armer utstrakt'},
       {score:'5', label:'(mellomtrinn)'},
       {score:'6', label:'(mellomtrinn)'},
-      {score:'7', label:'Kraftig tremor, også uten at armene er strakt frem'}
+      {score:'7', label:'Sterk, selv når armene ikke er utstrakt'}
     ]},
-  { key:'svette', kw:'svett', label:'3. Paroksysmal svetting',
+  { key:'svette', kw:'svette', label:'3. Svettetokter',
     q:'Observasjon.',
     choices:[
       {score:'0', label:'Ingen synlig svette'},
-      {score:'1', label:'Knapt merkbar svette, fuktige håndflater'},
+      {score:'1', label:'Knapt merkbar svetting, klamme håndflater'},
       {score:'2', label:'(mellomtrinn)'},
       {score:'3', label:'(mellomtrinn)'},
-      {score:'4', label:'Svetteperler synlige i pannen'},
+      {score:'4', label:'Tydelige svetteperler i pannen'},
       {score:'5', label:'(mellomtrinn)'},
       {score:'6', label:'(mellomtrinn)'},
-      {score:'7', label:'Dryppende svett'}
+      {score:'7', label:'Gjennomvåt av svette'}
     ]},
   { key:'angst', kw:'angst', label:'4. Angst',
-    q:'«Føler du deg nervøs eller engstelig?» Observasjon.',
+    q:'«Føler du deg nervøs?» Observasjon.',
     choices:[
-      {score:'0', label:'Ingen angst, avslappet'},
+      {score:'0', label:'Ingen angst, rolig'},
       {score:'1', label:'Lett engstelig'},
       {score:'2', label:'(mellomtrinn)'},
       {score:'3', label:'(mellomtrinn)'},
-      {score:'4', label:'Moderat engstelig eller på vakt, slik at angst kan antas'},
+      {score:'4', label:'Moderat engstelig eller vaktsom (slik at det oppfattes som angst)'},
       {score:'5', label:'(mellomtrinn)'},
       {score:'6', label:'(mellomtrinn)'},
-      {score:'7', label:'Tilsvarer akutt panikktilstand, som ved alvorlig delirium eller akutte psykotiske reaksjoner'}
+      {score:'7', label:'Tilsvarende akutt panikktilstand som ved alvorlig delirium eller akutte schizofrene reaksjoner'}
     ]},
-  { key:'agitasjon', kw:'agitasjon', label:'5. Agitasjon (motorisk uro)',
+  { key:'uro', kw:'uro', label:'5. Uro',
     q:'Observasjon.',
     choices:[
       {score:'0', label:'Normal aktivitet'},
-      {score:'1', label:'Noe økt aktivitet'},
+      {score:'1', label:'Noe mer enn normal aktivitet'},
       {score:'2', label:'(mellomtrinn)'},
       {score:'3', label:'(mellomtrinn)'},
       {score:'4', label:'Moderat urolig og rastløs'},
       {score:'5', label:'(mellomtrinn)'},
       {score:'6', label:'(mellomtrinn)'},
-      {score:'7', label:'Går frem og tilbake under det meste av samtalen, eller kaster seg stadig rundt'}
+      {score:'7', label:'Vandrer frem og tilbake under mesteparten av intervjuet eller kaster på seg hele tiden'}
     ]},
-  { key:'taktil', kw:'taktil', label:'6. Taktile forstyrrelser',
-    q:'«Kjenner du kløe, prikking, brenning, nummenhet eller at noe kryper på eller under huden?»',
+  { key:'sensibilitet', kw:'sensibilitet', label:'6. Sensibilitetsforstyrrelser',
+    q:'«Har du noe form for kløe, prikking, stikking, brennende/sviende følelse, nummenhet eller kjenner du at småkryp kravler på eller under huden din?»',
     choices:[
       {score:'0', label:'Ingen'},
-      {score:'1', label:'Svært lett kløe, prikking, brenning eller nummenhet'},
-      {score:'2', label:'Lett kløe, prikking, brenning eller nummenhet'},
-      {score:'3', label:'Moderat kløe, prikking, brenning eller nummenhet'},
-      {score:'4', label:'Moderat alvorlige hallusinasjoner'},
-      {score:'5', label:'Alvorlige hallusinasjoner'},
-      {score:'6', label:'Ekstremt alvorlige hallusinasjoner'},
-      {score:'7', label:'Kontinuerlige hallusinasjoner'}
+      {score:'1', label:'Svært lett kløe, prikking, stikking, svie eller nummenhet'},
+      {score:'2', label:'Lett kløe, prikking, stikking, svie eller nummenhet'},
+      {score:'3', label:'Moderat kløe, prikking, stikking, svie eller nummenhet'},
+      {score:'4', label:'Moderate hallusinasjoner'},
+      {score:'5', label:'Sterke hallusinasjoner'},
+      {score:'6', label:'Svært sterke hallusinasjoner'},
+      {score:'7', label:'Vedvarende hallusinasjoner'}
     ]},
-  { key:'auditiv', kw:'auditiv', label:'7. Auditive forstyrrelser',
-    q:'«Er du mer var for lyder rundt deg? Er de skarpe eller skremmende? Hører du noe som forstyrrer deg, eller ting du vet ikke er der?»',
+  { key:'horsel', kw:'hørsel', label:'7. Hørselsforstyrrelser',
+    q:'«Er du mer oppmerksom på lyder rundt deg? Er de ubehagelige? Skremmer de deg? Hører du noe som er urovekkende? Hører du ting som du vet ikke er der?»',
     choices:[
       {score:'0', label:'Ingen'},
-      {score:'1', label:'Svært lett skarphet eller evne til å skremme'},
-      {score:'2', label:'Lett skarphet eller evne til å skremme'},
-      {score:'3', label:'Moderat skarphet eller evne til å skremme'},
-      {score:'4', label:'Moderat alvorlige hallusinasjoner'},
-      {score:'5', label:'Alvorlige hallusinasjoner'},
-      {score:'6', label:'Ekstremt alvorlige hallusinasjoner'},
-      {score:'7', label:'Kontinuerlige hallusinasjoner'}
+      {score:'1', label:'Svært lett ubehag eller evne til å skremme'},
+      {score:'2', label:'Lett ubehag eller evne til å skremme'},
+      {score:'3', label:'Moderat ubehag eller evne til å skremme'},
+      {score:'4', label:'Moderate hallusinasjoner'},
+      {score:'5', label:'Sterke hallusinasjoner'},
+      {score:'6', label:'Svært sterke hallusinasjoner'},
+      {score:'7', label:'Vedvarende hallusinasjoner'}
     ]},
-  { key:'visuell', kw:'visuell', label:'8. Visuelle forstyrrelser',
-    q:'«Virker lyset for sterkt? Har fargene endret seg? Gjør det vondt i øynene? Ser du noe som forstyrrer deg, eller ting du vet ikke er der?»',
+  { key:'syn', kw:'syn', label:'8. Synsforstyrrelser',
+    q:'«Virker lyset sterkere enn vanlig? Oppleves farger annerledes enn vanlig? Gjør det vondt for øynene? Ser du noe som er urovekkende? Ser du ting som du vet ikke er der?»',
     choices:[
       {score:'0', label:'Ingen'},
-      {score:'1', label:'Svært lett lysømfintlighet'},
-      {score:'2', label:'Lett lysømfintlighet'},
-      {score:'3', label:'Moderat lysømfintlighet'},
-      {score:'4', label:'Moderat alvorlige hallusinasjoner'},
-      {score:'5', label:'Alvorlige hallusinasjoner'},
-      {score:'6', label:'Ekstremt alvorlige hallusinasjoner'},
-      {score:'7', label:'Kontinuerlige hallusinasjoner'}
+      {score:'1', label:'Svært lett lysfølsomhet'},
+      {score:'2', label:'Lett lysfølsomhet'},
+      {score:'3', label:'Moderat lysfølsomhet'},
+      {score:'4', label:'Moderate hallusinasjoner'},
+      {score:'5', label:'Sterke hallusinasjoner'},
+      {score:'6', label:'Svært sterke hallusinasjoner'},
+      {score:'7', label:'Vedvarende hallusinasjoner'}
     ]},
   { key:'hodepine', kw:'hodepine', label:'9. Hodepine, trykk i hodet',
-    q:'«Føles det annerledes i hodet? Kjennes det som et bånd rundt hodet?» Svimmelhet skåres ikke.',
+    q:'«Føles hodet annerledes? Føles det som om det er et bånd rundt hodet ditt?» Ikke skår for svimmelhet eller ørhet. Forøvrig skåres alvorlighetsgrad.',
     choices:[
-      {score:'0', label:'Ikke til stede'},
+      {score:'0', label:'Ingen'},
       {score:'1', label:'Svært lett'},
       {score:'2', label:'Lett'},
       {score:'3', label:'Moderat'},
-      {score:'4', label:'Moderat alvorlig'},
-      {score:'5', label:'Alvorlig'},
-      {score:'6', label:'Svært alvorlig'},
-      {score:'7', label:'Ekstremt alvorlig'}
+      {score:'4', label:'Moderat sterk'},
+      {score:'5', label:'Sterk'},
+      {score:'6', label:'Svært sterk'},
+      {score:'7', label:'Ekstremt sterk'}
     ]},
-  { key:'orientering', kw:'orient', label:'10. Orientering og omtåkethet',
-    q:'«Hvilken dag er det? Hvor er du? Hvem er jeg?» (Addisjon i serie.)',
+  { key:'orientering', kw:'orient', label:'10. Orientering og bevissthetsnivå',
+    q:'«Hvilken dag er det i dag? Hvor er du? Hvem er jeg?» Be pasienten legge sammen tall.',
     choices:[
-      {score:'0', label:'Orientert og kan utføre addisjon i serie'},
-      {score:'1', label:'Kan ikke utføre addisjon i serie, eller usikker på dato'},
-      {score:'2', label:'Desorientert for dato med inntil 2 kalenderdager'},
-      {score:'3', label:'Desorientert for dato med mer enn 2 kalenderdager'},
-      {score:'4', label:'Desorientert for sted og/eller person'}
+      {score:'0', label:'Orientert og kan legge sammen flere tall'},
+      {score:'1', label:'Kan ikke legge sammen flere tall eller er usikker på dato'},
+      {score:'2', label:'Ikke orientert for dato, avviker med inntil 2 dager'},
+      {score:'3', label:'Ikke orientert for dato, avviker med mer enn 2 dager'},
+      {score:'4', label:'Ikke orientert for sted og/eller person'}
     ]}
 ];
 const CIWA_MAX = 67;
@@ -6580,7 +6577,7 @@ function buildCiwaTab(){
       <section class="cardList">
         <div class="exam-card">
           <div class="card-head"><span class="card-name">CIWA-Ar: Clinical Institute Withdrawal Assessment for Alcohol, revidert</span></div>
-          <div class="ekg-hedge-note" style="margin:0 0 14px;">Norsk versjon. Velg skår for hvert av de 10 punktene (punkt 1–9: 0–7, punkt 10: 0–4). Puls og blodtrykk noteres, men inngår ikke i skåren.</div>
+          <div class="ekg-hedge-note" style="margin:0 0 14px;">Norsk versjon etter Norsk legemiddelhåndbok. Velg skår for hvert av de 10 punktene (punkt 1–9: 0–7, punkt 10: 0–4). Puls og blodtrykk noteres, men inngår ikke i skåren.</div>
           <div style="display:flex; flex-wrap:wrap; gap:14px; margin-bottom:16px;">
             <label style="font-size:.78rem; color:var(--ink-muted);">Tidspunkt<br><input type="text" id="ciwa-tid" data-allow-comma="1" value="${escHtml(ciwaState.tid)}" placeholder="f.eks. kl. 08.00" style="${inp} width:130px; margin-top:4px;"/></label>
             <label style="font-size:.78rem; color:var(--ink-muted);">Puls (/min)<br><input type="text" inputmode="decimal" id="ciwa-puls" value="${escHtml(ciwaState.puls)}" placeholder="–" style="${inp} width:90px; margin-top:4px;"/></label>
@@ -6589,13 +6586,20 @@ function buildCiwaTab(){
           <div id="ciwa-calc-container"></div>
         </div>
         <div class="exam-card">
-          <div class="card-head"><span class="card-name">Om CIWA-Ar og kilder</span></div>
+          <div class="card-head"><span class="card-name">Tolkning og forskjeller mellom kildene</span></div>
           <ul class="ekg-sources">
-            <li><b>Original:</b> Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. «Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar).» <em>Br J Addict</em> 1989;84(11):1353–1357. Skalaen er ikke opphavsrettslig beskyttet og kan brukes fritt.</li>
-            <li><b>Norsk versjon:</b> Oversatt av Vestre Viken og Haukeland universitetssjukehus (Tidsskr Nor Legeforen 2014). Fritt tilgjengelig via Norsk legemiddelhåndbok og Norsk forening for rus- og avhengighetsmedisin.</li>
-            <li><b>Helsedirektoratet:</b> Nasjonal faglig retningslinje for avrusning fra rusmidler og vanedannende legemidler anbefaler CIWA-Ar ved alkoholavhengighet for å vurdere om avrusning kan skje poliklinisk, vurdere behov for legemidler og følge forløpet. Krever opplæring.</li>
-            <li><b>Tolkning (til orientering):</b> En samlet skår på 10 eller høyere regnes vanligvis som tegn på moderat eller alvorlig abstinens. Grenseverdier og tiltak følger lokal prosedyre. Verktøyet beregner kun sum og gir ingen klinisk vurdering.</li>
-            <li><b>Begrensninger:</b> Forutsetter at pasienten kan kommunisere. Ikke utviklet for blandingsmisbruk eller benzodiazepinabstinens, og validiteten hos akutt somatisk syke er omdiskutert.</li>
+            <li><b>Helsedirektoratet:</b> skår under 10: lette symptomer, 10–18: moderate, over 18: alvorlige. Under 10 behandles pasienten vanligvis uten legemidler; dosering ved 10–15 og over 15 står i retningslinjen.</li>
+            <li><b>Norsk legemiddelhåndbok:</b> diazepam ved CIWA over 10, høyere dosering ved over 15.</li>
+            <li><b>Forskjell:</b> Helsedirektoratet deler alvorlighetsgrad ved 10 og 18, mens behandlingstersklene i begge kildene er 10 og 15.</li>
+            <li><b>Avgrensning:</b> Verktøyet legger kun sammen poeng og erstatter ikke klinisk vurdering.</li>
+          </ul>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Kilder</span></div>
+          <ul class="ekg-sources">
+            <li><a href="https://www.legemiddelhandboka.no/ciwa-ar-clinical-institute-withdrawal-assessment-of-alcohol-scale-revised" target="_blank" rel="noopener noreferrer">Norsk legemiddelhåndbok: CIWA-AR, norsk skjema (revidert 22.12.2015)</a></li>
+            <li><a href="https://www.helsedirektoratet.no/retningslinjer/avrusning-fra-rusmidler-og-vanedannende-legemidler/avrusning-fra-alkohol/ciwa-ar-styrt-behandling-ved-alkoholavrusning" target="_blank" rel="noopener noreferrer">Helsedirektoratet: CIWA-Ar-styrt behandling ved alkoholavrusning (13.05.2016)</a></li>
+            <li><a href="https://www.legemiddelhandboka.no/extended/psykiske-lidelser/rusproblemer-og-avhengighetstilstander/alkoholbrukslidelser/alkohol-abstinensreaksjoner" target="_blank" rel="noopener noreferrer">Norsk legemiddelhåndbok: Alkohol abstinensreaksjoner (revidert 26.03.2024)</a></li>
           </ul>
         </div>
       </section>
@@ -6689,8 +6693,7 @@ function attachCiwaEvents(panel){
 
 <script>
 /* ============================== SIRS / qSOFA TAB ==============================
-   SIRS: ACCP/SCCM-konsensus (Bone et al., Chest 1992) – 4 kriterier.
-   qSOFA: Sepsis-3 (Singer et al. / Seymour et al., JAMA 2016) – 3 kriterier, 0–3 poeng.
+   SIRS og qSOFA etter UNN (2021) og Sørlandet sykehus (2023).
    Hvert kriterium kan settes manuelt (Ja/Nei) eller fylles automatisk fra målinger.
    Verktøyet teller kun oppfylte kriterier og gir ingen klinisk vurdering. */
 
@@ -6931,13 +6934,20 @@ function buildSepsisTab(){
           <div id="sep-qsofa-container"></div>
         </div>
         <div class="exam-card">
-          <div class="card-head"><span class="card-name">Om SIRS og qSOFA, kilder</span></div>
+          <div class="card-head"><span class="card-name">Kriterier og forskjeller mellom kildene</span></div>
           <ul class="ekg-sources">
-            <li><b>SIRS:</b> Bone RC, Balk RA, Cerra FB et al. «Definitions for sepsis and organ failure and guidelines for the use of innovative therapies in sepsis.» ACCP/SCCM Consensus Conference. <em>Chest</em> 1992;101(6):1644–1655. Fire kriterier; to eller flere oppfylt utgjør SIRS etter denne definisjonen.</li>
-            <li><b>qSOFA / Sepsis-3:</b> Singer M, Deutschman CS, Seymour CW et al. «The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3).» <em>JAMA</em> 2016;315(8):801–810. Seymour CW et al. «Assessment of Clinical Criteria for Sepsis.» <em>JAMA</em> 2016;315(8):762–774. Tre kriterier, 0–3 poeng.</li>
-            <li><b>Screening:</b> Evans L et al. «Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021.» <em>Crit Care Med</em> 2021;49(11):e1063–e1143. Anbefaler å ikke bruke qSOFA alene som screeningverktøy, sammenlignet med SIRS, NEWS eller MEWS.</li>
-            <li><b>Norsk kontekst:</b> Følg lokal sepsisprosedyre og Helsedirektoratets nasjonale faglige retningslinje for antibiotikabruk i sykehus. Mange sykehus bruker NEWS2 i tillegg.</li>
-            <li><b>Avgrensning:</b> Verktøyet teller kun oppfylte kriterier ut fra det som er registrert. Det stiller ingen diagnose og gir ingen klinisk vurdering.</li>
+            <li><b>UNN (2021):</b> SIRS: temperatur > 38 °C eller < 36 °C, puls > 90/min, RF > 20/min, leukocytter > 12 eller < 4 × 10⁹/L. SIRS ≥ 2 og organsvikt tyder på sepsis. qSOFA: endret mental status, systolisk BT ≤ 100 mmHg, RF ≥ 22/min. qSOFA ≥ 2 tyder på sepsis.</li>
+            <li><b>Sørlandet sykehus (2023):</b> samme qSOFA-kriterier (endret mental status = GCS < 15, nyoppstått). SIRS er forlatt som indikator på sepsis fordi kriteriene er for uspesifikke.</li>
+            <li><b>Forskjell:</b> Helse Bergen (2017) bruker temperatur > 38,5 °C eller < 35 °C, og tar med PaCO₂ < 4,3 kPa og > 10 % umodne former. Verktøyet bruker UNNs temperaturgrenser og tar med PaCO₂ og umodne former som valgfrie felt.</li>
+            <li><b>Avgrensning:</b> Verktøyet teller kun oppfylte kriterier og stiller ingen diagnose.</li>
+          </ul>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Kilder</span></div>
+          <ul class="ekg-sources">
+            <li><a href="https://unn.no/Documents/Samhandling/Ressurser%20og%20prosedyrer/Pasientforl%c3%b8p%20sepsis%20-%20Trygg%20akuttmedisin.pdf" target="_blank" rel="noopener noreferrer">UNN: Pasientforløp sepsis – Trygg akuttmedisin (v1-2021)</a></li>
+            <li><a href="https://kvalitet.sshf.no/docs/pub/dok02838.htm" target="_blank" rel="noopener noreferrer">Sørlandet sykehus: Sepsis – diagnostikk, monitorering og behandling (04.07.2023)</a></li>
+            <li><a href="https://kvalitet.helse-bergen.no/docs/pub/DOK13932.pdf" target="_blank" rel="noopener noreferrer">Helse Bergen: Sepsis/septisk sjokk (versjon 2.01, 2017)</a></li>
           </ul>
         </div>
       </section>
@@ -7179,7 +7189,7 @@ function parseVitalsText(raw){
 
 <script>
 /* ============================== NEWS2 TAB ==============================
-   National Early Warning Score 2 (Royal College of Physicians, 2017).
+   NEWS2, skåringstabell etter Sykehuset i Vestfold (21.02.2024).
    Values come from the shared vital signs; each parameter's band is selected
    automatically from the value, or can be chosen by hand without a value.
    The tool only adds up points and gives no clinical assessment. */
@@ -7200,7 +7210,7 @@ const NEWS_PARAMS = [
     {id:'a', label:'≤83',              pts:3},
     {id:'b', label:'84–85',            pts:2},
     {id:'c', label:'86–87',            pts:1},
-    {id:'d', label:'88–92 / ≥93 på romluft', pts:0},
+    {id:'d', label:'88–92 og ≥93 på romluft', pts:0},
     {id:'e', label:'93–94 på oksygen', pts:1},
     {id:'f', label:'95–96 på oksygen', pts:2},
     {id:'g', label:'≥97 på oksygen',   pts:3}],
@@ -7228,10 +7238,10 @@ const NEWS_PARAMS = [
     {id:'f', label:'≥131',    pts:3, max:Infinity}]},
   { key:'acvpu', label:'Bevissthet (ACVPU)', categorical:true, bands:[
     {id:'A', label:'A – våken',                 pts:0},
-    {id:'C', label:'C – nyoppstått forvirring', pts:3},
+    {id:'C', label:'C – forvirret, nytilkommet', pts:3},
     {id:'V', label:'V – reagerer på tiltale',   pts:3},
-    {id:'P', label:'P – reagerer på smerte',    pts:3},
-    {id:'U', label:'U – ingen respons',         pts:3}]},
+    {id:'P', label:'P – reagerer ved smertestimulering', pts:3},
+    {id:'U', label:'U – reagerer ikke på tiltale eller smertestimulering', pts:3}]},
   { key:'temp', label:'Temperatur', unit:'°C', bands:[
     {id:'a', label:'≤35,0',     pts:3, max:35.0},
     {id:'b', label:'35,1–36,0', pts:1, max:36.0},
@@ -7240,7 +7250,7 @@ const NEWS_PARAMS = [
     {id:'e', label:'≥39,1',     pts:2, max:Infinity}]}
 ];
 
-let news2State = { scale:1, manual:{} };
+let news2State = { scale:1, manual:{}, interp:false };
 
 function news2Params(){ return NEWS_PARAMS.filter(p => !p.scale || p.scale===news2State.scale); }
 function news2Vital(p){ return p.vital || p.key; }
@@ -7272,6 +7282,16 @@ function news2ValueText(p, r){
   if(r.src==='målt' && v) return `${fmtNo(v)} ${p.unit}`;
   return `${r.band.label}${p.unit && !/romluft|oksygen/.test(r.band.label) ? ' '+p.unit : ''}`;
 }
+/* Risk level per Sykehuset i Vestfold; only when every parameter is scored */
+function news2Risk(){
+  const { total, scored, n } = news2Totals();
+  if(!scored || scored<n) return null;
+  if(total>=7) return 'høy risiko (7 eller mer)';
+  if(total>=5) return 'middels risiko (5–6)';
+  if(news2Params().some(p=>{ const r = news2Band(p); return r.band && r.band.pts===3; })) return 'lav–middels risiko (3 poeng i én parameter)';
+  return 'lav risiko (0–4)';
+}
+function news2RiskLine(){ const r = news2Risk(); return (news2State.interp && r) ? `Risikonivå etter Sykehuset i Vestfold: ${r}.` : ''; }
 function news2Lines(){
   return news2Params().map(p=>{
     const r = news2Band(p);
@@ -7286,6 +7306,7 @@ function news2OutputText(){
   news2Lines().forEach(l=>out.push(l.text));
   out.push('');
   out.push(scored ? `NEWS2 totalskår: ${total} poeng`+(scored<n?` (${scored} av ${n} parametre skåret)`:'') : 'Totalskår: ikke beregnet, ingen parametre skåret ennå.');
+  const rl = news2RiskLine(); if(rl) out.push(rl);
   return out.join('\n');
 }
 function news2OutputHTML(forCopy){
@@ -7299,6 +7320,7 @@ function news2OutputHTML(forCopy){
   });
   out.push('');
   out.push(scored ? `NEWS2 totalskår: <b>${total}</b> poeng`+(scored<n?` (${scored} av ${n} parametre skåret)`:'') : 'Totalskår: ikke beregnet.');
+  const rl = news2RiskLine(); if(rl) out.push(escHtml(rl));
   return out.join('<br>');
 }
 function news2AbnText(){
@@ -7329,7 +7351,8 @@ function renderNews2(){
       <div class="chip-group" style="margin-top:6px;">${btns}</div>
     </div>`;
   }).join('');
-  box.innerHTML = `<div class="nihss-total-bar">NEWS2-sum: <b>${scored?total:'–'}</b> poeng${scored?` · ${scored}/${n} parametre skåret`:' · fyll inn målinger eller velg under'}</div>${rows}`;
+  const risk = news2Risk();
+  box.innerHTML = `<div class="nihss-total-bar">NEWS2-sum: <b>${scored?total:'–'}</b> poeng${scored?` · ${scored}/${n} parametre skåret`:' · fyll inn målinger eller velg under'}${risk?` · ${risk}`:''}</div>${rows}`;
   const b = document.getElementById('news2-output-body'); if(b) b.innerHTML = news2OutputHTML();
   const a = document.getElementById('news2-abn-body');    if(a) a.innerHTML = news2AbnHTML();
 }
@@ -7365,12 +7388,23 @@ function buildNews2Tab(){
           <div id="news2-rows"></div>
         </div>
         <div class="exam-card">
-          <div class="card-head"><span class="card-name">Om NEWS2 og kilder</span></div>
+          <div class="card-head"><span class="card-name">Tolkning og forskjeller mellom kildene</span></div>
           <ul class="ekg-sources">
-            <li><b>Original:</b> Royal College of Physicians. <em>National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS.</em> London: RCP, 2017. Sju parametre, totalskår 0–20.</li>
-            <li><b>Norsk kontekst:</b> NEWS2 brukes i norske sykehus som del av pasientsikkerhetsprogrammets innsatsområde «Tidlig oppdagelse og rask respons ved forverret tilstand». Følg lokal prosedyre for observasjonsfrekvens og tiltak.</li>
-            <li><b>Tolkning (til orientering):</b> Etter RCP regnes totalskår 0–4 som lav, 5–6 som middels og 7 eller mer som høy klinisk risiko, og 3 poeng på ett enkelt parameter skal også utløse vurdering. Tiltak følger lokal prosedyre. Verktøyet beregner kun poeng og gir ingen klinisk vurdering.</li>
-            <li><b>Avgrensning:</b> NEWS2 er ikke validert for barn under 16 år eller gravide.</li>
+            <li><b>Metodebok (Oslo legevakt):</b> SpO₂ skala 2 brukes bare ved kjent hyperkapnisk respirasjonssvikt med mål 88–92 %; ellers skala 1. Ved 3 poeng i én parameter skal sykepleier alltid kontakte lege.</li>
+            <li><b>Sykehuset i Vestfold:</b> skåringstabellen i verktøyet følger denne kilden. Total 0–4: lav risiko. 3 i én parameter: lav–middels. 5–6: middels (grense for rask respons). 7 eller mer: høy.</li>
+            <li><b>Sykehuset Innlandet:</b> skala 2 kun etter forordning fra lege. Tilført oksygen gir 2 poeng. Skår 5 eller mer og mistenkt infeksjon: tenk sepsis.</li>
+            <li><b>Helsedirektoratet:</b> NEWS2 ≥ 7 er brukt som eksempel på alvorlig klinikk ved sepsis i primærhelsetjenesten.</li>
+            <li><b>Avgrensning:</b> Verktøyet beregner kun poeng. Tiltak og observasjonsfrekvens følger lokal prosedyre.</li>
+          </ul>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Kilder</span></div>
+          <ul class="ekg-sources">
+            <li><a href="https://metodebok.no/index.php?action=topic&item=sEUjgUFA" target="_blank" rel="noopener noreferrer">Metodebok (Oslo legevakt): National Early Warning Score (NEWS2) (versjon 0.3, 24.11.2022)</a></li>
+            <li><a href="https://kvalitet.siv.no/docs/pub/DOK15387.pdf" target="_blank" rel="noopener noreferrer">Sykehuset i Vestfold: Tidlig identifisering av akutt og kritisk syke pasienter (21.02.2024)</a></li>
+            <li><a href="https://kvalitet.sykehuset-innlandet.no/docs/pub/dok38966.htm" target="_blank" rel="noopener noreferrer">Sykehuset Innlandet: NEWS2 – ansvar og gjennomføring (utgave 4.01, 2023)</a></li>
+            <li><a href="https://www.helsedirektoratet.no/faglige-rad/tidlig-oppdagelse-og-rask-respons-ved-forverret-somatisk-tilstand/observasjonsrutiner" target="_blank" rel="noopener noreferrer">Helsedirektoratet: Tidlig oppdagelse og rask respons – observasjonsrutiner (30.04.2020)</a></li>
+            <li><a href="https://www.helsedirektoratet.no/retningslinjer/antibiotika-i-primaerhelsetjenesten/andre-infeksjoner/sepsis" target="_blank" rel="noopener noreferrer">Helsedirektoratet: Antibiotika i primærhelsetjenesten – sepsis (30.06.2026)</a></li>
           </ul>
         </div>
       </section>
@@ -7386,6 +7420,10 @@ function buildNews2Tab(){
           </div>
         </div>
 
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <label class="switch"><input type="checkbox" id="news2-interp" ${news2State.interp?'checked':''}/><span class="slider"></span></label>
+          <span class="toggle-label">Ta med risikonivå i notatet</span>
+        </div>
         <div class="note-head"><div class="note-title">NEWS2-resultat</div></div>
         <div class="note-body" id="news2-output-body" style="white-space:normal;"></div>
         <div class="note-foot" style="gap:8px; flex-wrap:wrap;">
@@ -7408,6 +7446,9 @@ function buildNews2Tab(){
 
   if(!panel.dataset.newsEvt){
     panel.dataset.newsEvt = '1';
+    panel.addEventListener('change', e=>{
+      if(e.target.id==='news2-interp'){ news2State.interp = e.target.checked; renderNews2(); }
+    });
     panel.addEventListener('click', e=>{
       const nb = e.target.closest('[data-news-band]');
       if(nb){
@@ -7434,7 +7475,7 @@ function buildNews2Tab(){
       if(e.target.closest('#news2-copy-btn')){ copyPlain(news2OutputText(), document.getElementById('news2-copy-status')); return; }
       if(e.target.closest('#news2-copy-rich-btn')){ copyWithRichText(news2OutputHTML(true), news2OutputText(), document.getElementById('news2-copy-status')); return; }
       if(e.target.closest('#news2-copy-abn-btn')){ copyWithRichText(news2AbnHTML(true), news2AbnText(), document.getElementById('news2-copy-abn-status')); return; }
-      if(e.target.closest('#news2-reset-btn')){ news2State = { scale:1, manual:{} }; clearVitals(); buildNews2Tab(); return; }
+      if(e.target.closest('#news2-reset-btn')){ news2State = { scale:1, manual:{}, interp:false }; clearVitals(); buildNews2Tab(); return; }
     });
   }
 }
@@ -7443,16 +7484,19 @@ function buildNews2Tab(){
 <script>
 /* ============================== SCORING TAB ==============================
    Collapsible scoring systems. Criteria and wording follow Norwegian sources
-   (Metodebok, Norsk legemiddelhåndbok, Helsedirektoratet), with the original publications cited.
+   (Metodebok first, then Norsk legemiddelhåndbok, Helsedirektoratet and hospital procedures).
    Values from shared vital signs / age / sex tick criteria automatically;
    every criterion can also be set by hand. The tool adds up points only. */
 
 let scoreCommon = { age:'', sex:'' };
 function commonAge(){ const v = parseNum(scoreCommon.age); return isNaN(v) ? null : v; }
 
+/* Source link: the whole line is a clickable link */
+const SRC = (name, title, date, url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${name}: ${title}${date ? ' ('+date+')' : ''}</a>`;
+
 const SCORE_DEFS = [
   { id:'wellsdvt', title:'Wells skår for dyp venetrombose (DVT)', resultLabel:'Wells DVT-skår',
-    intro:'Forenklet Wells skår. Ved symptomer i begge ben brukes benet med mest symptomer.',
+    intro:'Forenklet Wells skår, ordlyd og grenser etter Metodebok i indremedisin (OUS).',
     items:[
       {key:'kreft',     pts:1,  label:'Aktiv kreftsykdom (pågående behandling, behandling siste 6 måneder eller palliativ behandling)'},
       {key:'parese',    pts:1,  label:'Paralyse, parese eller nylig immobilisering av benet med gips/ortose'},
@@ -7466,16 +7510,19 @@ const SCORE_DEFS = [
       {key:'alt',       pts:-2, label:'Alternativ diagnose lik eller mer sannsynlig enn DVT (f.eks. Bakers cyste, infeksjon, traume, spontan blødning)'}
     ],
     interp:[
-      'Skår ≥ 2: høy sannsynlighet for DVT (50–60 %).',
-      'Skår ≤ 1: lav sannsynlighet for DVT (ca. 10 %).',
-      'Skår ≤ 1 og negativ D-dimer utelukker DVT med > 99 % sannsynlighet.'],
+      '<b>Metodebok (OUS):</b> skår ≥ 2: høy sannsynlighet for DVT (50–60 %). Skår ≤ 1: lav sannsynlighet for DVT (ca. 10 %). Skår ≤ 1 og negativ D-dimer utelukker DVT med > 99 % sannsynlighet.',
+      '<b>Sykehuset Innlandet:</b> ved skår ≥ 2 bestilles ultralyd med en gang; ved 0–1 tas D-dimer først.',
+      '<b>Norsk selskap for trombose og hemostase:</b> høy risiko ved skår ≥ 2, lav risiko ved 0–1.',
+      '<b>Forskjell:</b> Metodebok skriver «større kirurgi siste 12 uker», Sykehuset Innlandet «siste 4 uker». Verktøyet følger Metodebok. Øvrige kriterier og grenser er like.'],
     category:(t)=> t>=2 ? 'høy sannsynlighet for DVT (skår ≥ 2)' : 'lav sannsynlighet for DVT (skår ≤ 1)',
-    categorySource:'Metodebok',
+    categorySource:'Metodebok (OUS)',
     sources:[
-      '<b>Metodebok i indremedisin (OUS):</b> «Dyp venetrombose (DVT)», forenklet Wells skår, versjon 1.1, sist oppdatert 14.09.2021, metodebok.no.',
-      '<b>Original:</b> Wells PS et al. «Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis.» <em>N Engl J Med</em> 2003;349:1227–35.']
+      SRC('Metodebok i indremedisin (OUS)', 'Dyp venetrombose (DVT)', 'versjon 1.1, 14.09.2021', 'https://metodebok.no/index.php?action=topic&item=eusyq4q5'),
+      SRC('Sykehuset Innlandet', 'DVT – utredning og behandling', 'versjon 2.00, 01.11.2022', 'https://kvalitet.sykehuset-innlandet.no/docs/pub/dok44527.htm'),
+      SRC('Norsk selskap for trombose og hemostase', 'Retningslinjer for antitrombotisk behandling og profylakse', '2020', 'https://files.magicapp.org/guideline/b91add9d-87c2-498c-8237-241d8d08b4e2/published_guideline_4246-2_0.pdf')]
   },
   { id:'wellsle', title:'Wells skår for lungeemboli (LE)', resultLabel:'Wells LE-skår',
+    intro:'Forenklet Wells skår. Grense (≤ 4 / > 4) etter Metodebok. Metodebok lister ikke kriteriene, så kriterier og poeng er etter Norsk legemiddelhåndbok.',
     items:[
       {key:'dvt',   pts:3,   label:'Kliniske symptomer og tegn på DVT (minimum hevelse og smerter ved palpasjon av dype vener)'},
       {key:'alt',   pts:3,   label:'En alternativ diagnose er mindre sannsynlig enn LE'},
@@ -7486,92 +7533,104 @@ const SCORE_DEFS = [
       {key:'hemo',  pts:1,   label:'Hemoptyse'},
       {key:'kreft', pts:1,   label:'Kreftsykdom (på behandling, behandling siste 6 måneder eller palliativ fase)'}
     ],
-    interp:['> 4 poeng: LE sannsynlig.','≤ 4 poeng: LE ikke sannsynlig.'],
-    category:(t)=> t>4 ? 'LE sannsynlig (> 4 poeng)' : 'LE ikke sannsynlig (≤ 4 poeng)',
-    categorySource:'Norsk legemiddelhåndbok',
+    interp:[
+      '<b>Metodebok:</b> Wells skår ≤ 4 og negativ D-dimer: klinisk liten mistanke om LE. Wells skår > 4: mistanke om LE, CT-angiografi uavhengig av D-dimer.',
+      '<b>Norsk legemiddelhåndbok:</b> samme grense, > 4 poeng LE sannsynlig, ≤ 4 poeng LE ikke sannsynlig.',
+      '<b>Forskjell:</b> Sørlandet sykehus bruker samme poeng, men tre nivåer slik det står i kilden: lav 0–1, moderat 2–6, høy ≥ 6.'],
+    category:(t)=> t>4 ? 'mistanke om LE (Wells skår > 4)' : 'klinisk liten mistanke om LE (Wells skår ≤ 4), forutsetter negativ D-dimer for å avkrefte',
+    categorySource:'Metodebok',
     sources:[
-      '<b>Norsk legemiddelhåndbok:</b> «Wells forenklet skår for klinisk sannsynlighet for lungeemboli», legemiddelhandboka.no.',
-      '<b>Original:</b> Wells PS et al. «Derivation of a simple clinical model to categorize patients probability of pulmonary embolism.» <em>Thromb Haemost</em> 2000;83:416–20.']
+      SRC('Metodebok (OUS)', 'Lungeembolisme (LE)', 'versjon 1.2, 14.09.2021', 'https://metodebok.no/index.php?action=topic&item=szjNjKYd'),
+      SRC('Norsk legemiddelhåndbok', 'Wells forenklet skår for klinisk sannsynlighet for lungeemboli', '', 'https://www.legemiddelhandboka.no/wells-forenklet-skar-for-klinisk-sannsynlighet-for-lungeemboli'),
+      SRC('Sørlandet sykehus', 'Lungeemboli (Med.avd.)', 'revisjon 2.01, 28.11.2022', 'https://kvalitet.sshf.no/docs/pub/dok46194.htm')]
   },
   { id:'chads', title:'CHA₂DS₂-VASc (hjerneslagrisiko ved atrieflimmer)', resultLabel:'CHA₂DS₂-VASc-skår',
-    options:[{key:'va', label:'Bruk CHA₂DS₂-VA (uten kjønn, ESC 2024)'}],
+    intro:'Kriterier, poeng og tolkning etter Metodebok i indremedisin (OUS). Maks 9 poeng.',
     items:[
-      {key:'hs',   pts:1, label:'Hjertesvikt (C)'},
-      {key:'ht',   pts:1, label:'Hypertensjon (H)'},
-      {key:'alder', type:'choice', label:'Alder (A₂ / A)', choices:[
-        {id:'u65', label:'< 65 år',  pts:0},
-        {id:'a65', label:'65–74 år', pts:1},
-        {id:'a75', label:'≥ 75 år',  pts:2}],
+      {key:'hs',   pts:1, label:'Hjertesvikt'},
+      {key:'ht',   pts:1, label:'Hypertensjon'},
+      {key:'alder', type:'choice', label:'Alder', choices:[
+        {id:'u65', label:'Under 65 år',        pts:0},
+        {id:'a65', label:'65–74 år',           pts:1},
+        {id:'a75', label:'75 år eller eldre',  pts:2}],
         auto:()=>{ const a = commonAge(); return a==null ? null : (a>=75 ? 'a75' : a>=65 ? 'a65' : 'u65'); }},
-      {key:'dm',   pts:1, label:'Diabetes (D)'},
-      {key:'slag', pts:2, label:'Tidligere hjerneslag, TIA eller tromboemboli (S₂)'},
-      {key:'kar',  pts:1, label:'Karsykdom: tidligere hjerteinfarkt, perifer arteriesykdom eller aortaplakk (V)'},
-      {key:'kjonn', type:'choice', label:'Kjønn (Sc)', hideWhen:'va', choices:[
+      {key:'dm',   pts:1, label:'Diabetes'},
+      {key:'slag', pts:2, label:'Tidligere hjerneslag/TIA'},
+      {key:'kar',  pts:1, label:'Karsykdom'},
+      {key:'kjonn', type:'choice', label:'Kjønn', choices:[
         {id:'m', label:'Mann',   pts:0},
         {id:'k', label:'Kvinne', pts:1}],
         auto:()=> scoreCommon.sex==='mann' ? 'm' : scoreCommon.sex==='kvinne' ? 'k' : null}
     ],
-    titleFor:(st)=> st.opts.va ? 'CHA₂DS₂-VA (hjerneslagrisiko ved atrieflimmer)' : 'CHA₂DS₂-VASc (hjerneslagrisiko ved atrieflimmer)',
-    resultLabelFor:(st)=> st.opts.va ? 'CHA₂DS₂-VA-skår' : 'CHA₂DS₂-VASc-skår',
     interp:[
-      '<b>CHA₂DS₂-VASc (Norsk legemiddelhåndbok):</b> ≥ 2 hos menn eller ≥ 3 hos kvinner: antikoagulasjon anbefalt. 1 hos menn eller 2 hos kvinner: antikoagulasjon valgfri, avhengig av blødningsfare og pasientens preferanse. 0 hos menn eller 1 hos kvinner: antikoagulasjon ikke anbefalt.',
-      '<b>CHA₂DS₂-VA (ESC 2024):</b> ≥ 2: antikoagulasjon anbefalt. 1: antikoagulasjon bør vurderes.'],
+      '<b>Metodebok (OUS):</b> skår ≥ 2: sterk anbefaling om antikoagulasjon. Skår 1: antikoagulasjon foreslås, nytten veies mot blødningsrisiko og pasientens preferanser. Skår 0: ingen antitrombotisk behandling. Skår 1 kun på grunn av kvinnelig kjønn: antikoagulasjon heller ikke anbefalt.',
+      '<b>Forskjell:</b> Norsk legemiddelhåndbok og Norsk selskap for trombose og hemostase har én poeng høyere grense for kvinner: anbefalt ved ≥ 2 hos menn og ≥ 3 hos kvinner, valgfri/foreslått ved 1 hos menn og 2 hos kvinner. For en kvinne med skår 2 sier altså Metodebok «sterk anbefaling», de andre «valgfri».',
+      '<b>Forskjell, alder:</b> Metodebok bruker 65–74 år (1 poeng) og ≥ 75 år (2 poeng). Norsk legemiddelhåndbok skriver «65–75 år» og «> 75 år». Verktøyet følger Metodebok, så 75 år gir 2 poeng.'],
     category:(t, st)=>{
-      if(st.opts.va) return t>=2 ? 'antikoagulasjon anbefalt (≥ 2)' : t===1 ? 'antikoagulasjon bør vurderes (1)' : 'skår 0';
       const k = scoreVal(SCORE_DEFS[2], SCORE_DEFS[2].items.find(i=>i.key==='kjonn'), st).val;
-      if(!k) return null;
-      const adj = k==='k' ? t-1 : t;   /* thresholds are one point higher for women */
-      return adj>=2 ? 'antikoagulasjon anbefalt' : adj===1 ? 'antikoagulasjon valgfri, avhengig av blødningsfare og pasientens preferanse' : 'antikoagulasjon ikke anbefalt';
+      if(t>=2) return 'sterk anbefaling om antikoagulasjon (skår ≥ 2)';
+      if(t===1 && k==='k') return 'antikoagulasjon ikke anbefalt (skår 1 kun på grunn av kvinnelig kjønn)';
+      if(t===1) return 'antikoagulasjon foreslås, nytten veies mot blødningsrisiko og pasientens preferanser (skår 1)';
+      return 'ingen antitrombotisk behandling (skår 0)';
     },
-    categorySourceFor:(st)=> st.opts.va ? 'ESC 2024' : 'Norsk legemiddelhåndbok',
+    categorySource:'Metodebok (OUS)',
     sources:[
-      '<b>Norsk legemiddelhåndbok:</b> «Atrieflimmer», CHA₂DS₂-VASc-tabell og anbefalinger (kapittel revidert 09.02.2024), legemiddelhandboka.no. Legemiddelhåndboka oppgir alder som «65–75 år» og «> 75 år»; her brukes originalens 65–74 og ≥ 75 år.',
-      '<b>ESC 2024:</b> Van Gelder IC et al. «2024 ESC Guidelines for the management of atrial fibrillation.» <em>Eur Heart J</em> 2024;45:3314–414. Anbefaler CHA₂DS₂-VA, uten kjønn.',
-      '<b>Original:</b> Lip GYH et al. <em>Chest</em> 2010;137:263–72.']
+      SRC('Metodebok i indremedisin (OUS)', 'Antikoagulasjon ved atrieflimmer', 'versjon 2.2, 14.09.2021', 'https://metodebok.no/index.php?action=topic&item=9nsW4SUp'),
+      SRC('Norsk legemiddelhåndbok', 'Atrieflimmer', 'revidert 09.02.2024', 'https://www.legemiddelhandboka.no/extended/hjerte-og-karsykdommer/hjerterytmeforstyrrelser/atrierelaterte-rytmeforstyrrelser/atrieflimmer'),
+      SRC('Norsk selskap for trombose og hemostase', 'Retningslinjer for antitrombotisk behandling og profylakse', '2020', 'https://files.magicapp.org/guideline/b91add9d-87c2-498c-8237-241d8d08b4e2/published_guideline_4246-2_0.pdf')]
   },
-  { id:'crb65', title:'CRB-65 / CURB-65 (alvorlighetsgrad ved pneumoni)', resultLabel:'CRB-65-skår',
-    options:[{key:'urea', label:'Ta med urea (CURB-65)'}],
+  { id:'crb65', title:'CRB-65 (alvorlighetsgrad ved pneumoni)', resultLabel:'CRB-65-skår',
+    intro:'Kriterier og tolkning etter Metodebok (Norsk forening for infeksjonsmedisin, 2025).',
     items:[
-      {key:'konf', pts:1, label:'Konfusjon: nyoppstått desorientering for person, tid eller sted'},
-      {key:'urea', pts:1, label:'Urea > 7 mmol/L', showWhen:'urea'},
-      {key:'rf',   pts:1, label:'Respirasjonsfrekvens ≥ 30/min', vitals:['rf'],
+      {key:'konf', pts:1, label:'Mental endring (nyoppstått konfusjon)'},
+      {key:'rf',   pts:1, label:'Respirasjonsfrekvens ≥ 30 per minutt', vitals:['rf'],
         auto:()=>{ const r = vitalNum('rf'); return r==null ? null : r>=30; }},
-      {key:'bt',   pts:1, label:'Blodtrykk: systolisk < 90 mmHg eller diastolisk ≤ 60 mmHg', vitals:['sbt','dbt'],
-        auto:()=>{ const s = vitalNum('sbt'), d = vitalNum('dbt'); if(s==null && d==null) return null; return (s!=null && s<90) || (d!=null && d<=60); }},
-      {key:'alder', pts:1, label:'Alder 65 år eller eldre', common:'age',
+      {key:'bt',   pts:1, label:'Blodtrykk: systolisk ≤ 90 eller diastolisk < 60 mmHg', vitals:['sbt','dbt'],
+        auto:()=>{ const s = vitalNum('sbt'), d = vitalNum('dbt');
+          if((s!=null && s<=90) || (d!=null && d<60)) return true;
+          if(s!=null && d!=null) return false;
+          return null; /* only one value, and it is normal: the other one decides, so leave it to the user */ }},
+      {key:'alder', pts:1, label:'Alder ≥ 65 år', common:'age',
         auto:()=>{ const a = commonAge(); return a==null ? null : a>=65; }}
     ],
-    titleFor:(st)=> st.opts.urea ? 'CURB-65 (alvorlighetsgrad ved pneumoni)' : 'CRB-65 (alvorlighetsgrad ved pneumoni)',
-    resultLabelFor:(st)=> st.opts.urea ? 'CURB-65-skår' : 'CRB-65-skår',
     interp:[
-      'Helsedirektoratet bruker CRB-65 som eksempel på alvorlighetsgrad: CRB-65 0–2 ved mild til moderat pneumoni, CRB-65 3–4 ved alvorlig pneumoni (sengepost) eller svært alvorlig pneumoni (intensivbehov).'],
-    category:(t, st)=> st.opts.urea ? null : (t<=2 ? 'forenlig med mild til moderat pneumoni (CRB-65 0–2)' : 'forenlig med alvorlig eller svært alvorlig pneumoni (CRB-65 3–4)'),
-    categorySource:'Helsedirektoratet',
+      '<b>Metodebok (Norsk forening for infeksjonsmedisin):</b> 0–1 poeng: ikke alvorlig pneumoni, vurder ambulant behandling. 3–4 poeng: alvorlig pneumoni med økt mortalitet. I behandlingsavsnittet hører CRB-65 0–2 til mild til moderat pneumoni.',
+      '<b>Metodebok i indremedisin (OUS):</b> alvorlig pneumoni med CRB-65 3–4 eller respirasjonssvikt gir opptrapping av antibiotikabehandlingen.',
+      '<b>Helsedirektoratet:</b> CRB-65 0–2 som eksempel på mild/moderat pneumoni, 3–4 som eksempel på alvorlig pneumoni.',
+      '<b>St. Olavs hospital (skjema for primærhelsetjenesten):</b> 0 poeng: hjemmebehandling. 1–2 poeng: vurder sykehusinnleggelse. 3–4 poeng: umiddelbar sykehusinnleggelse.',
+      '<b>Forskjell:</b> Metodebok bruker RF ≥ 30 og systolisk ≤ 90 mmHg. St. Olavs skjema bruker RF > 30 og systolisk < 90 mmHg. Verktøyet følger Metodebok.'],
+    category:(t)=> t<=1 ? 'ikke alvorlig pneumoni, vurder ambulant behandling (0–1 poeng)'
+                 : t===2 ? 'mild til moderat pneumoni (2 poeng)'
+                 : 'alvorlig pneumoni med økt mortalitet (3–4 poeng)',
+    categorySource:'Metodebok',
     sources:[
-      '<b>Helsedirektoratet:</b> Nasjonal faglig retningslinje «Antibiotika i sykehus», 9.1 Pneumoni, samfunnservervet.',
-      '<b>Definisjon:</b> Lim WS et al. «Defining community acquired pneumonia severity on presentation to hospital.» <em>Thorax</em> 2003;58:377–82 (RF ≥ 30, systolisk < 90 eller diastolisk ≤ 60, alder ≥ 65, urea > 7 mmol/L).']
+      SRC('Metodebok (Norsk forening for infeksjonsmedisin)', 'Pneumoni, samfunnservervet', 'versjon 2.3, 12.06.2025', 'https://metodebok.no/index.php?action=topic&item=B3j6gPXK'),
+      SRC('Metodebok i indremedisin (OUS)', 'Bakteriell pneumoni', 'versjon 1.2, 14.09.2021', 'https://metodebok.no/index.php?action=topic&item=EgiExrzb'),
+      SRC('Helsedirektoratet', 'Antibiotika i sykehus: Pneumoni, samfunnservervet', '', 'https://www.helsedirektoratet.no/retningslinjer/antibiotika-i-sykehus/luftveisinfeksjoner-nedre/pneumoni-samfunnservervet'),
+      SRC('St. Olavs hospital', 'CRB-65 (skjema)', '', 'https://media.legehandboka.no/siteassets/regional-content/st-olavs-h-th-lv/crb-65-pdf')]
   },
   { id:'centor', title:'Centor-kriterier (sår hals hos voksne)', resultLabel:'Centor', unitWord:'kriterier', max:4,
+    intro:'Ordlyd etter NHI.no. Målt temperatur over 38,5 °C krysser av feber automatisk. Lavere målt temperatur utelukker ikke feber i forløpet, så da må du velge selv.',
     items:[
-      {key:'feber',  pts:1, label:'Feber > 38,5 °C', vitals:['temp'],
-        auto:()=>{ const t = vitalNum('temp'); return t==null ? null : t>38.5; }},
-      {key:'belegg', pts:1, label:'Belegg på tonsillene'},
-      {key:'glandl', pts:1, label:'Forstørrede, ømme halsglandler'},
+      {key:'feber',  pts:1, label:'Feber over 38,5 °C', vitals:['temp'],
+        auto:()=>{ const t = vitalNum('temp'); return (t!=null && t>38.5) ? true : null; }},
+      {key:'belegg', pts:1, label:'Belegg eller pusspropper på tonsillene'},
+      {key:'glandl', pts:1, label:'Forstørrede og ømme halsglandler'},
       {key:'hoste',  pts:1, label:'Fravær av hoste'}
     ],
     interp:[
-      '0–1 kriterier: lav sannsynlighet for streptokokk-tonsillitt og liten nytte av hurtigtest. Verken test eller antibiotika tilbys.',
-      '2–3 kriterier: hurtigtesten gir stor nytte. Ved positiv strep-test vurderes antibiotika.',
-      '4 kriterier: sannsynligheten for streptokokk-tonsillitt er over 50 %, og testen gir liten nytte. Antibiotika kan vurderes uten videre testing.',
-      'Kriteriene er validert for voksne og er mindre pålitelige hos barn.'],
-    category:(t)=> t===4 ? 'over 50 % sannsynlighet for streptokokk-tonsillitt, antibiotika kan vurderes uten videre testing (4 kriterier)'
-                 : t>=2 ? 'hurtigtest gir stor nytte, antibiotika vurderes ved positiv test (2–3 kriterier)'
-                 : 'lav sannsynlighet, verken test eller antibiotika tilbys (0–1 kriterier)',
-    categorySource:'«Antibiotika i primærhelsetjenesten»',
+      '<b>Helsedirektoratet (2026):</b> hos voksne kan Centor-kriteriene brukes til å vurdere alvorlighetsgrad og nytte av hurtigtest. Antibiotika bør tilbys hvis pasienten er systemisk påvirket eller har risiko for alvorlig sykdom.',
+      '<b>Antibiotika i primærhelsetjenesten, høringsutkast:</b> 0–1 kriterier: verken test eller antibiotika. 2–3 kriterier: hurtigtest, ved positiv test vurderes antibiotika. 4 kriterier: antibiotika kan vurderes uten videre testing.',
+      '<b>NHI.no (2025):</b> ved alle fire kriterier kan antibiotika vurderes uten videre testing; ved to eller tre kan prøver være nyttig.',
+      '<b>Merk:</b> trinnene over kommer fra høringsutkastet. Den endelige retningslinjen fra Helsedirektoratet sier bare at kriteriene kan brukes til å vurdere nytten av hurtigtest.'],
+    category:(t)=> t===4 ? 'antibiotika kan vurderes uten videre testing (4 kriterier)'
+                 : t>=2 ? 'hurtigtest, antibiotika vurderes ved positiv test (2–3 kriterier)'
+                 : 'verken test eller antibiotika (0–1 kriterier)',
+    categorySource:'Antibiotika i primærhelsetjenesten (høringsutkast)',
     sources:[
-      '<b>Helsedirektoratet:</b> Nasjonal faglig retningslinje «Antibiotika i primærhelsetjenesten», «Streptokokkhalsinfeksjon og skarlagensfeber» (sist endret 30.06.2026): hos voksne kan Centor-kriteriene brukes til å vurdere alvorlighetsgrad og nytte av hurtigtest.',
-      '<b>Kriterier og trinn:</b> «Antibiotika i primærhelsetjenesten», høringsutkast (Den norske legeforening), avsnitt sår hals: feber over 38,5 °C, belegg på tonsillene, forstørrede ømme halsglandler, fravær av hoste.',
-      '<b>Original:</b> Centor RM et al. «The diagnosis of strep throat in adults in the emergency room.» <em>Med Decis Making</em> 1981;1:239–46.']
+      SRC('Helsedirektoratet', 'Antibiotika i primærhelsetjenesten: Streptokokkhalsinfeksjon og skarlagensfeber', 'sist endret 30.06.2026', 'https://www.helsedirektoratet.no/retningslinjer/antibiotika-i-primaerhelsetjenesten/infeksjoner-i-ovre-luftveier/streptokokkhalsinfeksjon-og-skarlagensfeber'),
+      SRC('NHI.no', 'Streptokokkhalsinfeksjon', 'oppdatert 06.11.2025', 'https://nhi.no/sykdommer/infeksjoner/bakteriesykdommer/streptokokkhalsinfeksjon'),
+      SRC('Den norske legeforening', 'Antibiotika i primærhelsetjenesten (høringsutkast)', '', 'https://www.legeforeningen.no/contentassets/c0de744c650b4124a69e25de5f56f984/antibiotika-i-primarhelsetjenesten-hoeringsutkast.pdf')]
   }
 ];
 
@@ -7736,10 +7795,15 @@ function buildScoreSection(def){
           <div id="score-items-${def.id}"></div>
         </div>
         <div class="exam-card">
-          <div class="card-head"><span class="card-name">Tolkning etter kilden og kilder</span></div>
+          <div class="card-head"><span class="card-name">Tolkning og forskjeller mellom kildene</span></div>
           <ul class="ekg-sources">
             ${def.interp.map(t=>`<li>${t}</li>`).join('')}
-            <li><b>Avgrensning:</b> Verktøyet legger kun sammen poeng ut fra det som er registrert. Tolkningen over gjengir kilden til orientering og erstatter ikke klinisk vurdering.</li>
+            <li><b>Avgrensning:</b> Verktøyet legger kun sammen poeng. Tolkningen gjengir kildene og erstatter ikke klinisk vurdering.</li>
+          </ul>
+        </div>
+        <div class="exam-card">
+          <div class="card-head"><span class="card-name">Kilder</span></div>
+          <ul class="ekg-sources">
             ${def.sources.map(t=>`<li>${t}</li>`).join('')}
           </ul>
         </div>
